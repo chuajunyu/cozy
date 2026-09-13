@@ -39,8 +39,10 @@ export function supportHeight(product: Product) {
 export function acceptsSupport(support: Product, product: Product) {
   if (!canSupportItems(support)) return false
   const deck = support.placement?.support
-  if (product.placement?.surfaceKind === 'mattress') {
-    return !!deck && product.dimensions[0] <= deck.width + EPSILON * 2 && product.dimensions[2] <= deck.depth + EPSILON * 2
+  const kind = product.placement?.surfaceKind
+  if (kind) {
+    const stem = kind === 'bouquet' ? product.placement?.stemDiameter : undefined
+    return !!deck && deck.kind === kind && (stem ?? product.dimensions[0]) <= deck.width + EPSILON * 2 && (stem ?? product.dimensions[2]) <= deck.depth + EPSILON * 2
   }
   return !deck
 }
@@ -71,6 +73,11 @@ function rectangle(item: Item, product: Product): Rectangle {
     axisX: [Math.cos(angle), -Math.sin(angle)],
     axisZ: [Math.sin(angle), Math.cos(angle)],
   }
+}
+
+function attachmentRectangle(item: Item, product: Product) {
+  const stem = product.placement?.surfaceKind === 'bouquet' ? product.placement.stemDiameter : undefined
+  return stem ? rectangle(item, { ...product, dimensions: [stem, product.dimensions[1], stem] }) : rectangle(item, product)
 }
 
 function supportRectangle(item: Item, product: Product) {
@@ -107,9 +114,9 @@ export function liftToSupport(item: Item, scene: Scene, catalog: Product[]): Ite
     const deck = supportRectangle(other, support)
     const distance = Math.hypot(item.x - position.x, item.z - position.z)
     const fit = Math.abs(deck.halfWidth * 2 - product.dimensions[0]) <= .02 && Math.abs(deck.halfDepth * 2 - product.dimensions[2]) <= .02 ? 0 : 1
-    const candidate = mattress && overlapsMattressDeck(item, product, deck)
+    const candidate = (product.placement?.surfaceKind === 'bouquet' && distance < .2) || (mattress && overlapsMattressDeck(item, product, deck))
       ? { ...item, ...position } : item
-    if (!contains(deck, rectangle(candidate, product)) || (mattress ? fit > bestFit || (fit === bestFit && distance >= nearest) : position.elevation <= highest)) continue
+    if (!contains(deck, attachmentRectangle(candidate, product)) || (mattress ? fit > bestFit || (fit === bestFit && distance >= nearest) : position.elevation <= highest)) continue
     const lifted = { ...candidate, elevation: Math.max(item.elevation ?? 0, position.elevation + (mattress ? .25 : 0)) }
     if (mattress && !settleItem(lifted, scene, catalog)) continue
     highest = position.elevation
@@ -194,7 +201,7 @@ export function settleItem(item: Item, scene: Scene, catalog: Product[]): Item |
       if (
         top <= start + EPSILON &&
         top > landing &&
-        contains(supportRectangle(other, support), shape)
+        contains(supportRectangle(other, support), attachmentRectangle(item, product))
       ) {
         landing = top
         supportId = other.id
@@ -240,7 +247,7 @@ function transformChanged(a: Item, b: Item) {
 function previousSupport(item: Item, scene: Scene, catalog: Product[]) {
   const product = catalog.find((value) => value.id === item.productId)
   if (!product || placementMode(product) !== 'surface') return undefined
-  const itemShape = rectangle(item, product)
+  const itemShape = attachmentRectangle(item, product)
   return scene.items.find((candidate) => {
     if (candidate.id === item.id) return false
     const support = catalog.find((value) => value.id === candidate.productId)
@@ -267,6 +274,7 @@ export function settleScene(
   let error: string | undefined
   if (next.floorColor !== undefined && !validPaintColor(next.floorColor))
     return { scene: previous, error: 'Choose a valid six-digit hex color for the floor.' }
+  if (next.wallpapers !== undefined && (typeof next.wallpapers !== 'object' || next.wallpapers === null || Object.entries(next.wallpapers).some(([wall, pattern]) => !['north', 'east', 'south', 'west'].includes(wall) || !['none', 'linen', 'stripes', 'dots', 'botanical'].includes(pattern)))) return { scene: previous, error: 'Invalid wallpaper pattern.' }
   if (next.wallColors !== undefined && !validWallColors(next.wallColors))
     return { scene: previous, error: 'Choose a valid six-digit hex color for each wall.' }
   if (nextItems.size !== next.items.length)
@@ -332,7 +340,7 @@ export function settleScene(
       catalog,
     )
     if (!settled) {
-      error = product.door ? 'Place the door clear of windows, other doors, and furniture, with room to swing inward.' : isWallFixture(product) ? 'Place the wall light on a clear section of wall, away from windows, doors, other fixtures and furniture.' : `Place ${product.name} fully on a clear floor or supporting surface, clear of door swings.`
+      error = product.door ? 'Place the door clear of windows, other doors, and furniture, with room to swing inward.' : isWallFixture(product) ? 'Place the wall object on a clear section of wall, away from windows, doors, other fixtures and furniture.' : `Place ${product.name} fully on a clear floor or supporting surface, clear of door swings.`
       return undefined
     }
     const normalizingUnsupportedLegacyItem =

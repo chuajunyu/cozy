@@ -1,4 +1,5 @@
 import RoomThumbnail from './RoomThumbnail'
+import MirrorSurface from './MirrorSurface'
 import { floorColor } from './roomFinishes'
 import { fitZoom } from './cameraFit'
 import { dragState } from './dragState'
@@ -66,7 +67,7 @@ function GlbFurniture({ product }: { product: Product }) {
   useEffect(() => () => { model.traverse(o => { if (o instanceof Mesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose()) }) }, [model])
   return <primitive object={model} />
 }
-export function Furniture({ product }: { product: Product }) {
+export function Furniture({ product, settings }: { product: Product; settings?: Item['light'] }) {
   if (product.door) return <DoorVisual product={product} />
   if (product.modelUrl)
     return (
@@ -90,16 +91,18 @@ export function Furniture({ product }: { product: Product }) {
         <mesh
           key={i}
           position={part.position}
-          scale={part.shape === 'cylinder' ? part.size : undefined}
+          scale={part.shape !== 'box' ? part.size : undefined}
           castShadow
           receiveShadow
         >
           {part.shape === 'box' ? (
             <boxGeometry args={part.size} />
+          ) : part.shape === 'sphere' ? (
+            <sphereGeometry args={[0.5, 16, 12]} />
           ) : (
             <cylinderGeometry args={[0.5, 0.5, 1, 24]} />
           )}
-          <meshStandardMaterial color={part.color} roughness={0.85} />
+          <meshStandardMaterial color={part.color} roughness={0.85} emissive={part.glow && settings?.on !== false ? settings?.color ?? '#ffd3a0' : '#000000'} emissiveIntensity={part.glow ? (settings?.brightness ?? .7)*2 : 0} />
         </mesh>
       ))}
     </group>
@@ -320,7 +323,7 @@ function Placed({
       onPointerUp={up}
       onPointerCancel={() => cancel()}
     >
-      <Furniture product={product} />
+      <Furniture product={product} settings={item.light} />
       <FixtureLight product={product} settings={item.light} />
       {selected && (
         <mesh position={[0, product.dimensions[1] / 2, 0]}>
@@ -381,6 +384,8 @@ export default function Room({
   const withAnchor = (item: Item, product: Product, anchor: WallAnchor) => item.door
     ? normalizeDoor({ ...item, door: { ...item.door, wall: anchor.wall, offset: anchor.offset } }, product, scene)
     : normalizeWallFixture({ ...item, wallMount: { wall: anchor.wall, offset: anchor.offset, height: anchor.center } }, product, scene)
+  const mirrors = scene.items.filter(i => catalog.find(p => p.id === i.productId)?.reflection)
+  const mirrorResolution = mirrors.length > 8 ? 256 : mirrors.length > 4 ? 512 : 1024
   const sun = sunAt(scene.sunHour ?? 9)
   return (
     <><Canvas
@@ -447,7 +452,7 @@ export default function Room({
                 onDrop={anchor => onMove(withAnchor(item, p, anchor))}>
                 {p.door ? <DoorPiece item={active} product={p} scene={shown} selected={selected === item.id} invalid={invalidWall} /> :
                   <group position={[active.x, active.elevation ?? 0, active.z]} rotation={[0, active.rotation * Math.PI / 180, 0]} userData={{ daylightFurniture: true }}>
-                    <Furniture product={p} /><FixtureLight product={p} settings={item.light} />
+                    <Furniture product={p} settings={item.light} /><FixtureLight product={p} settings={item.light} />{p.reflection && <MirrorSurface surface={p.reflection} resolution={mirrorResolution} />}
                     {selected === item.id && <mesh position={[0, p.dimensions[1] / 2, 0]}><boxGeometry args={p.dimensions} /><meshBasicMaterial transparent opacity={.06} depthWrite={false} /><Edges color={invalidWall ? '#b44e3e' : '#546b4b'} /></mesh>}
                   </group>}
               </WallDrag>

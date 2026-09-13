@@ -14,8 +14,10 @@ def mode(p):
 
 def supports(p, child):
     deck = p.get('placement', {}).get('support')
-    if child.get('placement', {}).get('surfaceKind') == 'mattress':
-        return bool(deck and child['width'] <= deck['width'] + .01 and child['depth'] <= deck['depth'] + .01)
+    kind = child.get('placement', {}).get('surfaceKind')
+    if kind:
+        stem = child.get('placement', {}).get('stemDiameter') if kind == 'bouquet' else None
+        return bool(deck and deck['kind'] == kind and (stem or child['width']) <= deck['width'] + .01 and (stem or child['depth']) <= deck['depth'] + .01)
     if deck or p['floorLayer'] or p.get('lighting') or mode(p) in {'ceiling', 'wall'}:
         return False
     explicit = p.get('placement', {}).get('canSupport')
@@ -33,10 +35,12 @@ def support_pose(s, p):
             s.elevation + deck.get('height', p['height']))
 
 
-def bounds(s, p, deck=False):
+def bounds(s, p, deck=False, attachment=False):
     data = p.get('placement', {}).get('support', {}) if deck else {}
     x, z, _ = support_pose(s, p) if deck else (s.x, s.z, s.elevation)
     w, d = data.get('width', p['width']), data.get('depth', p['depth'])
+    if attachment and p.get('placement', {}).get('surfaceKind') == 'bouquet':
+        w = d = p['placement'].get('stemDiameter', min(w, d))
     if s.rotation % 180:
         w, d = d, w
     return x - w / 2, x + w / 2, z - d / 2, z + d / 2
@@ -58,7 +62,7 @@ def valid_support(child, parent, products):
         return False
     return (mode(p) == 'surface' and supports(q, p)
             and abs(child.elevation - support_pose(parent, q)[2]) <= EPS
-            and contains(bounds(parent, q, True), bounds(child, p)))
+            and contains(bounds(parent, q, True), bounds(child, p, attachment=True)))
 
 
 def inferred_support(s, state, products):
@@ -170,7 +174,7 @@ def settle_state(candidate, previous, products, *, migration=False, allow_locked
         old = previous.slots.get(id)
         from backend.wall_fixtures import is_wall_fixture, normalize
         if is_wall_fixture(p):
-            require(not s.supportId and not s.door, 'wall_mount', 'Wall lights cannot attach to furniture or doors.')
+            require(not s.supportId and not s.door, 'wall_mount', 'Wall objects cannot attach to furniture or doors.')
             normalize(s, p, state.room)
         elif p.get('door'):
             normalize_door(s, p, state.room)
@@ -200,7 +204,7 @@ def settle_state(candidate, previous, products, *, migration=False, allow_locked
                 for other in list(resolved.values()):
                     if other.catalogId and other.id != id and supports(products[other.catalogId], p):
                         top = support_pose(other, products[other.catalogId])[2]
-                        if top <= start+EPS and top > landing and contains(bounds(other, products[other.catalogId], True), bounds(s,p)):
+                        if top <= start+EPS and top > landing and contains(bounds(other, products[other.catalogId], True), bounds(s,p, attachment=True)):
                             landing, support_id = top, other.id
             if s.supportId:
                 require(support_id == s.supportId, 'support_fit', 'The whole object must fit its selected supporting surface.')

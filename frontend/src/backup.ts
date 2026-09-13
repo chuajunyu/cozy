@@ -44,7 +44,7 @@ export function migrateLegacy(raw: string, catalog: Product[]): Backup {
       wallMount: i.wallMount, supportId: i.supportId ?? null, door: i.door ?? null, light: i.light ?? null, locked: i.locked, liked: false, replacing: false, explanation: 'Restored from this device.' }]
   }))
   return { version: 2, products: custom, state: { revision: 0,
-    room: { width: scene.width, depth: scene.depth, height: scene.height ?? 2.7, floorColor: scene.floorColor, wallColors: scene.wallColors, windows: scene.windows ?? [{ wall: 'east', offset: .5, width: Math.min(1.8, scene.depth - .4), height: 1.4, sill: .9 }], sunHour: scene.sunHour ?? ((scene.daylight ?? 1) === 0 ? 20 : 9), daylight: scene.daylight ?? 1 },
+    room: { width: scene.width, depth: scene.depth, height: scene.height ?? 2.7, wallpapers: scene.wallpapers, floorColor: scene.floorColor, wallColors: scene.wallColors, windows: scene.windows ?? [{ wall: 'east', offset: .5, width: Math.min(1.8, scene.depth - .4), height: 1.4, sill: .9 }], sunHour: scene.sunHour ?? ((scene.daylight ?? 1) === 0 ? 20 : 9), daylight: scene.daylight ?? 1 },
     brief: '', budget: scene.budget || null, concept: { title: 'Your saved room', summary: '', palette: [], materials: [] },
     slots, feedback: [], rejected: {}, rerollTargets: null } }
 }

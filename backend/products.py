@@ -17,6 +17,11 @@ CATEGORIES = {
     "Floor lamp": "lamp", "Coffee / side table": "coffee_table", "Shoe cabinet": "shelf",
     "Mattress": "mattress", "Kitchen trolley": "custom", "TV bench": "shelf",
     "Cabinet": "shelf", "Shelving unit": "shelf", "Footstool": "chair", "Rug": "rug",
+    "Plant": "plant", "Plant pot": "decor", "Vase": "decor", "Candle holder": "decor",
+    "Desk accessory": "decor", "Picture frame": "wall_art",
+    "Decoration": "wall_art", "Mirror": "mirror", "Noticeboard": "board",
+    "Cot": "nursery", "Changing table": "nursery", "Highchair": "nursery",
+    "Baby toy": "nursery", "Bathroom accessory": "bathroom", "Bathroom stool": "bathroom",
 }
 
 
@@ -25,10 +30,11 @@ class DataModel(BaseModel):
 
 
 class Part(DataModel):
-    shape: Literal["box", "cylinder"]
+    shape: Literal["box", "cylinder", "sphere"]
     size: tuple[float, float, float]
     position: tuple[float, float, float]
     color: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
+    glow: bool = False
 
 
 class LightOutput(DataModel):
@@ -37,7 +43,7 @@ class LightOutput(DataModel):
 
 
 class Deck(DataModel):
-    kind: Literal['mattress']
+    kind: Literal['mattress', 'bouquet']
     width: float = Field(gt=0, le=10)
     depth: float = Field(gt=0, le=10)
     height: float = Field(gt=0, le=5)
@@ -48,7 +54,8 @@ class Deck(DataModel):
 class PlacementCapabilities(DataModel):
     mode: Literal['floor', 'surface', 'ceiling', 'wall']
     canSupport: bool | None = None
-    surfaceKind: Literal['mattress'] | None = None
+    surfaceKind: Literal['mattress', 'bouquet'] | None = None
+    stemDiameter: float | None = Field(default=None, gt=0, le=.1)
     support: Deck | None = None
 
 
@@ -86,8 +93,9 @@ class GeneratedProduct(DataModel):
             w, h, d = self.dimensions
             if not .5 <= w <= 2 or not 1.8 <= h <= 2.5 or not 0 < d <= .2 or self.placement.canSupport or self.placement.support:
                 raise ValueError('Invalid door dimensions or support capabilities.')
-        elif self.placement and self.placement.mode == 'wall' and not (self.lighting and self.lighting.mount == 'wall' and not self.placement.canSupport and not self.placement.support):
-            raise ValueError('Wall placement requires door capabilities.')
+        elif self.placement and self.placement.mode == 'wall':
+            if self.placement.canSupport or self.placement.support or self.placement.surfaceKind or (self.lighting and self.lighting.mount != 'wall'):
+                raise ValueError('Wall objects cannot support furniture and must use consistent lighting mounts.')
         if self.placement and self.placement.support:
             deck = self.placement.support
             if deck.height > self.dimensions[1] or abs(deck.center[0]) + deck.width / 2 > self.dimensions[0] / 2 + .005 or abs(deck.center[1]) + deck.depth / 2 > self.dimensions[2] / 2 + .005:

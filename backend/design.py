@@ -25,6 +25,7 @@ class Window(Model):
     width: float = Field(ge=.5, le=4)
     height: float = Field(ge=.5, le=5)
     sill: float = Field(ge=.05, le=5)
+    curtain: Literal['none', 'sheer', 'linen', 'blackout'] = 'none'
 
 
 class DoorAnchor(Model):
@@ -40,6 +41,7 @@ class WallMount(Model):
 
 
 class Room(Model):
+    wallpapers: dict[Literal['north', 'east', 'south', 'west'], Literal['none', 'linen', 'stripes', 'dots', 'botanical']] = Field(default_factory=dict)
     floorColor: str = Field(default='#c7ac88', pattern=r'^#[0-9a-fA-F]{6}$')
     wallColors: dict[Literal['north', 'east', 'south', 'west'], Annotated[str, Field(pattern=r'^#[0-9a-fA-F]{6}$')]] = Field(default_factory=dict)
     width: float = Field(default=4, ge=2, le=12)
@@ -249,7 +251,7 @@ def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = 
             old.liked = False
         for key in ("catalogId", "x", "z", "rotation", "elevation", "supportId", "explanation"):
             setattr(old, key, getattr(placement, key))
-        if p.get('lighting', {}).get('mount') == 'wall':
+        if p.get('placement', {}).get('mode') == 'wall' and not p.get('door'):
             old.wallMount = placement.wallMount or old.wallMount
         else:
             old.wallMount = None

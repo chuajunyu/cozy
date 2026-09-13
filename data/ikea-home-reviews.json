@@ -1,0 +1,1721 @@
+{
+  "ikea-00326536": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.039200000000000006,
+        "depth": 0.039200000000000006,
+        "height": 0.099,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.14,
+      "height": 0.18,
+      "depth": 0.14
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-00466697": {
+    "mountingNeedsReview": true,
+    "dimensionNote": "Downloaded cot model footprint differs from the published variant; held for review."
+  },
+  "ikea-00537671": {
+    "dimensionNote": "IKEA: height 20 cm, length 22 cm, nominal diameter 10 cm. Model footprint: 22 \u00d7 8.3 cm; length maps to width. Depth measured from the model.",
+    "dimensionsMeters": {
+      "width": 0.22,
+      "height": 0.2,
+      "depth": 0.0828
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true
+  },
+  "ikea-00592101": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.27199999999999996,
+      "height": 1.122,
+      "center": [
+        0,
+        0.5750000000000001,
+        0.00825
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.3,
+      "height": 1.1500000000000001,
+      "depth": 0.0145
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-00610614": {
+    "modelRotation": [
+      0,
+      90,
+      0
+    ],
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.53,
+      "height": 0.88,
+      "depth": 0.72
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-10298397": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.52,
+      "height": 1.67,
+      "depth": 0.52
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-10440367": {
+    "modelRotation": [
+      0,
+      0,
+      90
+    ],
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.4,
+      "height": 0.6,
+      "depth": 0.025
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-10553726": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.5700000000000001,
+      "height": 0.3,
+      "depth": 0.03
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-10562467": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.37,
+      "height": 0.5,
+      "depth": 0.37
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-10623461": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 1.4000000000000001,
+      "height": 0.56,
+      "depth": 0.0219
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20256622": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.55,
+      "height": 0.58,
+      "depth": 0.02
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20339793": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.033600000000000005,
+        "depth": 0.033600000000000005,
+        "height": 0.044000000000000004,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.12,
+      "height": 0.08,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20372155": {
+    "modelRotation": [
+      0,
+      90,
+      0
+    ],
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.67,
+      "height": 0.86,
+      "depth": 1.25
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20381254": {
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.28,
+      "height": 0.17,
+      "depth": 0.17
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20395623": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.06160000000000001,
+        "depth": 0.06160000000000001,
+        "height": 0.11000000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.22,
+      "height": 0.2,
+      "depth": 0.22
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20532470": {
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.52,
+      "height": 0.33,
+      "depth": 0.0197
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20601779": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.45199999999999996,
+      "height": 0.572,
+      "center": [
+        0,
+        0.3,
+        0.00855
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.48,
+      "height": 0.6,
+      "depth": 0.0151
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-20623470": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 1.18,
+      "height": 0.78,
+      "depth": 0.0197
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30320806": {
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.56,
+      "height": 0.56,
+      "depth": 0.0315
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30471027": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.182,
+      "height": 0.27199999999999996,
+      "center": [
+        0,
+        0.15,
+        0.0021999999999999997
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.21,
+      "height": 0.3,
+      "depth": 0.0024
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30513881": {
+    "modelRotation": [
+      0,
+      90,
+      0
+    ],
+    "placement": {
+      "mode": "surface",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.24,
+      "height": 0.34,
+      "depth": 0.29
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30533577": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.07840000000000001,
+        "depth": 0.07840000000000001,
+        "height": 0.1375,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.28,
+      "height": 0.25,
+      "depth": 0.28
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30575082": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.59,
+      "height": 0.43,
+      "depth": 0.4061
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30586410": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.022400000000000003,
+        "depth": 0.022400000000000003,
+        "height": 0.1155,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.08,
+      "height": 0.21,
+      "depth": 0.16
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30591586": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.572,
+      "height": 0.572,
+      "center": [
+        0,
+        0.3,
+        0.051000000000000004
+      ],
+      "shape": "ellipse"
+    },
+    "dimensionsMeters": {
+      "width": 0.6,
+      "height": 0.6,
+      "depth": 0.1
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-30622069": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.55,
+      "height": 0.58,
+      "depth": 0.02
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-39597522": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.6,
+      "height": 1.04,
+      "depth": 0.81
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40289495": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.042,
+        "depth": 0.042,
+        "height": 0.0825,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.15,
+      "height": 0.15,
+      "depth": 0.32
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40417025": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.026600000000000002,
+        "depth": 0.026600000000000002,
+        "height": 0.09350000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.095,
+      "height": 0.17,
+      "depth": 0.095
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40513885": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.08,
+      "height": 0.34,
+      "depth": 0.08
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40549417": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.78,
+      "height": 0.47000000000000003,
+      "depth": 0.37
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40595895": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.030800000000000004,
+        "depth": 0.030800000000000004,
+        "height": 0.05500000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.11,
+      "height": 0.1,
+      "depth": 0.11
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40623474": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.52,
+      "height": 0.72,
+      "depth": 0.03
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-40624015": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.5,
+      "height": 0.7000000000000001,
+      "depth": 0.0301
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50429004": {
+    "mountingNeedsReview": true
+  },
+  "ikea-50440365": {
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.4,
+      "height": 0.6,
+      "depth": 0.0253
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50465493": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.29,
+      "height": 0.88,
+      "depth": 0.25
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50470866": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.5,
+      "height": 0.6,
+      "depth": 0.14
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50470989": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.033600000000000005,
+        "depth": 0.033600000000000005,
+        "height": 0.09350000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.12,
+      "height": 0.17,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50479292": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.64,
+      "height": 1.49,
+      "center": [
+        0,
+        0.79,
+        0.02125
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.73,
+      "height": 1.58,
+      "depth": 0.0405
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50513413": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.07840000000000001,
+        "depth": 0.07840000000000001,
+        "height": 0.1375,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.28,
+      "height": 0.25,
+      "depth": 0.28
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50515916": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.752,
+      "height": 1.932,
+      "center": [
+        0,
+        0.98,
+        0.031
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.78,
+      "height": 1.96,
+      "depth": 0.06
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50553710": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.48,
+      "height": 0.63,
+      "depth": 0.03
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50574430": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.44,
+      "height": 0.2469,
+      "depth": 0.35000000000000003
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50590449": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.472,
+      "height": 0.472,
+      "center": [
+        0,
+        0.25,
+        0.011
+      ],
+      "shape": "ellipse"
+    },
+    "dimensionsMeters": {
+      "width": 0.5,
+      "height": 0.5,
+      "depth": 0.02
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-50601773": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.17200000000000001,
+      "height": 1.172,
+      "center": [
+        0,
+        0.6,
+        0.00865
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.2,
+      "height": 1.2,
+      "depth": 0.0153
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-60381285": {
+    "mountingNeedsReview": true
+  },
+  "ikea-60408987": {
+    "mountingNeedsReview": true
+  },
+  "ikea-60442038": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.033600000000000005,
+        "depth": 0.033600000000000005,
+        "height": 0.12100000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.12,
+      "height": 0.22,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-60458618": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.372,
+      "height": 1.272,
+      "center": [
+        0,
+        0.65,
+        0.0121
+      ],
+      "shape": "rounded"
+    },
+    "dimensionsMeters": {
+      "width": 0.4,
+      "height": 1.3,
+      "depth": 0.0222
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-69546507": {
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.56,
+      "height": 0.56,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-70322304": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.0791,
+      "height": 0.17,
+      "depth": 0.0601
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-70544456": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.033600000000000005,
+        "depth": 0.033600000000000005,
+        "height": 0.0495,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.12,
+      "height": 0.09,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-70559551": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.044800000000000006,
+        "depth": 0.044800000000000006,
+        "height": 0.1155,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.16,
+      "height": 0.21,
+      "depth": 0.16
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-70567971": {
+    "dimensionNote": "Whole displayed arrangement measured from the IKEA model; individual print sizes are listed at IKEA.",
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 1.6909350752830505,
+      "height": 1.0091817378997803,
+      "depth": 0.0024014307418838143
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true
+  },
+  "ikea-70578899": {
+    "dimensionNote": "Whole displayed arrangement measured from the IKEA model; individual print sizes are listed at IKEA.",
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.5385403633117676,
+      "height": 0.6461852788925171,
+      "depth": 0.0025253943167626858
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true
+  },
+  "ikea-70591725": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.033600000000000005,
+        "depth": 0.033600000000000005,
+        "height": 0.05500000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.12,
+      "height": 0.1,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-70592089": {
+    "mountingNeedsReview": true
+  },
+  "ikea-70610620": {
+    "modelRotation": [
+      0,
+      90,
+      0
+    ],
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.66,
+      "height": 0.8,
+      "depth": 1.23
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-70623868": {
+    "dimensionNote": "Whole displayed arrangement measured from the IKEA model; individual print sizes are listed at IKEA.",
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.6266338527202606,
+      "height": 0.4034080505371094,
+      "depth": 0.01931978389620781
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true
+  },
+  "ikea-80306921": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.27,
+      "height": 0.4,
+      "depth": 0.1969
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80342976": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.029400000000000003,
+        "depth": 0.029400000000000003,
+        "height": 0.11000000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.105,
+      "height": 0.2,
+      "depth": 0.105
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80407557": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.07840000000000001,
+        "depth": 0.07840000000000001,
+        "height": 0.1705,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.28,
+      "height": 0.31,
+      "depth": 0.28
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80454817": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.039200000000000006,
+        "depth": 0.039200000000000006,
+        "height": 0.066,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.14,
+      "height": 0.12,
+      "depth": 0.14
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80458622": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.572,
+      "height": 1.172,
+      "center": [
+        0,
+        0.6,
+        0.012
+      ],
+      "shape": "rounded"
+    },
+    "dimensionsMeters": {
+      "width": 0.6,
+      "height": 1.2,
+      "depth": 0.022
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80513893": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.12,
+      "height": 0.17,
+      "depth": 0.12
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80553723": {
+    "mountingNeedsReview": false,
+    "category": "Wall art",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.5700000000000001,
+      "height": 0.3,
+      "depth": 0.03
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80583720": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.053200000000000004,
+        "depth": 0.053200000000000004,
+        "height": 0.12100000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.19,
+      "height": 0.22,
+      "depth": 0.19
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-80601776": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.45199999999999996,
+      "height": 1.172,
+      "center": [
+        0,
+        0.6,
+        0.00865
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.48,
+      "height": 1.2,
+      "depth": 0.0153
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-90320323": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.31000000000000005,
+      "height": 1.41,
+      "center": [
+        0,
+        0.75,
+        0.0275
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.4,
+      "height": 1.5,
+      "depth": 0.053
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-90321619": {
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.76,
+      "height": 0.56,
+      "depth": 0.0321
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-90454280": {
+    "mountingNeedsReview": false,
+    "category": "Mirrors",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "reflection": {
+      "width": 0.66,
+      "height": 1.56,
+      "center": [
+        0,
+        0.8250000000000001,
+        0.02355
+      ],
+      "shape": "rectangle"
+    },
+    "dimensionsMeters": {
+      "width": 0.75,
+      "height": 1.6500000000000001,
+      "depth": 0.0451
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-90454893": {
+    "placement": {
+      "mode": "surface",
+      "canSupport": false,
+      "support": {
+        "kind": "bouquet",
+        "width": 0.05600000000000001,
+        "depth": 0.05600000000000001,
+        "height": 0.08800000000000001,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Approximate decorative stem insertion anchor, inferred from outer bounds; not a measured opening."
+      }
+    },
+    "dimensionsMeters": {
+      "width": 0.2,
+      "height": 0.16,
+      "depth": 0.2
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-99564482": {
+    "mountingNeedsReview": false,
+    "category": "Boards",
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "dimensionsMeters": {
+      "width": 0.56,
+      "height": 0.37,
+      "depth": 0.2
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  },
+  "ikea-99597524": {
+    "placement": {
+      "mode": "floor",
+      "canSupport": false
+    },
+    "mountingNeedsReview": false,
+    "dimensionsMeters": {
+      "width": 0.6,
+      "height": 1.04,
+      "depth": 0.81
+    },
+    "dimensionSources": {
+      "width": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "height": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds.",
+      "depth": "Published IKEA measurement, checked against GLB axes; absent dimensions from transformed GLB bounds."
+    },
+    "dimensionsMeasuredFromModel": true,
+    "dimensionNote": "Published overall measurements; absent dimensions (including panel thickness) measured from the IKEA model. Reviewed orientation."
+  }
+}

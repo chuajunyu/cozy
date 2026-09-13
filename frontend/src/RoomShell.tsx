@@ -31,7 +31,7 @@ function CutawayWall({ wall, top, children, position, rotation }: { wall: Wall; 
 }
 
 const noRaycast: Mesh['raycast'] = () => {}
-
+import WallpaperMaterial from './WallpaperMaterial'
 export default function RoomShell({ scene, catalog, top, showCompass = false }: { scene: Scene; catalog: Product[]; top: boolean; showCompass?: boolean }) {
   const windows = scene.windows ?? defaultWindows
   return <group>
@@ -63,7 +63,7 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
       return <CutawayWall key={wall} wall={wall} top={top} position={position} rotation={rotation}>
         {blocks.filter(([a,b,c,d]) => b > a && d > c).map(([a,b,c,d], i) => <mesh key={i} position={[(a+b)/2-length/2, (c+d)/2, 0]} castShadow receiveShadow>
           <boxGeometry args={[b-a, d-c, 0.1]} />
-          <meshStandardMaterial color={wallColor(scene, wall)} />
+          <WallpaperMaterial pattern={scene.wallpapers?.[wall]} color={wallColor(scene, wall)} visible={true} width={b-a} height={d-c} left={a} bottom={c} />
         </mesh>)}
         {showCompass && <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>}
       </CutawayWall>
