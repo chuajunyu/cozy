@@ -27,6 +27,27 @@ def test_missing_models_stay_in_review() -> None:
     assert not enrich(product)['readyForPreview']
 
 
+def test_plant_pot_diameter_is_not_foliage_width():
+    p = record('FEJKA Artificial potted plant')
+    p.update(productType='Plant', dimensionsMeters={'width':None,'height':None,'depth':None},
+             measurements={'Diameter of plant pot':'21 cm','Height of plant':'180 cm'})
+    p = enrich(p)
+    assert p['dimensionsMeters'] == {'width':None,'height':1.8,'depth':None}
+    assert not p['readyForPreview']
+    assert p['placement']['mode'] == 'floor'
+    p.update(productType='Plant pot', measurements={'Outside diameter':'28 cm','Inside diameter':'24 cm'})
+    assert enrich(p)['dimensionsMeters']['width'] == .28
+
+
+def test_desk_accessories_are_surface_objects_after_repeated_enrichment():
+    p = record('Desk organiser')
+    p.update(productType='Desk accessory', dimensionsMeters={'width':.2,'height':.15,'depth':.1})
+    for _ in range(2):
+        p = enrich(p)
+        assert p['productType'] == 'Desk accessory'
+        assert p['placement'] == {'mode':'surface','canSupport':False}
+
+
 def test_bundles_and_pads_are_not_standalone_mattresses() -> None:
     for name in ['Bed frame with mattress', 'Mattress pad', 'Mattress protector']:
         assert 'placement' not in enrich(record(name))

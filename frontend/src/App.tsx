@@ -6,6 +6,7 @@ import { isWallFixture, normalizeWallFixture } from './wallFixtures'
 import { fixtureOutput } from './lighting'
 import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } from './placement'
 
+const dimensionCm = (meters: number) => Number((meters * 100).toFixed(1))
 const mattressSize = (width: number, depth: number) => `${Math.round(width * 100)} × ${Math.round(depth * 100)} cm`
 import SunlightControls from './SunlightControls'
 import { worldBackground } from './worldBackground'
@@ -150,7 +151,7 @@ export default function App() {
   useEffect(() => { setNotice('') }, [state?.revision])
   const scene: Scene = useMemo(() => ({
     width: state?.room.width ?? 4, depth: state?.room.depth ?? 3.5, height: state?.room.height ?? 2.6,
-    floorColor: state?.room.floorColor, wallColors: state?.room.wallColors, windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
+    wallpapers: state?.room.wallpapers, floorColor: state?.room.floorColor, wallColors: state?.room.wallColors, windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
     items: Object.values(state?.slots ?? {}).filter(s => s.catalogId).map(s => ({
       id: s.id, productId: s.catalogId!, x: s.x, z: s.z, rotation: s.rotation, locked: s.locked,
       wallMount: s.wallMount ?? undefined, supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
@@ -165,11 +166,11 @@ export default function App() {
   const activeWindow = (scene.windows ?? defaultWindows).find(window => window.wall === selectedWindow)
   const product = catalog.find((p) => p.id === item?.productId)
   const mattressSupport = item?.supportId ? catalog.find(p => p.id === scene.items.find(i => i.id === item.supportId)?.productId)?.placement?.support : undefined
-  const bedMattresses = product?.placement?.support ? catalog.filter(p => p.placement?.surfaceKind === 'mattress' && acceptsSupport(product, p))
+  const bedMattresses = product?.placement?.support?.kind === 'mattress' ? catalog.filter(p => p.placement?.surfaceKind === 'mattress' && acceptsSupport(product, p))
     .sort((a, b) => b.dimensions[0] * b.dimensions[2] - a.dimensions[0] * a.dimensions[2] || a.price - b.price) : []
-  const attachedMattress = product?.placement?.support ? scene.items.find(i => i.supportId === item?.id && catalog.find(p => p.id === i.productId)?.placement?.surfaceKind === 'mattress') : undefined
+  const attachedMattress = product?.placement?.support?.kind === 'mattress' ? scene.items.find(i => i.supportId === item?.id && catalog.find(p => p.id === i.productId)?.placement?.surfaceKind === 'mattress') : undefined
   const attachedMattressProduct = catalog.find(p => p.id === attachedMattress?.productId)
-  const looseMattresses = product?.placement?.support ? scene.items.filter(i => !i.supportId && !i.locked && bedMattresses.some(p => p.id === i.productId)) : []
+  const looseMattresses = product?.placement?.support?.kind === 'mattress' ? scene.items.filter(i => !i.supportId && !i.locked && bedMattresses.some(p => p.id === i.productId)) : []
   const alternativeOptions = useMemo(() => item && product ? findAlternatives(product, catalog).map(option => ({
     product: option,
     error: replaceItem(scene, item.id, option, catalog).error,
@@ -208,14 +209,14 @@ export default function App() {
       if (i.door) return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, door: i.door, wallMount: i.wallMount })
       return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, x: i.x, z: i.z, rotation: i.rotation, elevation: i.elevation, supportId: i.supportId ?? null })
     }
-    return !!state && edit({ type: 'room.update', room: { ...state.room, floorColor: next.floorColor, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
+    return !!state && edit({ type: 'room.update', room: { ...state.room, wallpapers: next.wallpapers, floorColor: next.floorColor, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
   }
   function move(next: Item) {
     const preview = settleScene({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) }, scene, catalog)
     if (preview.error) {
       const moving = catalog.find(p => p.id === next.productId)
       setNotice(moving && isWallFixture(moving)
-        ? 'Keep the wall light inside the wall, clear of windows, doors and other furniture.'
+        ? 'Keep the wall object inside the wall, clear of windows, doors and other furniture.'
         : moving?.placement?.surfaceKind === 'mattress'
         ? `This mattress is ${mattressSize(moving.dimensions[0], moving.dimensions[2])}. Drop it over an empty bed with a deck at least this size, or choose a bed under Mattress placement. It keeps its actual size and cannot overhang the frame.`
         : 'No stable landing here. Keep the whole base on a surface, clear of other furniture and room edges.')
@@ -229,7 +230,7 @@ export default function App() {
   function changeWindow(wall: Wall, next: RoomWindow) {
     const updated = { ...scene, windows: (scene.windows ?? defaultWindows).map(window => window.wall === wall ? next : window) }
     if (!validWindows(updated.windows, updated) || settleScene(updated, scene, catalog).error) {
-      setNotice('Keep the window within the wall and clear of doors and wall lights. Choose a wall without another window.')
+      setNotice('Keep the window within the wall and clear of doors and wall objects. Choose a wall without another window.')
       return
     }
     if (commit(updated)) setSelectedWindow(next.wall)
@@ -243,7 +244,7 @@ export default function App() {
         const window = presetWindow(id, scene, wall, offset)
         const updated = { ...scene, windows: [...windows, window] }
         if (validWindows(updated.windows, updated) && !settleScene(updated, scene, catalog).error && commit(updated)) {
-          setSelectedId(null); setSelectedWindow(wall); closePanel(); return
+          setSelectedId(null); setSelectedWindow(wall); if (panel !== 'catalog') closePanel(); return
         }
       }
     }
@@ -252,14 +253,14 @@ export default function App() {
   function add(p: Product) {
     if (status !== 'connected' || pending || backup) return
     if (isWallFixture(p)) {
-      if (scene.items.filter(i => catalog.find(q => q.id === i.productId)?.lighting).length >= 8) { setNotice('A room supports eight light fixtures.'); return }
+      if (p.lighting && scene.items.filter(i => catalog.find(q => q.id === i.productId)?.lighting).length >= 8) { setNotice('A room supports eight light fixtures.'); return }
       const id = crypto.randomUUID()
       for (const wall of walls) for (const height of [1.7, 2.35, 1.2]) for (const offset of [.5, .25, .75, .1, .9, 0, 1]) {
-        const lamp = normalizeWallFixture({ id, productId: p.id, x: 0, z: 0, rotation: 0, locked: false, wallMount: { wall, offset, height }, light: { on: true, brightness: 1, color: '#ffd3a0' } }, p, scene)
+        const lamp = normalizeWallFixture({ id, productId: p.id, x: 0, z: 0, rotation: 0, locked: false, wallMount: { wall, offset, height }, ...(p.lighting ? { light: { on: true, brightness: 1, color: '#ffd3a0' } } : {}) }, p, scene)
         const next = { ...scene, items: [...scene.items, lamp] }
-        if (!settleScene(next, scene, catalog).error && commit(next)) { setSelected(id); openPanel('details'); return }
+        if (!settleScene(next, scene, catalog).error && commit(next)) { setSelected(id); if (panel !== 'catalog') openPanel('details'); return }
       }
-      setNotice('No clear wall position fits this light. Move furniture or adjust the openings first.')
+      setNotice('No clear wall position fits this piece. Move furniture or adjust the openings first.')
       return
     }
     if (p.door) {
@@ -270,7 +271,7 @@ export default function App() {
         const next = { ...scene, items: [...scene.items, door] }
         if (validDoors(next, catalog) && !settleScene(next, scene, catalog).error && commit(next)) {
           setSelected(id)
-          closePanel()
+          if (panel !== 'catalog') closePanel()
           setNotice('Door added. Drag it along the wall to position it.')
           return
         }
@@ -310,10 +311,14 @@ export default function App() {
       const supported = settleItem(lamp, scene, catalog)
       if (supported && commit({ ...scene, items: [...scene.items, supported] })) {
         setSelected(p.placement?.surfaceKind === 'mattress' ? item.id : lamp.id)
-        closePanel()
+        if (panel !== 'catalog') closePanel()
         setNotice(
-          p.placement?.surfaceKind === 'mattress' ? 'Attaching the mattress to the selected bed.' : 'Placing the lamp on the selected surface.',
+          p.placement?.surfaceKind === 'mattress' ? 'Attaching the mattress to the selected bed.' : `Placing ${p.name} on the selected surface.`,
         )
+        return
+      }
+      if (p.placement?.surfaceKind === 'bouquet') {
+        setNotice('This vase is occupied or the arrangement overlaps something nearby. Remove its flowers or clear space first.')
         return
       }
       if (p.placement?.surfaceKind === 'mattress') {
@@ -345,7 +350,7 @@ export default function App() {
         }
         if (validPlacement(next, scene, catalog) && commit({ ...scene, items: [...scene.items, next] })) {
           setSelected(next.id)
-          closePanel()
+          if (panel !== 'catalog') closePanel()
           setNotice(`Placing ${p.name}...`)
           return
         }
@@ -363,7 +368,7 @@ export default function App() {
   const sourceProducts =
     source === 'IKEA'
       ? completeIkea
-      : catalog.filter((p) => source === 'Room elements' ? !!p.door : !p.id.startsWith('ikea-') && !p.door)
+      : catalog.filter((p) => source === 'Room elements' ? !!p.door : source === 'Brand references' ? p.id.startsWith('reference-') : !p.id.startsWith('ikea-') && !p.id.startsWith('reference-') && !p.door)
   const visible = filterProducts(catalog, {
     source,
     query: search,
@@ -463,14 +468,15 @@ export default function App() {
               IKEA collection
             </button>
             <button
-              className={source === 'Samples' ? 'active' : ''}
+              className={source === 'Unbranded' ? 'active' : ''}
               onClick={() => {
-                setSource('Samples')
+                setSource('Unbranded')
                 clearFilters()
               }}
             >
-              Samples
+              Unbranded
             </button>
+            <button className={source === 'Brand references' ? 'active' : ''} onClick={() => { setSource('Brand references'); clearFilters() }}>Brand references</button>
             <button
               className={source === 'Room elements' ? 'active' : ''}
               onClick={() => { setSource('Room elements'); clearFilters() }}
@@ -478,6 +484,8 @@ export default function App() {
               Room elements
             </button>
           </div>
+          {source === 'Unbranded' && <p className="catalog-source-note">Everyday objects, creative accents and the original samples. Approximate dimensions and illustrative prices; no brand affiliation.</p>}
+          {source === 'Brand references' && <p className="catalog-source-note">Omnidesk footprints from published specifications, with simplified geometry and fixed seated/standing heights. Prices are planning allowances.</p>}
           <div className="search">
             <span>⌕</span>
             <input
@@ -584,9 +592,13 @@ export default function App() {
                 <div className="product-info">
                   <h3>{p.name}</h3>
                   <p>
-                    {Math.round(p.dimensions[0] * 100)} ×{' '}
-                    {Math.round(p.dimensions[p.door ? 1 : 2] * 100)} cm{p.door ? ' · W × H' : ''}
+                    {dimensionCm(p.dimensions[0])} ×{' '}
+                    {dimensionCm(p.dimensions[1])} × {dimensionCm(p.dimensions[2])} cm · W × H × D
                   </p>
+                  {!p.id.startsWith('ikea-') && !p.id.startsWith('reference-') && !p.door && <small className="dimension-note">Approximate size · Unbranded</small>}
+                  {p.id.startsWith('reference-') && <small className="dimension-note" title={p.dimensionNote}>Published footprint · Simplified model</small>}
+                  {p.placement?.mode === 'surface' && <small className="dimension-note">{p.placement.surfaceKind === 'bouquet' ? 'Select a vase or planter to insert stems' : p.placement.surfaceKind === 'mattress' ? 'Select a bed with a fitting mattress deck' : 'Select a desk or table to place on top'}</small>}
+                  {isWallFixture(p) && <small className="dimension-note">Wall mounted · Drag to position</small>}
                   <div>
                     <strong>
                       {p.door ? 'Unpriced' : money(p.price)}
@@ -604,9 +616,9 @@ export default function App() {
             )}
           </div>
           <div className="catalog-note">
-            A starting collection, made for exploring.
+            Make room for a little personality.
             <br />
-            Sample prices · IKEA prices in SGD
+            Unbranded prices are illustrative · IKEA prices are dated SGD snapshots
           </div>
         </div>
 </div>
@@ -686,7 +698,7 @@ export default function App() {
           </div>
 </div>
           <div hidden={panel !== 'details'}>
-            {item && product ? <><div className="detail-summary"><ProductArt product={product} /><h3>{product.name}</h3><p>{product.dimensions.map(n => `${Math.round(n * 100)} cm`).join(' × ')}</p><p>{item.x.toFixed(2)}, {item.z.toFixed(2)} m · {item.rotation}°</p><div className="detail-actions"><button disabled={blocked || !!state?.slots[item.id]?.liked} onClick={() => edit({ type: 'feedback.send', action: 'like', slotIds: [item.id], expectedProducts: expected })}>{state?.slots[item.id]?.liked ? 'Liked' : 'Like'}</button><button className="danger" disabled={blocked || item.locked} onClick={() => { if (edit({ type: 'item.delete', slotId: item.id, expectedProduct: item.productId })) { setSelected(null); closePanel() } }}>Delete piece</button></div></div><fieldset disabled={blocked}>              {item && product?.door && <DoorControls item={item} product={product} scene={scene} onChange={next => commit({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) })} />}
+            {item && product ? <><div className="detail-summary"><ProductArt product={product} /><h3>{product.name}</h3><p>{product.dimensions.map(n => `${dimensionCm(n)} cm`).join(' × ')}</p><p className="muted">{product.dimensionNote ?? (!product.id.startsWith('ikea-') && !product.door ? 'Unbranded geometry with approximate dimensions.' : '')}</p>{product.priceNote && <p className="muted">{product.priceNote}</p>}{product.productUrl && <a href={product.productUrl} target="_blank" rel="noreferrer">View product source ↗</a>}{product.reflection && <p className="muted">Live room reflection. All wall mirrors reflect together; resolution adjusts when many are present.</p>}<p>{item.x.toFixed(2)}, {item.z.toFixed(2)} m · {item.rotation}°</p><div className="detail-actions"><button disabled={blocked || !!state?.slots[item.id]?.liked} onClick={() => edit({ type: 'feedback.send', action: 'like', slotIds: [item.id], expectedProducts: expected })}>{state?.slots[item.id]?.liked ? 'Liked' : 'Like'}</button><button className="danger" disabled={blocked || item.locked} onClick={() => { if (edit({ type: 'item.delete', slotId: item.id, expectedProduct: item.productId })) { setSelected(null); closePanel() } }}>Delete piece</button></div></div><fieldset disabled={blocked}>              {item && product?.door && <DoorControls item={item} product={product} scene={scene} onChange={next => commit({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) })} />}
               {item && product && isWallFixture(product) && <WallLightControls item={item} product={product} scene={scene} onChange={move} />}
 {item && product && !product.door && !isWallFixture(product) && <div className="placement-controls">
                 <strong>{product.placement?.surfaceKind === 'mattress' ? 'Mattress placement' : isAnchored(product) ? 'Ceiling mounted' : item.supportId ? 'Resting on a surface' : 'On the floor'}</strong>
@@ -708,8 +720,8 @@ export default function App() {
                     })}
                   </select>
                 </label>}
-                {product.placement?.support && <small>Mattress deck · {Math.round(product.placement.support.width * 100)} × {Math.round(product.placement.support.depth * 100)} cm · {Math.round(product.placement.support.height * 100)} cm high. {product.placement.support.evidence.startsWith('Assumed') ? 'Assumed slatted base; check the base and assembly setting at IKEA.' : 'Estimated from the bed model.'}</small>}
-                {product.placement?.support && !attachedMattress && <label>Attach mattress
+                {product.placement?.support?.kind === 'mattress' && <small>Mattress deck · {Math.round(product.placement.support.width * 100)} × {Math.round(product.placement.support.depth * 100)} cm · {Math.round(product.placement.support.height * 100)} cm high. {product.placement.support.evidence.startsWith('Assumed') ? 'Assumed slatted base; check the base and assembly setting at IKEA.' : 'Estimated from the bed model.'}</small>}
+                {product.placement?.support?.kind === 'mattress' && !attachedMattress && <label>Attach mattress
                   <select aria-label="Mattress for selected bed" value="" onChange={e => {
                     const [kind, id] = e.target.value.split(':')
                     if (kind === 'room') {
@@ -728,6 +740,12 @@ export default function App() {
                     {!!looseMattresses.length && <optgroup label="Already in your room">{looseMattresses.map(i => <option key={i.id} value={`room:${i.id}`}>{catalog.find(p => p.id === i.productId)!.name}</option>)}</optgroup>}
                     <optgroup label="Add from collection">{bedMattresses.map(p => <option key={p.id} value={`catalog:${p.id}`}>{p.name} · {Math.abs(product.placement!.support!.width - p.dimensions[0]) <= .02 && Math.abs(product.placement!.support!.depth - p.dimensions[2]) <= .02 ? 'Exact fit' : 'Smaller than frame'}</option>)}</optgroup>
                   </select>
+                </label>}
+                {product.placement?.support?.kind === 'bouquet' && <label>Flowers / greenery
+                  <select aria-label="Bouquet for selected vase" value="" disabled={item.locked} onChange={e => { const bouquet = catalog.find(p => p.id === e.target.value); if (bouquet) add(bouquet) }}>
+                    <option value="" disabled>Choose an arrangement…</option>
+                    {catalog.filter(p => p.placement?.surfaceKind === 'bouquet' && acceptsSupport(product, p)).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select><small>Decorative insertion anchor, approximately sized. Move the vase to carry its flowers. Select flowers in the room to remove or replace them.</small>
                 </label>}
                 {attachedMattress && attachedMattressProduct && <div className="bed-pair"><strong>Attached mattress</strong><span>{attachedMattressProduct.name}</span><button onClick={() => setSelected(attachedMattress.id)}>Select mattress</button><small>Move or rotate the bed frame to carry both pieces together.</small>
                   {product.placement?.support && (product.placement.support.width - attachedMattressProduct.dimensions[0] > .02 || product.placement.support.depth - attachedMattressProduct.dimensions[2] > .02) && <small className="mattress-size-warning">Size mismatch · {mattressSize(attachedMattressProduct.dimensions[0], attachedMattressProduct.dimensions[2])} mattress centred on a {mattressSize(product.placement.support.width, product.placement.support.depth)} deck. Gaps remain; the mattress keeps its actual size.</small>}

@@ -43,8 +43,19 @@ CATALOG = [
     product("plant-fern", "Fern in sand pot", "plant", (.3, .3, .7), 25, "#84916a", "ceramic", "natural"),
 ]
 for item in CATALOG:
-    item.update(collection=item['category'].replace('_', ' ').title(), readyForPreview=True, canRecommend=True)
+    group = {'sofa':'Living', 'rug':'Decor', 'coffee_table':'Living', 'bed':'Bedroom',
+             'desk':'Workspace', 'chair':'Workspace', 'lamp':'Lighting', 'shelf':'Storage',
+             'side_table':'Bedroom', 'plant':'Plants'}[item['category']]
+    item.update(collection=group, readyForPreview=True, canRecommend=True)
 CATALOG += [generated(p, 'sample-') for p in json.loads((ROOT / 'data/samples.json').read_text())]
+for raw in json.loads((ROOT / 'data/unbranded.json').read_text(encoding='utf-8')):
+    item = generated(raw, 'sample-')
+    item.update(thumbnailUrl=f'/previews/unbranded/{raw["id"]}.svg', brand='Unbranded')
+    CATALOG.append(item)
+for raw in json.loads((ROOT / 'data/brand-references.json').read_text(encoding='utf-8')):
+    item = generated(raw['geometry'], 'reference-')
+    item.update(raw['metadata'])
+    CATALOG.append(item)
 CATALOG += load_ikea()
 BY_ID = {item["id"]: item for item in CATALOG}
 

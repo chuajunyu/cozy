@@ -3,9 +3,10 @@ import fs from 'node:fs'
 import { Object3D, Box3, Vector3, Matrix4 } from '../frontend/node_modules/three/build/three.module.js'
 const path='data/ikea-catalog.json'
 const data=JSON.parse(fs.readFileSync(path))
-for(const p of data.products.filter(p=>p.modelUrl && p.lighting && p.lighting.mount !== 'wall' && !p.modelRotation)){
+for(const p of data.products.filter(p=>p.modelUrl && (p.lighting || ['Plant', 'Vase', 'Plant pot', 'Candle holder'].includes(p.productType)) && p.lighting?.mount !== 'wall' && !p.modelRotation && !p.mountingNeedsReview)){
  if(p.dimensionSources?.width==='Visible measurements: Length'){p.dimensionsMeters.width=null;delete p.dimensionSources.width}
  if(Object.values(p.dimensionsMeters).every(Boolean))continue
+ if (!fs.existsSync('frontend/public'+p.modelUrl)) continue
  const b=fs.readFileSync('frontend/public'+p.modelUrl)
  const j=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)).toString())
  const box=new Box3()
@@ -24,6 +25,6 @@ for(const p of data.products.filter(p=>p.modelUrl && p.lighting && p.lighting.mo
  const scale=ratios.reduce((a,b)=>a+b,0)/ratios.length
  for(let i=0;i<3;i++)if(!p.dimensionsMeters[axes[i]]){p.dimensionsMeters[axes[i]]=Math.round(sizes[i]*scale*1000)/1000;p.dimensionSources[axes[i]]='Measured GLB bounds; scale checked against published dimensions (10% tolerance)'}
  p.dimensionsMeasuredFromModel=true
- console.log('Measured lamp footprint:',p.name,p.dimensionsMeters)
+ console.log('Measured object bounds:',p.name,p.dimensionsMeters)
 }
 fs.writeFileSync(path,JSON.stringify(data,null,2)+'\n')

@@ -6,7 +6,7 @@ const GAP = .05
 const EPSILON = .005
 
 export function isWallFixture(product: Product) {
-  return product.lighting?.mount === 'wall' && product.placement?.mode === 'wall'
+  return product.placement?.mode === 'wall' && !product.door
 }
 
 export function wallFixtureGeometry(item: Item, product: Product, scene: Pick<Scene, 'width' | 'depth'>) {

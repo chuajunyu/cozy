@@ -8,6 +8,8 @@ export type Product = {
   productUrl?: string; brand?: string; fetchedAt?: string; productType?: string
   features?: string[]; colorFamilies?: string[]; priceBand?: string; priceNote?: string
   dimensionsMeasuredFromModel?: boolean; lighting?: StudioProduct['lighting']
+  reflection?: StudioProduct['reflection']
+  dimensionNote?: string
   modelRotation?: StudioProduct['modelRotation']; placement?: StudioProduct['placement']; door?: StudioProduct['door']
   readyForPreview: boolean; canRecommend: boolean; assetIssue?: string
 }
@@ -19,7 +21,7 @@ export type Slot = {
   wallMount?: import('./catalog').Item['wallMount']; supportId: string | null; door: { wall: 'north' | 'east' | 'south' | 'west'; offset: number; open: boolean } | null
 }
 export type DesignState = {
-  revision: number; room: { width: number; depth: number; height: number; daylight: number; floorColor?: string; wallColors?: import('./catalog').Scene['wallColors']; windows: import('./sunlight').RoomWindow[]; sunHour: number }
+  revision: number; room: { width: number; depth: number; height: number; daylight: number; floorColor?: string; wallpapers?: import('./catalog').Scene['wallpapers']; wallColors?: import('./catalog').Scene['wallColors']; windows: import('./sunlight').RoomWindow[]; sunHour: number }
   brief: string; budget: number | null
   concept: { title: string; summary: string; palette: string[]; materials: string[] }
   slots: Record<string, Slot>; total: number; complete: boolean

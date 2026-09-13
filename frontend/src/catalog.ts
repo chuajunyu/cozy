@@ -4,10 +4,11 @@ import { validDoors } from './doors.ts'
 import { isWallFixture, validWallFixture } from './wallFixtures.ts'
 export type Vec3 = [number, number, number]
 export type Part = {
-  shape: 'box' | 'cylinder'
+  shape: 'box' | 'cylinder' | 'sphere'
   size: Vec3
   position: Vec3
   color: string
+  glow?: boolean
 }
 export type Product = {
   id: string
@@ -44,10 +45,13 @@ export type Product = {
   placement?: {
     mode: 'floor' | 'surface' | 'ceiling' | 'wall'
     canSupport?: boolean
-    surfaceKind?: 'mattress'
-    support?: { kind: 'mattress'; width: number; depth: number; height: number; center: [number, number]; evidence: string }
+    surfaceKind?: 'mattress' | 'bouquet'
+    stemDiameter?: number
+    support?: { kind: 'mattress' | 'bouquet'; width: number; depth: number; height: number; center: [number, number]; evidence: string }
   }
   priceNote?: string
+  reflection?: { width: number; height: number; center: Vec3; shape: 'rectangle' | 'ellipse' | 'rounded' }
+  dimensionNote?: string
 }
 export type Item = {
   id: string
@@ -73,6 +77,7 @@ export type Scene = {
   daylight?: number
   floorColor?: string
   wallColors?: Partial<Record<Wall, string>>
+  wallpapers?: Partial<Record<Wall, 'none' | 'linen' | 'stripes' | 'dots' | 'botanical'>>
   items: Item[]
 }
 const box = (size: Vec3, position: Vec3, color: string): Part => ({
@@ -427,14 +432,15 @@ export function parseProduct(raw: unknown): Product {
   if (p.placement && (!['floor', 'surface', 'ceiling', 'wall'].includes(p.placement.mode) || (p.placement.canSupport !== undefined && typeof p.placement.canSupport !== 'boolean'))) throw new Error('Invalid placement capabilities.')
   if (p.door !== undefined && (!p.door || p.door.kind !== 'solid' || p.placement?.mode !== 'wall' || p.dimensions[0] < .5 || p.dimensions[0] > 2 || p.dimensions[1] < 1.8 || p.dimensions[1] > 2.5 || p.dimensions[2] > .2 || p.lighting || p.modelUrl || p.placement.canSupport || p.placement.support || p.placement.surfaceKind))
     throw new Error('Doors need a solid leaf and wall placement with valid doorway dimensions.')
-  if (p.placement?.mode === 'wall' && !p.door && !isWallFixture(p))
-    throw new Error('Wall placement requires a door or wall light.')
+  if (p.placement?.mode === 'wall' && !p.door && (p.placement.canSupport || p.placement.support || p.placement.surfaceKind || (p.lighting && p.lighting.mount !== 'wall')))
+    throw new Error('Wall objects cannot support furniture and must use consistent lighting mounts.')
   if (p.lighting?.mount === 'wall' && (!isWallFixture(p) || p.door || p.placement?.canSupport || p.placement?.support || p.placement?.surfaceKind))
     throw new Error('Wall lights require wall placement without supporting surfaces.')
-  if (p.placement?.surfaceKind !== undefined && p.placement.surfaceKind !== 'mattress')
+  if (p.placement?.surfaceKind !== undefined && !['mattress', 'bouquet'].includes(p.placement.surfaceKind))
     throw new Error('Invalid supported item kind.')
+  if (p.placement?.stemDiameter !== undefined && (!Number.isFinite(p.placement.stemDiameter) || p.placement.stemDiameter <= 0 || p.placement.stemDiameter > .1)) throw new Error('Invalid bouquet stem diameter.')
   const support = p.placement?.support
-  if (support && (support.kind !== 'mattress' || ![support.width, support.depth, support.height].every(n => Number.isFinite(n) && n > 0) || !Array.isArray(support.center) || support.center.length !== 2 || !support.center.every(Number.isFinite) || support.height > p.dimensions[1] || Math.abs(support.center[0]) + support.width / 2 > p.dimensions[0] / 2 + .005 || Math.abs(support.center[1]) + support.depth / 2 > p.dimensions[2] / 2 + .005 || typeof support.evidence !== 'string'))
+  if (support && (!['mattress', 'bouquet'].includes(support.kind) || ![support.width, support.depth, support.height].every(n => Number.isFinite(n) && n > 0) || !Array.isArray(support.center) || support.center.length !== 2 || !support.center.every(Number.isFinite) || support.height > p.dimensions[1] || Math.abs(support.center[0]) + support.width / 2 > p.dimensions[0] / 2 + .005 || Math.abs(support.center[1]) + support.depth / 2 > p.dimensions[2] / 2 + .005 || typeof support.evidence !== 'string'))
     throw new Error('Invalid mattress deck dimensions or provenance.')
   if (p.lighting) {
     if (
@@ -454,7 +460,7 @@ export function parseProduct(raw: unknown): Product {
   for (const part of p.parts) {
     if (
       !part ||
-      !['box', 'cylinder'].includes(part.shape) ||
+      !['box', 'cylinder', 'sphere'].includes(part.shape) ||
       !vector(part.size, true) ||
       !vector(part.position) ||
       typeof part.color !== 'string' ||
@@ -492,8 +498,9 @@ export function filterProducts(products: Product[], filters: CatalogFilters) {
   return products.filter((p) => {
     const isIkea = p.id.startsWith('ikea-')
     if (isIkea && p.readyForPreview !== true) return false
-    if (filters.source === 'IKEA' ? !isIkea : filters.source === 'Room elements' ? !p.door : isIkea || !!p.door) return false
-    const searchable = [p.name, p.color, p.productType, ...(p.features ?? [])]
+    const isReference = p.id.startsWith('reference-')
+    if (filters.source === 'IKEA' ? !isIkea : filters.source === 'Room elements' ? !p.door : filters.source === 'Brand references' ? !isReference : isIkea || isReference || !!p.door) return false
+    const searchable = [p.name, p.category, p.brand, p.color, p.productType, ...(p.features ?? [])]
       .join(' ')
       .toLowerCase()
     return (
@@ -505,7 +512,7 @@ export function filterProducts(products: Product[], filters: CatalogFilters) {
       (filters.maxPrice === '' || p.price <= Number(filters.maxPrice)) &&
       words.every((w) => searchable.includes(w))
     )
-  })
+  }).sort((a, b) => Number(b.brand === 'Unbranded') - Number(a.brand === 'Unbranded'))
 }
 
 export function toStudioProduct(p: WireProduct): Product {

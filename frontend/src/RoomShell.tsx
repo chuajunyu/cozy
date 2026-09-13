@@ -3,6 +3,7 @@ import type { Product, Scene, Vec3 } from './catalog'
 import { doorGeometry } from './doors'
 import { defaultWindows, walls, windowGeometry } from './sunlight'
 import { wallColor } from './roomFinishes'
+import WallpaperMaterial from './WallpaperMaterial'
 
 export default function RoomShell({ scene, catalog, top, showCompass = false }: { scene: Scene; catalog: Product[]; top: boolean; showCompass?: boolean }) {
   const windows = scene.windows ?? defaultWindows
@@ -36,7 +37,7 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
       return <group key={wall} position={position} rotation={rotation}>
         {blocks.filter(([a,b,c,d]) => b > a && d > c).map(([a,b,c,d], i) => <mesh key={i} raycast={visible ? undefined : () => {}} position={[(a+b)/2-length/2, (c+d)/2, 0]} castShadow receiveShadow>
           <boxGeometry args={[b-a, d-c, 0.1]} />
-          <meshStandardMaterial color={wallColor(scene, wall)} colorWrite={visible} depthWrite={visible} />
+          <WallpaperMaterial pattern={scene.wallpapers?.[wall]} color={wallColor(scene, wall)} visible={visible} width={b-a} height={d-c} left={a} bottom={c} />
         </mesh>)}
         {showCompass && <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>}
       </group>

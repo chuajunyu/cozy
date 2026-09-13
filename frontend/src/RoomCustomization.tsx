@@ -32,6 +32,9 @@ export default function RoomCustomization({ scene, onChange }: {
     <label>Surface<select aria-label="Paint area" value={target} onChange={e => setTarget(e.target.value as typeof target)}>
       <option value="all">All walls</option><option value="floor">Floor</option>{walls.map(wall => <option key={wall} value={wall}>{wall[0].toUpperCase() + wall.slice(1)} wall</option>)}
     </select></label>
+    {target !== 'floor' && <label>Wallpaper pattern<select aria-label="Wallpaper pattern" value={scene.wallpapers?.[target === 'all' ? 'north' : target] ?? 'none'} onChange={e => onChange({ ...scene, wallpapers: { ...scene.wallpapers, ...Object.fromEntries((target === 'all' ? walls : [target]).map(wall => [wall, e.target.value])) } })}>
+      <option value="none">Plain paint</option><option value="linen">Linen texture</option><option value="stripes">Soft stripes</option><option value="dots">Nursery dots</option><option value="botanical">Botanical sprigs</option>
+    </select><small>Unbranded patterns in your chosen wall color.</small></label>}
     <div className="paint-swatches" role="group" aria-label="Surface colors">{(target === 'floor' ? floors : paints).map(([name, color]) =>
       <button key={color} title={name} aria-label={`Paint ${name}`} aria-pressed={!mixed && selectedColor.toLowerCase() === color} onClick={() => apply(color)}>
         <span style={{ backgroundColor: color }} /><small>{name}</small>
@@ -47,14 +50,14 @@ export function WallLightControls({ item, product, scene, onChange }: {
   const anchor = item.wallMount
   const area = wallFixtureGeometry(item, product, scene)
   const update = (patch: Partial<NonNullable<Item['wallMount']>>) => onChange({ ...item, wallMount: { ...anchor, ...patch } })
-  return <section className="wall-light-controls" aria-label="Wall light placement">
+  return <section className="wall-light-controls" aria-label="Wall object placement">
     <h3>Wall mounted</h3>
-    <p className="muted">Drag the light to reposition it on the wall. Drag past a corner to switch walls.</p>
+    <p className="muted">Drag the piece to reposition it on the wall. Drag past a corner to switch walls.</p>
     <details><summary>Precise placement</summary>
-    <div className="window-walls" role="group" aria-label="Light wall">{walls.map(wall => <button key={wall} disabled={item.locked} aria-label={`Light on ${wall} wall`} aria-pressed={anchor.wall === wall} onClick={() => update({ wall })}>{wall[0].toUpperCase() + wall.slice(1)}</button>)}</div>
-    <label>Position along {anchor.wall} wall · {area.start.toFixed(2)} m from corner<input aria-label="Wall light position" disabled={item.locked} type="range" min="0" max="1" step="0.025" value={anchor.offset} onChange={e => update({ offset: Number(e.target.value) })} /></label>
-    <label>Light centre above floor · {anchor.height.toFixed(2)} m<input aria-label="Wall light height" disabled={item.locked} type="range" min={Math.ceil((product.dimensions[1] / 2 + .05) * 100) / 100} max={Math.floor(((scene.height ?? 2.6) - .05 - product.dimensions[1] / 2) * 100) / 100} step="0.01" value={anchor.height} onChange={e => update({ height: Number(e.target.value) })} /></label>
+    <div className="window-walls" role="group" aria-label="Object wall">{walls.map(wall => <button key={wall} disabled={item.locked} aria-label={`Object on ${wall} wall`} aria-pressed={anchor.wall === wall} onClick={() => update({ wall })}>{wall[0].toUpperCase() + wall.slice(1)}</button>)}</div>
+    <label>Position along {anchor.wall} wall · {area.start.toFixed(2)} m from corner<input aria-label="Wall object position" disabled={item.locked} type="range" min="0" max="1" step="0.025" value={anchor.offset} onChange={e => update({ offset: Number(e.target.value) })} /></label>
+    <label>Centre above floor · {anchor.height.toFixed(2)} m<input aria-label="Wall object height" disabled={item.locked} type="range" min={Math.ceil((product.dimensions[1] / 2 + .05) * 100) / 100} max={Math.floor(((scene.height ?? 2.6) - .05 - product.dimensions[1] / 2) * 100) / 100} step="0.01" value={anchor.height} onChange={e => update({ height: Number(e.target.value) })} /></label>
     </details>
-    <small>{item.locked ? 'Placement locked. You can still switch the light and change its color.' : 'It stays attached to the wall, clear of windows, doors and furniture.'}</small>
+    <small>{item.locked ? 'Placement locked. Unlock the piece to move it.' : 'It stays attached to the wall, clear of windows, doors and furniture.'}</small>
   </section>
 }

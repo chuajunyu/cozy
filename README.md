@@ -23,7 +23,7 @@ decoders locally. It reuses valid cached files and reports failed downloads.
 Run it before starting FastAPI, or restart FastAPI after preparing assets.
 No metadata refresh or OpenAI API call happens during asset preparation.
 
-The checked-in catalog has 203 preview-ready source records and 245 records awaiting
+The checked-in catalog has 244 preview-ready source records and 350 records awaiting
 review. The backend only marks a product preview-ready when its local GLB passes
 validation. Unavailable assets are excluded from placement and recommendations;
 out-of-stock products may be added manually but are excluded from agent search.
@@ -82,7 +82,7 @@ restart the backend after creating the first build. Vite development is unchange
   sheet's top edge to adjust its height. Sizes persist while switching panels.
   The focused handle also supports arrow keys, Home/End, and Enter to reset;
   double-clicking the handle restores its default size.
-- Browse and filter the IKEA collection or samples, then add pieces directly to
+- Browse and filter the IKEA collection, Unbranded objects or Brand references, then add pieces directly to
   the room. The furniture lab and separate model-preview scene have been removed.
   Repeated GLB instances have independent transforms; Draco, WebP textures and
   texture transforms are supported locally.
@@ -303,12 +303,12 @@ an exact product and pose across future design iterations. Undo and Reset pause
 Astra as before.
 ## Expanded IKEA Singapore collection
 
-448 product records cover study, living, dining, kitchen trolleys/islands, storage
-and wall décor; 203 have usable local models and 245 remain in review. Three URLs
+594 product records cover study, living, dining, kitchen trolleys/islands, storage
+and wall décor; 244 have usable local models and 350 remain in review. Three URLs
 failed to load. Prices and availability retain their retrieval timestamps.
 
 Run `python3 scripts/ingest_ikea.py data/ikea-urls.json` to regenerate from cached
-records (or add `--refresh` to fetch again). Curated batches are limited to 500
+records (or add `--refresh` to fetch again). Curated batches are limited to 1000
 entries with an explicit error, rather than silent truncation. Run
 `python -m scripts.prepare_assets` and restart the backend to load the new models.
 Models and decoder files remain Git-ignored.
@@ -388,3 +388,84 @@ Both text Astra and a new voice call receive recent restored conversation contex
 restoring history does not replay requests or override the saved room. Existing
 live sessions remain authoritative. Closing the tab or clearing its storage removes
 this browser fallback; it is not account-level or cross-device chat storage.
+
+## Everyday objects, décor and brand references
+
+The collection adds 41 locally validated IKEA models (244 total), including FEJKA
+bamboo, vases, pots, a tealight holder, SOLSKUR lighting and desktop accessories.
+146 new source records retain their retrieval dates and original source links;
+missing geometry, incomplete dimensions and unreviewed hanging/mounting stay in
+review. Plant pot diameter is never treated as foliage width. FEJKA bamboo's
+footprint is measured from its GLB, checked against published plant height.
+
+**Unbranded** combines the original samples with 44 original procedural props:
+monitors, laptop, gaming PCs, keyboard/mouse, speakers, console/controller,
+headphones, guitars/stand/amplifier/record player, plants, vases, books, basket,
+organiser, mug, standing desks, ambient lights, paintings and photo frames.
+The two cinema posters are original movie-themed illustrations, not licensed
+posters of existing films. All unbranded dimensions are planning estimates and
+prices are illustrative. Cards show width × height × depth and individual previews.
+
+**Brand references** includes Omnidesk Ascent in 122, 153 and 183 × 76 cm footprints,
+each at a fixed seated (74 cm) or standing (110 cm) planning height. These are
+simplified original meshes using the official footprint and published height range,
+not manufacturer 3D assets. Frame details are approximate; prices are illustrative
+budget allowances based on the page starting price, not quotes for each variant.
+Evidence is recorded in `data/brand-references.json` and linked in piece details.
+Source: https://theomnidesk.com/products/ascent (retrieved 2026-09-13).
+
+Select a desk/table before adding a surface prop to place it on top. Objects follow
+their supporting furniture and preserve supports through undo and saved-room
+recovery. Wall art attaches to any clear wall and supports dragging, precise
+position, locking, undo and backup using the existing wall anchor. It does not
+consume a lighting slot. Spheres extend the validated data-only geometry format
+alongside boxes and cylinders; no executable custom models are introduced.
+
+Rebuild the original objects and their SVG previews with
+`python -m scripts.build_unbranded`. Append a bounded public IKEA décor batch with
+`python -m scripts.expand_decor`; existing records are preserved. Run
+`node scripts/measure_ikea_models.mjs` to recover missing supported model extents
+only where published dimensions agree within 10%, then rerun cached ingestion
+and `python -m scripts.prepare_assets`. Restart the backend after catalog changes.
+
+
+### Nursery, bathroom and home decor
+
+The collection now has 304 usable IKEA models, 60 more than the initial decor
+batch: cots, changing tables, baby toys, highchairs, bathroom storage, mirrors,
+7 memo/noticeboards, framed prints and poster arrangements. Incompatible variants
+and missing assets stay in review. Art and reviewed mirrors attach to walls.
+
+- Unbranded / Lighting: two fairy-light chains with glowing bulbs and color,
+  brightness and on/off controls. Each chain counts as one light fixture.
+- Select a supported IKEA vase or planter, then Flowers / greenery to insert one
+  of four original arrangements. The vase carries its flowers when moved. Delete
+  the flower piece to empty the vase. Stem anchors and flowers are approximate.
+- Room setup / Surfaces: linen, stripes, dots and botanical wallpaper patterns,
+  tinted by the chosen wall color. These are unbranded patterns.
+- Select a window for sheer, linen or charcoal curtains. Open, floor-length
+  panels resize and move with the window. Closing curtains is outside this pass.
+  Curtains and wallpaper persist through room updates, undo and backups.
+- Reviewed flat wall mirrors reflect the room using a reflected orthographic
+  camera and a 1024 x 1024 render target per mirror for up to four mirrors,
+  512 x 512 for five to eight, and 256 x 256 above eight mirrors.
+  All reviewed wall mirrors reflect together using HDR targets, room exposure
+  and a small brightness lift. Rendering remains on demand,
+  without recursive mirror-in-mirror reflections. Tilted/table mirrors and the NYSJON shelf
+  mirror retain their ordinary model.
+- Unbranded / Bathroom includes an approximate close-coupled toilet. IKEA
+  bathroom storage and accessories remain in the IKEA collection.
+
+RAFFELBJORK 00537671 is corrected to 22 x 20 x 8.3 cm (W x H x D) in model space.
+IKEA publishes height 20 cm, length 22 cm and nominal diameter 10 cm. Its visible
+note distinguishes the measured model depth from the nominal diameter. The old
+10 x 20 x 22 cm mapping stretched the vase along the wrong axes.
+
+Dimension and mounting reviews live in data/ikea-home-reviews.json. Reproduce with
+`node scripts/model_bounds.mjs .cache/model-bounds.json`, then
+`python -m scripts.review_home`. Use `python -m scripts.expand_home` for bounded
+home discovery. `python -m scripts.build_unbranded` also regenerates the original
+props from scripts/build_home_props.py. Asset preparation remains unchanged.
+
+Adding pieces from the furniture catalog keeps it open, preserving the current
+search, filters and scroll position so multiple pieces can be added in sequence.

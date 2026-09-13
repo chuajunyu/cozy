@@ -24,7 +24,7 @@ test('built-in door metadata survives validated JSON persistence', () => {
 
 test('wall capabilities reject invalid or unsupported imported door metadata', () => {
   for (const changes of [
-    { door: null }, { door: { kind: 'glass' } }, { door: undefined },
+    { door: null }, { door: { kind: 'glass' } },
     { placement: { mode: 'floor' } },
     { dimensions: [.9, 2.6, .045] },
     { placement: { mode: 'wall', canSupport: true } },

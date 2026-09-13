@@ -11,9 +11,12 @@ export default function WindowControls({ window, scene, disabled, onChange, onRe
   return <fieldset disabled={disabled} className="window-details">
     <h3>{window.wall[0].toUpperCase() + window.wall.slice(1)} window</h3>
     <p className="muted">Drag the glass or frame to move it along the wall or change its height. Drag past a corner to switch walls. In Top view, drag toward another wall.</p>
-    <label>Window style<select aria-label="Window style" value="" onChange={e => onChange(presetWindow(e.target.value, scene, window.wall, window.offset))}>
+    <label>Window style<select aria-label="Window style" value="" onChange={e => onChange({ ...presetWindow(e.target.value, scene, window.wall, window.offset), curtain: window.curtain })}>
       <option value="" disabled>Choose a preset</option>{windowPresets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
     </select></label>
+    <label>Curtains<select aria-label="Window curtains" value={window.curtain ?? 'none'} onChange={e => onChange({ ...window, curtain: e.target.value as RoomWindow['curtain'] })}>
+      <option value="none">None</option><option value="sheer">White sheer</option><option value="linen">Natural linen</option><option value="blackout">Charcoal blackout fabric</option>
+    </select><small>Open, floor-length panels sized to this window. Unbranded planning geometry.</small></label>
     <p className="muted">{window.width.toFixed(2)} m wide × {window.height.toFixed(2)} m tall</p>
     <details><summary>Precise placement</summary>
       <form onSubmit={e => { e.preventDefault(); onChange(draft) }}>

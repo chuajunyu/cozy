@@ -118,6 +118,28 @@ FEATURE_RULES = {
 }
 
 def enrich(product):
+    # Use whole-object measurements. A plant-pot diameter is not foliage width.
+    kind = product.get('productType')
+    if product.get('category') == 'Workspace accessories':
+        kind = product['productType'] = 'Desk accessory'
+    measurements = product.get('measurements', {})
+    if kind == 'Plant':
+        height = meters(measurements.get('Height of plant'))
+        if height and not product['dimensionsMeters'].get('height'):
+            product['dimensionsMeters']['height'] = height
+            product.setdefault('dimensionSources', {})['height'] = 'Visible measurements: Height of plant'
+        product['placement'] = {'mode': 'floor' if (height or 0) > .8 else 'surface', 'canSupport': False}
+        if 'hanging' in product['name'].lower():
+            product['mountingNeedsReview'] = True
+    if kind == 'Plant pot':
+        diameter = meters(measurements.get('Outside diameter'))
+        if diameter:
+            for axis in ['width', 'depth']:
+                if not product['dimensionsMeters'].get(axis):
+                    product['dimensionsMeters'][axis] = diameter
+                    product.setdefault('dimensionSources', {})[axis] = 'Visible measurements: Outside diameter'
+    if kind in {'Vase', 'Plant pot', 'Candle holder', 'Desk accessory'}:
+        product['placement'] = {'mode': 'surface', 'canSupport': False}
     placement_path = ROOT / 'data/ikea-placement.json'
     if placement_path.exists():
         product.update(json.loads(placement_path.read_text()).get(product['id'], {}))
@@ -139,6 +161,10 @@ def enrich(product):
         if mount == 'wall':
             product['placement'] = {'mode': 'wall', 'canSupport': False}
     if product.get('lighting'):
+        total_height = meters(product.get('measurements', {}).get('Total height'))
+        if total_height and not product['dimensionsMeters'].get('height'):
+            product['dimensionsMeters']['height'] = total_height
+            product.setdefault('dimensionSources', {})['height'] = 'Visible measurements: Total height'
         flux = re.fullmatch(r'([0-9.]+)\s*lm', product.get('measurements', {}).get('Luminous flux', ''))
         lumens = float(flux[1]) if flux else (1055 if product['lighting']['mount'] == 'ceiling' else 470)
         product['lighting']['output'] = {
@@ -173,8 +199,12 @@ def enrich(product):
     product['materialsMentioned']=[m for m in ['solid wood','bamboo','pine','oak','birch','walnut','steel','aluminium','glass','rattan','leather','cotton','polyester'] if re.search(r'\b'+m+r'\b',source,re.I)]
     product['materialEvidenceSource']='Product name/description; mentions are not a full material composition.'
     gaps=[]
-    if product.get('productType') in {'Wall shelf', 'Mirror', 'Kitchen wall storage', 'Decoration'}:
+    if product.get('productType') in {'Wall shelf', 'Mirror', 'Kitchen wall storage', 'Decoration', 'Picture frame', 'Noticeboard'}:
         product['mountingNeedsReview'] = True
+    # Explicit axis/mounting reviews survive re-ingestion and retain their sources.
+    review_path = ROOT / 'data/ikea-home-reviews.json'
+    if review_path.exists():
+        product.update(json.loads(review_path.read_text(encoding='utf-8')).get(product['id'], {}))
     if product.get('mountingNeedsReview'):
         gaps.append('Decoration geometry and mounting need review')
     if re.search(r'\bclamp\b', name):
@@ -195,7 +225,7 @@ def enrich(product):
     product['canRecommend']=not gaps and product.get('availability','').rsplit('/',1)[-1] in ['InStock','LimitedAvailability','PreOrder']
     name=product['name'].lower()
     type_rules=[('Mattress',r'^(?!.*(?:bed|pad|protector|cover)).*mattress'),('Bedside table',r'bedside|chest of 2 drawers'),('Sofa',r'sofa'),('Armchair',r'armchair|wing chair|easy chair|lounge chair'),('Bed',r'bed frame|bed,|day-bed'),('Wardrobe',r'wardrobe'),('Chest of drawers',r'chest of'),('Bookcase',r'bookcase|shelving unit'),('Office chair',r'office chair|swivel chair|gaming chair|desk chair'),('Desk',r'desk|laptop stand'),('Dining table',r'dining table|extendable table'),('Coffee / side table',r'coffee table|side table|tray table|nest of tables'),('Dining chair',r'chair'),('Lighting',r'lamp')]
-    product['productType']=next((kind for kind,pattern in type_rules if re.search(pattern,name)),product.get('productType') or product.get('sourceCategory') or product['category'])
+    product['productType']=product.get('productType') if kind in {'Plant', 'Plant pot', 'Vase', 'Candle holder', 'Desk accessory', 'Picture frame'} else next((kind for kind,pattern in type_rules if re.search(pattern,name)),product.get('productType') or product.get('sourceCategory') or product['category'])
     return product
 
 def save_catalogs(products, errors):
@@ -221,8 +251,8 @@ def save_catalogs(products, errors):
 
 if __name__=='__main__':
     entries=list({e['url']:e for e in json.loads(Path(sys.argv[1]).read_text())}.values())
-    if len(entries) > 500:
-        raise SystemExit('Curated ingestion is limited to 500 products; split the work explicitly rather than silently truncating the catalog.')
+    if len(entries) > 1000:
+        raise SystemExit('Curated ingestion is limited to 1000 products; split the work explicitly rather than silently truncating the catalog.')
     previous=ROOT/'data/ikea-catalog.json'
     cached=json.loads(previous.read_text()).get('products',[]) if previous.exists() and '--refresh' not in sys.argv else []
     allowed={e['url'] for e in entries}
