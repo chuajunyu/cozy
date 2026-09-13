@@ -16,8 +16,8 @@ class SimulatedDesigner:
         self.generation = session.generation
         self.inputs = asyncio.Queue()
 
-    def submit(self, request_id, text):
-        self.inputs.put_nowait((request_id, text))
+    def submit(self, request_id, text, *, background=False):
+        self.inputs.put_nowait((request_id, text, background))
 
     async def tool(self, name, args):
         result = await execute_tool(self.session, secrets.token_hex(8), name, json.dumps(args), self.generation)
@@ -28,7 +28,7 @@ class SimulatedDesigner:
     async def run(self):
         s = self.session
         try:
-            request, _ = await self.inputs.get()
+            request, _, _ = await self.inputs.get()
             s.set_status('working', 'Simulated designer - no API calls')
             s.publish({'type': 'feedback.ack', 'requestId': request, 'stage': 'applied'})
             message = secrets.token_hex(8)
@@ -48,11 +48,12 @@ class SimulatedDesigner:
             # Leave time to exercise steering, dragging and undo in the real UI.
             while True:
                 try:
-                    request, _ = await asyncio.wait_for(self.inputs.get(), timeout=15)
+                    request, _, background = await asyncio.wait_for(self.inputs.get(), timeout=15)
                 except TimeoutError:
                     break
                 s.publish({'type': 'feedback.ack', 'requestId': request, 'stage': 'applied'})
-                s.message('assistant', 'Simulation received your change and read the latest room.')
+                if not background:
+                    s.message('assistant', 'Simulation received your feedback and read the latest room.')
                 placements = []
                 for slot in s.state.slots.values():
                     if not slot.replacing or slot.locked:

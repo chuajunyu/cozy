@@ -319,3 +319,6 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
 .room-customization summary { font-size: 12px; cursor: pointer; color: #65705f; }
 .custom-paint { margin-top: 12px; gap: 8px; justify-content: flex-start; }
 .wall-light-controls { padding: 18px; }
+
+.chat-activity { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 5px 2px; margin: 4px 0; color: #747b6f; font-size: 11px; line-height: 1.5; }
+.chat-activity .object-pill { font-size: 11px; padding: 3px 7px; }

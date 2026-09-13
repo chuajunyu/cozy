@@ -610,7 +610,7 @@ export default function App() {
           </div>
         </div>
 </div>
-          <div hidden={panel !== 'astra'}><AgentPanel connection={connection} selected={selected} onSelect={setSelected} disabled={!!backup} replacementTarget={replacementTarget} onReplacementOpened={() => setReplacementTarget(null)} /></div>
+          <div hidden={panel !== 'astra'}><AgentPanel active={panel === 'astra'} connection={connection} selected={selected} onSelect={setSelected} disabled={!!backup} replacementTarget={replacementTarget} onReplacementOpened={() => setReplacementTarget(null)} /></div>
           <div hidden={panel !== 'setup'}><fieldset disabled={blocked}>              <div className="door-entry">
                 <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
                 <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>

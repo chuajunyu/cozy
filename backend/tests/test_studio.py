@@ -239,6 +239,8 @@ def test_websocket_manual_roundtrip_reconnect_and_recoverable_errors():
             socket.send_json({"type": "item.add", "requestId": "add", "baseRevision": 0, "slotId": "desk", "catalogId": "sample-desk", "x": 0, "z": 0})
             assert receive(socket, "design.updated")["state"]["slots"]["desk"]["x"] == 0
             receive(socket, "command.ack")
+            activity = receive(socket, 'chat.message')['message']
+            assert activity['kind'] == 'activity' and activity['text'] == 'You added'
             socket.send_json({"type": "item.update", "requestId": "stale", "baseRevision": 0, "slotId": "desk", "expectedProduct": "sample-desk", "x": 1})
             assert socket.receive_json()["code"] == "stale_revision"
             socket.send_json({"type": "echo", "text": "still here"})

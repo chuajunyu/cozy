@@ -69,9 +69,9 @@ class Session:
         self.status, self.activity = status, activity
         self.publish({"type": "agent.status", "status": status, "activity": activity})
 
-    def message(self, role: str, text: str, id: str | None = None, references: list[dict] | None = None) -> str:
+    def message(self, role: str, text: str, id: str | None = None, references: list[dict] | None = None, *, kind: str | None = None) -> str:
         id = id or secrets.token_hex(8)
-        self.messages.append({"id": id, "role": role, "text": text, **({"references": references} if references else {})})
+        self.messages.append({"id": id, "role": role, "text": text, **({"references": references} if references else {}), **({"kind": kind} if kind else {})})
         self.messages = self.messages[-50:]
         self.publish({"type": "chat.message", "message": self.messages[-1]})
         return id

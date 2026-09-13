@@ -32,8 +32,8 @@ class AstraDesigner:
         self.turns = 0
         self.creating_request: dict | None = None
 
-    def submit(self, request_id: str, text: str) -> None:
-        self.inbox.put_nowait({"requestId": request_id, "text": text})
+    def submit(self, request_id: str, text: str, *, background: bool = False) -> None:
+        self.inbox.put_nowait({"requestId": request_id, "text": text, "background": background})
 
     async def run(self) -> None:
         session = self.session
@@ -72,6 +72,10 @@ class AstraDesigner:
             request = await self.inbox.get()
             async with self.control:
                 if not self.active:
+                    # A queued edit may arrive just after the design finishes. The
+                    # next brief already includes it in state; don't start a reply.
+                    if request.get('background'):
+                        continue
                     self.turns = 0
                     # Recover from authoritative state and saved user-facing conversation.
                     history = [{"role": m["role"], "content": m["text"] + ("\nReferenced objects: " + json.dumps(m['references']) if m.get('references') else '')} for m in self.session.messages[-20:] if m["role"] in {"user", "assistant"} and m["text"]]

@@ -4,9 +4,9 @@ import type { useConnection } from './useConnection'
 import ObjectPill from './ObjectPill'
 import { displayMessage, objectReference } from './chatReferences'
 
-export default function AgentPanel({ connection, selected, onSelect, disabled, replacementTarget, onReplacementOpened }: {
+export default function AgentPanel({ connection, selected, onSelect, disabled, active, replacementTarget, onReplacementOpened }: {
   connection: ReturnType<typeof useConnection>; selected: string | null
-  onSelect: (id: string | null) => void; disabled: boolean
+  onSelect: (id: string | null) => void; disabled: boolean; active: boolean
   replacementTarget: string | null; onReplacementOpened: () => void
 }) {
   const { state, catalog, messages, status, agentStatus, activity, feedbackStage, send, reconnect } = connection
@@ -14,7 +14,8 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, r
   const [scope, setScope] = useState<string[]>([])
   const [replacement, setReplacement] = useState<string[] | null>(null)
   const [reason, setReason] = useState('')
-  const log = useRef<HTMLDivElement>(null)
+  const composer = useRef<HTMLFormElement>(null)
+  const following = useRef(true)
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     if (replacementTarget) { setReplacement([replacementTarget]); setReason(''); onReplacementOpened() }
@@ -24,23 +25,42 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, r
   const slots = Object.values(state?.slots ?? {})
   const groups = [...new Set(slots.map(s => `${s.zone} / ${s.group}`))]
   const expected = (ids: string[]) => Object.fromEntries(ids.flatMap(id => state?.slots[id]?.catalogId ? [[id, state.slots[id].catalogId!]] : []))
-  useEffect(() => { if (log.current) log.current.scrollTop = log.current.scrollHeight }, [messages])
+  const scrollToComposer = () => {
+    const form = composer.current, body = form?.closest('.panel-body')
+    if (form && body) body.scrollTop += form.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom + 12
+  }
+  useEffect(() => {
+    if (!active) return
+    const form = composer.current, body = form?.closest('.panel-body')
+    if (!form || !body) return
+    following.current = true
+    const frame = requestAnimationFrame(scrollToComposer)
+    const onScroll = () => { following.current = Math.abs(form.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom) < 80 }
+    body.addEventListener('scroll', onScroll, { passive: true })
+    return () => { cancelAnimationFrame(frame); body.removeEventListener('scroll', onScroll) }
+  }, [active])
+  useEffect(() => {
+    if (!active || !following.current) return
+    const frame = requestAnimationFrame(scrollToComposer)
+    return () => cancelAnimationFrame(frame)
+  }, [messages, active])
   useEffect(() => { setScope(selected ? [selected] : []) }, [selected])
   return <section className="agent-panel" aria-label="AI designer">
     <div className={`agent-status ${status}`} role="status"><i /> {activity}
       {agentStatus === 'working' && <span aria-label="Working"> ···</span>}
     </div>
     {status !== 'connected' && <button onClick={reconnect}>Reconnect</button>}
-    <div className="agent-messages" ref={log} role="log" aria-label="Design conversation" aria-live="polite">
+    <div className="agent-messages" role="log" aria-label="Design conversation" aria-live="polite">
       {!messages.length && <p className="muted">Describe your room. Astra can build a concept around the pieces you add.</p>}
       {messages.map(raw => {
         const m = displayMessage(raw, state, catalog)
+        if (m.kind === 'activity') return <div key={m.id} className="chat-activity"><span aria-hidden="true">↳</span><span>{m.text}</span>{m.references?.map(reference => <ObjectPill key={reference.slotId} reference={reference} available={!!state?.slots[reference.slotId]} onSelect={() => onSelect(reference.slotId)} />)}</div>
         return <article key={m.id} className={`chat-${m.role}`}><small>{m.role === 'user' ? 'YOU' : m.role === 'assistant' ? 'ASTRA' : 'STUDIO'}</small>
           {!!m.references?.length && <div className="object-references">{m.references.map(reference => <ObjectPill key={reference.slotId} reference={reference} available={!!state?.slots[reference.slotId]} onSelect={() => onSelect(reference.slotId)} />)}</div>}
           <ReactMarkdown>{m.text}</ReactMarkdown></article>
       })}
     </div>
-    <form onSubmit={e => { e.preventDefault(); if (!text.trim()) return
+    <form ref={composer} onSubmit={e => { e.preventDefault(); if (!text.trim()) return
       if (send(scope.length ? { type: 'feedback.send', action: 'comment', text, slotIds: scope, expectedProducts: expected(scope) } : { type: 'chat.send', text })) setText('')
     }}>
       <label htmlFor="design-message">{scope.length ? `Comment on ${scope.length} selected ${scope.length === 1 ? 'piece' : 'pieces'}` : 'Your brief or feedback'}</label>

@@ -98,6 +98,11 @@ Run one FastAPI worker because sessions are in memory.
 - Click the cost summary for budget editing and the room's piece list. The studio
   menu contains Reset room and connection details. Escape closes the panel before
   deselecting a piece. Disconnection, restoration and validation notices remain visible.
+- Ask Astra opens at the latest conversation and message box. Scrolling back to
+  read history stops automatic scrolling until you return to the composer.
+- Manual room edits appear as compact activity rows (for example, You moved with a
+  named object pill), not Astra speech. They remain in authoritative room context
+  and steer active work silently; an edit alone never starts a new design response.
 - Describe a room to Astra. It streams explanations and places coordinated groups.
   Select an item or use a group's Comment button to scope feedback. Named object
   pills show the targets in the composer and sent messages; click one to select

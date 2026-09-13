@@ -37,7 +37,7 @@ class QuietDesigner:
     def __init__(self, session):
         self.submissions = []
 
-    def submit(self, id, text):
+    def submit(self, id, text, *, background=False):
         self.submissions.append((id, text))
 
     async def run(self):
