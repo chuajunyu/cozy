@@ -10,6 +10,7 @@ from backend.astra import AstraDesigner
 from backend.design import DesignError, Model, Room, require
 from backend.sessions import Session
 from backend.architecture import explicit_permissions
+from backend.concurrency import can_rebase
 
 
 class Command(Model):
@@ -50,7 +51,10 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
             session.publish(session.requests[command.requestId])
             return
         if command.baseRevision is not None:
-            require(command.baseRevision == session.state.revision, "stale_revision", "The room changed. Review it and try again.")
+            conversational = command.type == 'chat.send' or (command.type == 'feedback.send' and command.action in {'comment', 'like'})
+            unchanged_targets = bool(command.slotIds) and all(can_rebase(session.revisions.get(command.baseRevision), session.state, id) for id in command.slotIds)
+            require(command.baseRevision == session.state.revision or conversational or unchanged_targets,
+                    "stale_revision", "This piece changed while you were editing. Review it and try again.")
         state = session.state.model_copy(deep=True)
         slots = list(dict.fromkeys(command.slotIds))
         if command.action == "reroll_unlocked" and command.type == "feedback.send":
@@ -113,7 +117,16 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
             grants = explicit_permissions(command.text) if command.type == 'chat.send' or command.action == 'comment' else []
             if grants:
                 session.room_permissions[command.requestId] = grants
-        session.message("user", text, command.requestId)
+        references = [{"slotId": id, "name": session.products.get(state.slots[id].catalogId, {}).get("name") or state.slots[id].label,
+                       "category": "door" if state.slots[id].door else state.slots[id].category} for id in slots]
+        display = command.text
+        if command.type == 'item.lock':
+            display = 'Keep these pieces in place.' if command.locked else 'Allow changes to these pieces.'
+        elif command.type == 'feedback.send' and command.action == 'like':
+            display = 'I like these choices.'
+        elif command.type == 'feedback.send' and command.action in {'reroll', 'reroll_unlocked'}:
+            display = 'Find alternatives.' + (' ' + command.text if command.text else '')
+        session.message("user", display, command.requestId, references)
         session.broadcast_state()
         ack = {"type": "feedback.ack", "requestId": command.requestId, "stage": "received"}
         session.requests[command.requestId] = ack

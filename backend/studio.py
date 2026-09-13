@@ -9,6 +9,7 @@ from backend.design import DesignState, DoorAnchor, LightSettings, Model, Room, 
 from backend.placement import alternative_kind, inferred_support, settle_state
 from backend.products import GeneratedProduct, generated
 from backend.sessions import Session
+from backend.concurrency import can_rebase
 
 
 class Backup(Model):
@@ -64,6 +65,9 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             if command.requestId in session.requests:
                 session.publish(session.requests[command.requestId])
                 return
+            if command.baseRevision != session.state.revision and command.type in {'item.update', 'item.delete', 'item.replace', 'fixture.update'}:
+                if can_rebase(session.revisions.get(command.baseRevision), session.state, command.slotId):
+                    command = command.model_copy(update={'baseRevision': session.state.revision})
             require(command.baseRevision == session.state.revision, "stale_revision", "The room changed. Review it and try again.")
             if command.type == 'session.restore.preview':
                 from backend.restore import preview_restore

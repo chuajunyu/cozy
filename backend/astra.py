@@ -74,7 +74,7 @@ class AstraDesigner:
                 if not self.active:
                     self.turns = 0
                     # Recover from authoritative state and saved user-facing conversation.
-                    history = [{"role": m["role"], "content": m["text"]} for m in self.session.messages[-20:] if m["role"] in {"user", "assistant"} and m["text"]]
+                    history = [{"role": m["role"], "content": m["text"] + ("\nReferenced objects: " + json.dumps(m['references']) if m.get('references') else '')} for m in self.session.messages[-20:] if m["role"] in {"user", "assistant"} and m["text"]]
                     self.creating_request = request
                     await self.create([{"role": "user", "content": "Current authoritative design state:\n" + json.dumps(self.session.snapshot())},
                                        *history,

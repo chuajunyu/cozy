@@ -1,4 +1,5 @@
 import { fitZoom } from './cameraFit'
+import { dragState } from './dragState'
 import { fixtureIntensity } from './lighting'
 import { liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
@@ -187,6 +188,13 @@ function Placed({
 }) {
   const [preview, setPreview] = useState<Item | null>(null)
   const dragging = useRef(false)
+  const capture = useRef<{ target: Element; pointerId: number } | null>(null)
+  const dragVersion = dragState(scene, item)
+  function releaseCapture() {
+    if (!capture.current) return
+    try { capture.current.target.releasePointerCapture(capture.current.pointerId) } catch { /* The browser may have already released the pointer. */ }
+    capture.current = null
+  }
   const offset = useRef({ x: 0, z: 0 })
   const current = useRef<Item | null>(null)
   const plane = new Plane(new Vector3(0, 1, 0), -(item.elevation ?? 0))
@@ -216,13 +224,14 @@ function Placed({
   useEffect(() => { invalidate() }, [item.elevation, invalidate])
   useEffect(
     () => () => {
+      releaseCapture()
       if (dragging.current) onDrag(false)
     },
     [onDrag],
   )
   useEffect(() => {
-    if (dragging.current) { dragging.current = false; current.current = null; setPreview(null); onDrag(false) }
-  }, [scene.revision, item.locked, item.productId, onDrag])
+    if (dragging.current) { releaseCapture(); dragging.current = false; current.current = null; setPreview(null); onDrag(false) }
+  }, [dragVersion, onDrag])
   function down(e: ThreeEvent<PointerEvent>) {
     e.stopPropagation()
     onSelect(item.id)
@@ -237,6 +246,7 @@ function Placed({
     dragging.current = true
     onDrag(true)
     ;(e.target as unknown as Element).setPointerCapture(e.pointerId)
+    capture.current = { target: e.target as unknown as Element, pointerId: e.pointerId }
   }
   function move(e: ThreeEvent<PointerEvent>) {
     if (!dragging.current) return
@@ -259,7 +269,7 @@ function Placed({
     e.stopPropagation()
     dragging.current = false
     onDrag(false)
-    ;(e.target as unknown as Element).releasePointerCapture(e.pointerId)
+    releaseCapture()
     if (current.current) onMove(current.current)
     current.current = null
     setPreview(null)
@@ -267,7 +277,7 @@ function Placed({
   function cancel(e?: ThreeEvent<PointerEvent>) {
     if (!dragging.current) return
     e?.stopPropagation()
-    if (e) (e.target as unknown as Element).releasePointerCapture(e.pointerId)
+    releaseCapture()
     dragging.current = false
     onDrag(false)
     current.current = null
@@ -298,7 +308,7 @@ function Placed({
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
-      onPointerCancel={() => { dragging.current = false; current.current = null; setPreview(null); onDrag(false) }}
+      onPointerCancel={() => cancel()}
     >
       <Furniture product={product} />
       <FixtureLight product={product} settings={item.light} />

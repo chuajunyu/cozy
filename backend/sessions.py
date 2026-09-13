@@ -16,6 +16,7 @@ class Session:
     state: DesignState = field(default_factory=DesignState)
     custom_products: dict = field(default_factory=dict)
     history: list[DesignState] = field(default_factory=list)
+    revisions: dict[int, DesignState] = field(default_factory=dict)
     generation: int = 0
     room_permissions: dict = field(default_factory=dict)
     restore_previews: dict = field(default_factory=dict)
@@ -37,6 +38,9 @@ class Session:
         return {**BY_ID, **self.custom_products}
 
     def snapshot(self) -> dict:
+        self.revisions[self.state.revision] = self.state.model_copy(deep=True)
+        while len(self.revisions) > 50:
+            del self.revisions[next(iter(self.revisions))]
         return {**snapshot(self.state, self.products), "undoCount": len(self.history)}
 
     def remember(self) -> None:
@@ -65,9 +69,9 @@ class Session:
         self.status, self.activity = status, activity
         self.publish({"type": "agent.status", "status": status, "activity": activity})
 
-    def message(self, role: str, text: str, id: str | None = None) -> str:
+    def message(self, role: str, text: str, id: str | None = None, references: list[dict] | None = None) -> str:
         id = id or secrets.token_hex(8)
-        self.messages.append({"id": id, "role": role, "text": text})
+        self.messages.append({"id": id, "role": role, "text": text, **({"references": references} if references else {})})
         self.messages = self.messages[-50:]
         self.publish({"type": "chat.message", "message": self.messages[-1]})
         return id

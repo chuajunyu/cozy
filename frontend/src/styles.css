@@ -243,3 +243,9 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
 @media (prefers-reduced-motion: no-preference) {
   button { transition: background .12s ease, border-color .12s ease; }
 }
+.object-references { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.object-pill { display: inline-flex; align-items: center; max-width: 100%; border: 1px solid #c9d4be; border-radius: 20px; background: #edf2e7; overflow: hidden; }
+.object-pill button { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 0; background: transparent; color: #4c633e; padding: 5px 9px; font-size: 11px; min-height: 30px; min-width: 0; }
+.object-pill button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.object-pill svg { flex-shrink: 0; }
+.object-pill .remove-reference { padding: 5px 8px; border-left: 1px solid #d3deca; }

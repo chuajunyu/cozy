@@ -130,12 +130,12 @@ export function useConnection() {
   }, [attempt])
 
   const send = useCallback((command: Command) => {
-    if (pendingRequest.current) { setError('Wait for the current room edit to finish.'); return false }
+    const manual = !['chat.send', 'feedback.send'].includes(command.type)
+    if (manual && pendingRequest.current) { setError('Wait for the current room edit to finish.'); return false }
     if (socket.current?.readyState !== WebSocket.OPEN) { setError('Reconnect before sending an update.'); return false }
     try {
       const requestId = crypto.randomUUID()
       latestRequest.current = requestId
-      const manual = !['chat.send', 'feedback.send'].includes(command.type)
       if (manual) { pendingRequest.current = requestId; setPending(true) }
       if (command.type === 'session.restore') restoreRequest.current = requestId
       if (command.type === 'session.restore.preview') previewRequest.current = requestId

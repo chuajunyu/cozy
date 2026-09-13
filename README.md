@@ -85,8 +85,9 @@ Run one FastAPI worker because sessions are in memory.
   menu contains Reset room and connection details. Escape closes the panel before
   deselecting a piece. Disconnection, restoration and validation notices remain visible.
 - Describe a room to Astra. It streams explanations and places coordinated groups.
-  Select an item or use a group's Comment button to scope feedback; Whole room
-  clears that scope. Like is a soft preference. Locks preserve exact product and
+  Select an item or use a group's Comment button to scope feedback. Named object
+  pills show the targets in the composer and sent messages; click one to select
+  the object or remove its composer pill to change the scope. Whole room clears it. Like is a soft preference. Locks preserve exact product and
   pose. Replace and Find alternatives for unlocked pieces keep current pieces visible until valid
   alternatives are accepted. Feedback and manual edits can steer an active run.
 - Undo restores the previous accepted room change, including agent groups, room
@@ -143,6 +144,9 @@ storage is optional; the UI reports write failures while preserving backend stat
   also require `slotId` and `expectedProduct`. See `backend/studio.py` schemas.
 - `design.updated` carries a full accepted snapshot, revision and undo count.
   `catalog.updated` carries approved products. `command.ack` confirms a studio edit.
+  Chat messages optionally include `references: [{slotId, name, category}]`; names
+  are captured at send time and survive replacement/deletion. Model feedback retains
+  internal target IDs separately from the visible message.
   Chat events include `chat.message`, `chat.delta`, `agent.status`, `feedback.ack`,
   `design.group` and `design.completed`. Receipt, upstream submission, queued
   steering and applied feedback are distinguished. Errors leave the socket usable.
@@ -150,7 +154,12 @@ storage is optional; the UI reports write failures while preserving backend stat
 - Frames are bounded: 32 KB ordinary commands, 510 KB imports, 2 MB restores.
   The original echo command remains supported for transport checks.
 
-Every accepted change advances a revision. Stale browser/model edits are rejected;
+Every accepted change advances a revision. Stale model proposals are rejected.
+Direct item moves, deletes, replacements and fixture edits may rebase over an
+unrelated change when the last 50 revision snapshots prove that the target and
+its supporting group are unchanged. The latest layout and locks are still
+validated before committing. Room-wide changes retain strict revision checks;
+conversation accepts current state while expected-product guards protect its targets.
 clients never rewind to an older snapshot. Atomic validation checks IDs, categories,
 renderable assets, bounds, height, collisions, locks, rejected products, fixture
 limits and budget. Rugs may overlap solids; height-separated objects can stack.
@@ -237,3 +246,15 @@ frontend/backend ports. A sandboxed backend may accept browser connections while
 its Astra connection fails with ConnectionRefusedError. Restart it in a process
 with outbound network access; changing local ports or rotating keys does not fix
 that restriction.
+
+## Editing alongside Astra
+
+Astra does not hold a room lock while generating. Short transactions serialize
+accepted changes. Dragging continues across unrelated scene revisions; a change
+to the dragged piece's pose, product, lock, support or room dimensions cancels
+that gesture. New collisions are checked against the latest room at drop time.
+Chat remains available while a manual command awaits acknowledgment. Manual
+commands still use one in-flight write at a time. Same-object conflicts require
+retrying against the current object; Lock remains the explicit way to preserve
+an exact product and pose across future design iterations. Undo and Reset pause
+Astra as before.
