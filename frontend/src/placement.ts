@@ -1,3 +1,4 @@
+import { validWallColors } from './roomFinishes.ts'
 import type { Item, Product, Scene } from './catalog.ts'
 import { normalizeDoor, validDoorAnchor, validDoors } from './doors.ts'
 
@@ -255,6 +256,8 @@ export function settleScene(
   const resolved = new Map<string, Item>()
   const processing = new Set<string>()
   let error: string | undefined
+  if (next.wallColors !== undefined && !validWallColors(next.wallColors))
+    return { scene: previous, error: 'Choose a valid six-digit hex color for each wall.' }
   if (nextItems.size !== next.items.length)
     return { scene: previous, error: 'Every room item needs a unique ID.' }
   for (const item of previous.items) {

@@ -229,6 +229,7 @@ permissions or undo history. Legacy brightness is accepted but ignored by render
 Daylight is computed in a browser worker from authoritative room dimensions and
 openings. Worker errors leave editing available and expose a Retry daylight button.
 
+<<<<<<< HEAD
 ## Demo notices
 
 Normal recovery is automatic. The canvas can briefly show Opening your room,
@@ -258,3 +259,10 @@ commands still use one in-flight write at a time. Same-object conflicts require
 retrying against the current object; Lock remains the explicit way to preserve
 an exact product and pose across future design iterations. Undo and Reset pause
 Astra as before.
+=======
+## Wall colors
+
+**Make it yours** paints each compass wall or all walls using presets or a custom
+hex color. Paint affects reflected daylight. `room.wallColors` is validated by the
+shared backend, saved in backups and included in undo; older rooms use defaults.
+>>>>>>> 075d139 (Add user-customizable wall colors with shared persistence)

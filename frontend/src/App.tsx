@@ -1,3 +1,4 @@
+import RoomCustomization from './RoomCustomization'
 import { fixtureOutput } from './lighting'
 import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } from './placement'
 
@@ -141,7 +142,7 @@ export default function App() {
   useEffect(() => { setNotice('') }, [state?.revision])
   const scene: Scene = useMemo(() => ({
     width: state?.room.width ?? 4, depth: state?.room.depth ?? 3.5, height: state?.room.height ?? 2.6,
-    windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
+    wallColors: state?.room.wallColors, windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
     items: Object.values(state?.slots ?? {}).filter(s => s.catalogId).map(s => ({
       id: s.id, productId: s.catalogId!, x: s.x, z: s.z, rotation: s.rotation, locked: s.locked,
       supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
@@ -197,7 +198,7 @@ export default function App() {
       if (i.door) return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, door: i.door })
       return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, x: i.x, z: i.z, rotation: i.rotation, elevation: i.elevation, supportId: i.supportId ?? null })
     }
-    return !!state && edit({ type: 'room.update', room: { ...state.room, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
+    return !!state && edit({ type: 'room.update', room: { ...state.room, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
   }
   function move(next: Item) {
     const preview = settleScene({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) }, scene, catalog)
@@ -800,6 +801,7 @@ export default function App() {
                   </small>
                 </div>
               )}
+<<<<<<< HEAD
 </fieldset></> : <p className="panel-empty">Select a piece in the room to see its details.</p>}
           </div>
           <div hidden={panel !== 'replace'}><fieldset disabled={blocked}>{alternativesPanel || <p className="panel-empty">Select a piece to find alternatives.</p>}{item && !product?.door && <button className="primary wide" disabled={blocked || item.locked} onClick={askReplacement}>Ask Astra for another option</button>}</fieldset></div>
@@ -807,6 +809,49 @@ export default function App() {
             <button className="danger" disabled={status !== 'connected' || pending || (!scene.items.length && !backup)} onClick={() => { if (resetRoom()) { setSelected(null); closePanel(); setNotice('Room reset. Undo brings your pieces back.') } }}>Reset room</button>
             <p className="muted">Remove all pieces, including locked ones. Room dimensions and budget stay the same. Undo restores the previous arrangement.</p>
             {recoveryError && backup && <section className="recovery-options"><h3>Saved room</h3><p className="muted">Your original save is still on this device.</p><button disabled={pending || status !== 'connected'} onClick={restore}>Try opening again</button><button onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([backup], { type: 'application/json' })); a.download = 'cozy-room-backup.json'; a.click(); URL.revokeObjectURL(a.href) }}>Download saved room</button></section>}
+=======
+              {compact && alternativesPanel}
+              <div className="door-entry">
+                <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
+                <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
+              </div>
+              <RoomCustomization scene={scene} onChange={commit} />
+              <SunlightControls scene={scene} catalog={catalog} onChange={commit} />
+              <div className="room-settings">
+                <div><label htmlFor="height">Room height</label><select id="height" value={scene.height} onChange={e => resize('height', Number(e.target.value))}>{Array.from({length:31},(_,i) => Number((2+i*.1).toFixed(1))).map(n => <option key={n} value={n}>{n.toFixed(1)} m</option>)}</select></div>
+                <div>
+                  <label htmlFor="width">Room width</label>
+                  <select
+                    id="width"
+                    value={scene.width}
+                    onChange={(e) => resize('width', Number(e.target.value))}
+                  >
+                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
+                      (n) => (
+                        <option key={n} value={n}>
+                          {n.toFixed(1)} m
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="depth">Room depth</label>
+                  <select
+                    id="depth"
+                    value={scene.depth}
+                    onChange={(e) => resize('depth', Number(e.target.value))}
+                  >
+                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
+                      (n) => (
+                        <option key={n} value={n}>
+                          {n.toFixed(1)} m
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+>>>>>>> 075d139 (Add user-customizable wall colors with shared persistence)
 
             <details><summary>Connection & collection</summary>{diagnostic && <p>{diagnostic}</p>}<p>{status} · {completeIkea.length} IKEA pieces ready · {reviewCount} awaiting review</p><button onClick={reconnect}>Refresh connection and collection</button></details>
             <p className="muted">Accepted changes are backed up on this device. Undo pauses the designer.</p>

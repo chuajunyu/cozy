@@ -20,6 +20,21 @@ const base: TransportInput = {
   surfaceReflectance: { floor: grey, wall: grey, ceiling: grey },
 }
 
+test('individual wall paint changes bounced light while keeping other surfaces independent', () => {
+  const darkRoom = { ...base, surfaceReflectance: { floor: black, wall: black, ceiling: black } }
+  const dark = solveDaylight(darkRoom)
+  const redWest = solveDaylight({ ...darkRoom, wallReflectance: { west: [.8, 0, 0] } })
+  assert.ok(redWest.meanIrradiance > dark.meanIrradiance)
+  let redIncrease = 0
+  for (let i = 0; i < dark.coefficients.length; i += 4) {
+    redIncrease += Math.abs(redWest.coefficients[i] - dark.coefficients[i])
+    assert.equal(redWest.coefficients[i + 1], dark.coefficients[i + 1])
+    assert.equal(redWest.coefficients[i + 2], dark.coefficients[i + 2])
+  }
+  assert.ok(redIncrease > 0)
+  assert.deepEqual(solveDaylight({ ...base, wallReflectance: { north: grey, south: grey, east: grey, west: grey } }), solveDaylight(base))
+})
+
 test('a sealed room receives no outdoor light, even with a bright sun and sky', () => {
   const result = solveDaylight({ ...base, windows: [], sunIntensity: 100 })
   assert.equal(result.meanIrradiance, 0)

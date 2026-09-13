@@ -68,6 +68,7 @@ export type Scene = {
   windows?: RoomWindow[]
   sunHour?: number
   daylight?: number
+  wallColors?: Partial<Record<Wall, string>>
   items: Item[]
 }
 const box = (size: Vec3, position: Vec3, color: string): Part => ({

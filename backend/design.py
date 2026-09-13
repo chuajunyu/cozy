@@ -1,7 +1,7 @@
 """Authoritative scene validation. Mutations are atomic and contain no network I/O."""
 
 from copy import deepcopy
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -33,6 +33,7 @@ class DoorAnchor(Model):
 
 
 class Room(Model):
+    wallColors: dict[Literal['north', 'east', 'south', 'west'], Annotated[str, Field(pattern=r'^#[0-9a-fA-F]{6}$')]] = Field(default_factory=dict)
     width: float = Field(default=4, ge=2, le=12)
     depth: float = Field(default=3.5, ge=2, le=12)
     height: float = Field(default=2.6, ge=2, le=5)

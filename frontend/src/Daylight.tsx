@@ -5,7 +5,8 @@ import { Box3, Data3DTexture, FloatType, LinearFilter, Mesh, MeshStandardMateria
 import type { Product, Scene, Vec3 } from './catalog'
 import { doorOpenings } from './doors'
 import { daylightExposure, diffuseSkyRadiance } from './lighting'
-import { defaultWindows, sunAt } from './sunlight'
+import { defaultWindows, sunAt, walls } from './sunlight'
+import { paintReflectance, wallColor } from './roomFinishes'
 import type { TransportInput } from './daylightTransport'
 
 const size: Vec3 = [7, 4, 7]
@@ -158,6 +159,7 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
       sunColor: sun.warm ? [1, .644, .356] : [1, .905, .738],
       skyRadiance: [sky * .8, sky * .9, sky], boxes,
       surfaceReflectance: { floor: [.571, .412, .246], wall: [.855, .815, .738], ceiling: [.82, .82, .8] },
+      wallReflectance: Object.fromEntries(walls.map(wall => [wall, paintReflectance(wallColor(room, wall))])),
       resolution: size, samples: 192, bounces: 5,
     }
     const key = JSON.stringify(input)

@@ -1,4 +1,4 @@
-import type { RoomWindow } from './sunlight'
+import type { RoomWindow, Wall } from './sunlight'
 
 export type Vec3 = [number, number, number]
 export type TransportBox = { min: Vec3; max: Vec3; reflectance: Vec3 }
@@ -15,6 +15,7 @@ export type TransportInput = {
   skyRadiance: Vec3
   boxes: TransportBox[]
   surfaceReflectance?: { floor: Vec3; wall: Vec3; ceiling: Vec3 }
+  wallReflectance?: Partial<Record<Wall, Vec3>>
   samples?: number
   bounces?: number
   resolution?: [number, number, number]
@@ -53,6 +54,7 @@ type Context = {
   boxes: TransportBox[]
   floor: Vec3
   wall: Vec3
+  wallReflectance: Partial<Record<Wall, Vec3>>
   ceiling: Vec3
   sunDirection: Vec3
   sunRadiance: Vec3
@@ -110,6 +112,7 @@ function createContext(input: TransportInput): Context {
     // Linear reflectances, not display/sRGB colors. All energy is source driven.
     floor: clampedReflectance(input.surfaceReflectance?.floor ?? [0.5, 0.4, 0.28]),
     wall: clampedReflectance(input.surfaceReflectance?.wall ?? [0.78, 0.76, 0.7]),
+    wallReflectance: Object.fromEntries(Object.entries(input.wallReflectance ?? {}).map(([wall, color]) => [wall, clampedReflectance(color)])),
     ceiling: clampedReflectance(input.surfaceReflectance?.ceiling ?? [0.82, 0.82, 0.8]),
     sunDirection,
     sunRadiance: nonnegative(input.sunColor).map(v => v * sunPower) as Vec3,
@@ -149,7 +152,7 @@ function intersect(context: Context, origin: Vec3, direction: Vec3): Hit {
   }
   let reflectance = boundaryAxis === 1
     ? boundarySide === -1 ? context.floor : context.ceiling
-    : context.wall
+    : context.wallReflectance[boundaryAxis === 0 ? boundarySide === -1 ? 'west' : 'east' : boundarySide === -1 ? 'north' : 'south'] ?? context.wall
   let furnitureHit = false
   for (const box of context.boxes) {
     let enter = -Infinity
