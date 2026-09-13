@@ -9,3 +9,7 @@ __pycache__/
 .env.*
 !.env.example
 *.log
+
+# IKEA assets are local evaluation downloads, not repository-owned content.
+frontend/public/models/ikea/
+frontend/public/ikea-catalog.json
