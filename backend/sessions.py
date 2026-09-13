@@ -4,10 +4,34 @@ import asyncio
 import secrets
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 from backend.design import DesignState, snapshot
 from backend.catalog import BY_ID, CATALOG_SUMMARY
+
+
+class SavedReference(BaseModel):
+    slotId: str = Field(max_length=100)
+    name: str = Field(max_length=300)
+    category: str = Field(max_length=100)
+
+
+class SavedMessage(BaseModel):
+    id: str = Field(min_length=1, max_length=100)
+    role: Literal['user', 'assistant']
+    text: str = Field(max_length=6000)
+    references: list[SavedReference] = Field(default_factory=list, max_length=50)
+
+
+class ConversationRecovery(BaseModel):
+    messages: list[SavedMessage] = Field(default_factory=list, max_length=50)
+
+    def history(self) -> list[dict]:
+        # Restored conversation is context only; it never replays room commands.
+        unique = {m.id: m.model_dump(exclude_defaults=True) for m in self.messages}
+        return list(unique.values())
 
 
 @dataclass
@@ -28,6 +52,7 @@ class Session:
     requests: dict[str, dict] = field(default_factory=dict)
     status: str = "idle"
     activity: str = "Ready when you are"
+    voice_active: bool = False
     designer: Any = None
     task: asyncio.Task | None = None
     previous_response_id: str | None = None
@@ -71,23 +96,28 @@ class Session:
 
     def message(self, role: str, text: str, id: str | None = None, references: list[dict] | None = None) -> str:
         id = id or secrets.token_hex(8)
-        self.messages.append({"id": id, "role": role, "text": text, **({"references": references} if references else {})})
+        message = {"id": id, "role": role, "text": text, **({"references": references} if references else {})}
+        existing = next((i for i, item in enumerate(self.messages) if item["id"] == id), None)
+        if existing is None:
+            self.messages.append(message)
+        else:
+            self.messages[existing] = message
         self.messages = self.messages[-50:]
-        self.publish({"type": "chat.message", "message": self.messages[-1]})
+        self.publish({"type": "chat.message", "message": message})
         return id
 
-    def delta(self, id: str, text: str) -> None:
+    def delta(self, id: str, text: str, *, internal: bool = False) -> None:
         message = next((m for m in self.messages if m["id"] == id), None)
         if message is None:
-            self.messages.append({"id": id, "role": "assistant", "text": ""})
+            self.messages.append({"id": id, "role": "assistant", "text": "", **({"internal": True} if internal else {})})
             self.messages = self.messages[-50:]
             message = self.messages[-1]
         message["text"] += text
-        self.publish({"type": "chat.delta", "id": id, "text": text})
+        self.publish({"type": "chat.delta", "id": id, "text": text, **({"internal": True} if internal else {})})
 
     def envelope(self, reset: bool = False) -> dict:
         return {"type": "session.ready", "sessionId": self.id, "reset": reset,
-                "state": self.snapshot(), "messages": self.messages,
+                "state": self.snapshot(), "messages": [m for m in self.messages if not m.get("internal")],
                 "status": self.status, "activity": self.activity, "catalog": list(self.products.values()), "catalogSummary": CATALOG_SUMMARY}
 
 

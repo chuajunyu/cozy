@@ -287,3 +287,60 @@ Colors affect the rendered material and reflected daylight, survive device
 backup and server restoration, and support Undo. Older saves use natural oak
 for the floor. Wall lamps live in Add furniture; select one and open More for
 wall, position and height controls. Other furniture keeps its normal drag controls.
+
+Astra's WebSocket TLS connection loads the `certifi` CA bundle as well as configured
+system roots, including on macOS Python installations without a native CA bundle.
+Certificate and hostname verification remain enabled. Known backend connection
+errors are displayed in the UI without forwarding raw upstream exception bodies.
+
+### Two-way voice
+
+Voice is off by default. Enable **Voice chat** in Ask Astra to show the voice
+controls. This frontend preference is remembered in this browser; no environment
+flag or backend restart is needed. Turning it off ends an active call and hides
+voice controls, while keeping text chat and conversation history available.
+Enabling the toggle does not start recording; press **Start voice** separately.
+
+When enabled, open **Ask Astra → Start voice**, allow microphone access, and talk naturally.
+Voice controls sit below the conversation, beside the text composer. Spoken
+transcripts appear only in the conversation, which scrolls to the latest message;
+there is no separate transcript above the chat. Text chat remains available in both modes.
+GPT live-1 handles speech and delegates room requests to the existing GPT-6 Astra
+designer. Replies are spoken and the spoken transcript appears in the conversation; internal designer output is not duplicated in chat. Mute pauses microphone
+input; **End voice** releases the microphone and closes the Live session. Switching panels keeps voice connected. Already submitted room work continues.
+
+Voice uses the existing backend `OPENAI_API_KEY` with access to `gpt-live-1` and
+`gpt-6-astra`. No key is sent to the browser. Serve the frontend over HTTPS or
+localhost, and proxy `/ws/voice` as a WebSocket (the existing Vite `/ws` proxy does
+this). Audio travels directly over WebRTC; the backend owns session startup and
+Astra delegation. One voice call per room is allowed; calls close after ten minutes,
+on room reset/restore, or when the controlling browser disconnects. Typed chat
+remains available. Voice is billed by call duration, with separate Astra usage.
+
+API references: [GPT-Live](https://developers.openai.com/api/docs/guides/live),
+[client delegation](https://developers.openai.com/api/docs/guides/live-delegation),
+[WebRTC](https://developers.openai.com/api/docs/guides/voice-webrtc?api=live).
+
+Voice control retries transient upstream WebSocket disconnects up to three times.
+The browser allows 15 seconds for a temporarily disconnected audio connection to
+recover. A dropped connection is reported separately from API access/quota errors;
+the ten-minute application cap shows its own end-of-session message.
+
+Voice transcripts appear as you speak and update in place, so room processing
+does not move your message below Astra’s reply.
+Voice remains connected through a brief interruption of the room-state socket.
+Recoverable Live command errors show a notice instead of hanging up the call.
+Backend voice diagnostics record connection states, elapsed time and close/error
+codes, without recording raw audio or authentication headers.
+
+Voice uses minimal acknowledgments and asks the model to resume an unfinished answer
+after interruptions. Actual session closures show a reason when the provider supplies
+one; a connected call with interrupted speech is different from a disconnected call.
+
+Chat recovery keeps the latest 50 user/assistant messages (up to 6,000 characters
+each) in sessionStorage for the current browser tab. Reconnects and page reloads
+reuse them when a backend restart or session expiry creates a replacement session.
+Both text Astra and a new voice call receive recent restored conversation context;
+restoring history does not replay requests or override the saved room. Existing
+live sessions remain authoritative. Closing the tab or clearing its storage removes
+this browser fallback; it is not account-level or cross-device chat storage.

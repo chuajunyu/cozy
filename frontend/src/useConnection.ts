@@ -6,14 +6,25 @@ import type { ChatMessage, Command, DesignState, Product } from './types'
 
 type Status = 'connecting' | 'connected' | 'disconnected'
 const sessionKey = 'cozy.session.v1'
+const conversationKey = 'cozy.conversation.v1'
+
+function savedConversation(): { sessionId: string | null; messages: ChatMessage[] } {
+  try {
+    const sessionId = sessionStorage.getItem(sessionKey)
+    const saved = JSON.parse(sessionStorage.getItem(conversationKey) ?? 'null')
+    return { sessionId, messages: saved?.sessionId === sessionId && Array.isArray(saved.messages) ? saved.messages : [] }
+  } catch { return { sessionId: null, messages: [] } }
+}
 
 export function useConnection() {
+  const saved = useRef(savedConversation())
   const socket = useRef<WebSocket | null>(null)
   const [attempt, setAttempt] = useState(0)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [status, setStatus] = useState<Status>('connecting')
   const [state, setState] = useState<DesignState | null>(null)
   const [catalog, setCatalog] = useState<Product[]>([])
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>(saved.current.messages)
   const [agentStatus, setAgentStatus] = useState('idle')
   const [activity, setActivity] = useState('Ready when you are')
   const [error, setError] = useState('')
@@ -39,9 +50,7 @@ export function useConnection() {
     const connection = new WebSocket(`${scheme}://${window.location.host}/ws`)
     socket.current = connection
     connection.onopen = () => {
-      let sessionId = null
-      try { sessionId = sessionStorage.getItem(sessionKey) } catch { /* Memory-only browser mode. */ }
-      connection.send(JSON.stringify({ type: 'session.init', sessionId }))
+      connection.send(JSON.stringify({ type: 'session.init', ...saved.current }))
     }
     connection.onclose = () => {
       setStatus('disconnected'); setPending(false); pendingRequest.current = null
@@ -54,6 +63,8 @@ export function useConnection() {
         const payload = JSON.parse(event.data)
         switch (payload.type) {
           case 'session.ready':
+            saved.current = { sessionId: payload.sessionId, messages: payload.messages }
+            setSessionId(payload.sessionId)
             retryCount.current = 0
             previewRequest.current = null; restoreRequest.current = null; recoveryAttempt.current = null
             setRecoveryError('')
@@ -91,10 +102,16 @@ export function useConnection() {
             if (payload.requestId === restoreRequest.current) { setBackup(null); setRecoveryError(''); restoreRequest.current = null }
             setFeedbackStage('applied')
             break
+          case 'voice.warning':
+            setError(payload.message)
+            break
           case 'chat.message':
-            setMessages(previous => [...previous.filter(m => m.id !== payload.message.id), payload.message].slice(-50))
+            setMessages(previous => previous.some(m => m.id === payload.message.id)
+              ? previous.map(m => m.id === payload.message.id ? payload.message : m)
+              : [...previous, payload.message].slice(-50))
             break
           case 'chat.delta':
+            if (payload.internal) break
             setMessages(previous => {
               const existing = previous.find(m => m.id === payload.id)
               return existing ? previous.map(m => m.id === payload.id ? { ...m, text: m.text + payload.text } : m)
@@ -111,8 +128,7 @@ export function useConnection() {
             if (payload.requestId && [previewRequest.current, restoreRequest.current].includes(payload.requestId)) {
               setRecoveryError('Your saved room couldn’t be opened.')
               previewRequest.current = null; restoreRequest.current = null
-            } else setError(payload.code === 'missing_key' || payload.code === 'astra_unavailable'
-              ? 'Astra is unavailable right now. Please try again.' : payload.message)
+            } else setError(payload.message)
             setFeedbackStage('failed')
             if (!payload.requestId || payload.requestId === pendingRequest.current) { setPending(false); pendingRequest.current = null }
             break
@@ -128,6 +144,14 @@ export function useConnection() {
       pendingRequest.current = null; previewRequest.current = null; restoreRequest.current = null
     }
   }, [attempt])
+
+  useEffect(() => {
+    const history = messages.filter(m => m.role === 'user' || m.role === 'assistant')
+      .slice(-50).map(m => ({ ...m, text: m.text.slice(-6000) }))
+    saved.current = { sessionId: saved.current.sessionId, messages: history }
+    try { sessionStorage.setItem(conversationKey, JSON.stringify(saved.current)) }
+    catch { setDiagnostic('Chat recovery is available in memory only; browser storage is unavailable.') }
+  }, [messages, sessionId])
 
   const send = useCallback((command: Command) => {
     const manual = !['chat.send', 'feedback.send'].includes(command.type)
@@ -177,5 +201,5 @@ export function useConnection() {
     setBackup(null); setRecoveryError(''); setError('')
     return true
   }
-  return { recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, feedbackStage, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
+  return { sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, feedbackStage, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
 }

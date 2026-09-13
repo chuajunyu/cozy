@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import type { useConnection } from './useConnection'
 import ObjectPill from './ObjectPill'
+import VoiceControls from './VoiceControls'
 import { displayMessage, objectReference } from './chatReferences'
 
 export default function AgentPanel({ connection, selected, onSelect, disabled, replacementTarget, onReplacementOpened }: {
@@ -10,6 +11,9 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, r
   replacementTarget: string | null; onReplacementOpened: () => void
 }) {
   const { state, catalog, messages, status, agentStatus, activity, feedbackStage, send, reconnect } = connection
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    try { return localStorage.getItem('cozy.voice.enabled') === 'true' } catch { return false }
+  })
   const [text, setText] = useState('')
   const [scope, setScope] = useState<string[]>([])
   const [replacement, setReplacement] = useState<string[] | null>(null)
@@ -24,7 +28,17 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, r
   const slots = Object.values(state?.slots ?? {})
   const groups = [...new Set(slots.map(s => `${s.zone} / ${s.group}`))]
   const expected = (ids: string[]) => Object.fromEntries(ids.flatMap(id => state?.slots[id]?.catalogId ? [[id, state.slots[id].catalogId!]] : []))
-  useEffect(() => { if (log.current) log.current.scrollTop = log.current.scrollHeight }, [messages])
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => { if (log.current) log.current.scrollTop = log.current.scrollHeight })
+    return () => cancelAnimationFrame(frame)
+  }, [messages, status, voiceEnabled])
+  useEffect(() => {
+    const element = log.current
+    if (!element) return
+    const observer = new ResizeObserver(() => { element.scrollTop = element.scrollHeight })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
   useEffect(() => { setScope(selected ? [selected] : []) }, [selected])
   return <section className="agent-panel" aria-label="AI designer">
     <div className={`agent-status ${status}`} role="status"><i /> {activity}
@@ -40,6 +54,12 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, r
           <ReactMarkdown>{m.text}</ReactMarkdown></article>
       })}
     </div>
+    <label className="voice-toggle"><input type="checkbox" checked={voiceEnabled} onChange={event => {
+      const enabled = event.target.checked
+      setVoiceEnabled(enabled)
+      try { localStorage.setItem('cozy.voice.enabled', String(enabled)) } catch { /* Keep this choice for the current page. */ }
+    }} /> Voice chat</label>
+    {voiceEnabled && <VoiceControls sessionId={connection.sessionId} connected={status === 'connected'} />}
     <form onSubmit={e => { e.preventDefault(); if (!text.trim()) return
       if (send(scope.length ? { type: 'feedback.send', action: 'comment', text, slotIds: scope, expectedProducts: expected(scope) } : { type: 'chat.send', text })) setText('')
     }}>
