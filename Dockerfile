@@ -24,6 +24,7 @@ RUN python -m scripts.prepare_assets
 
 FROM frontend-deps AS frontend
 COPY frontend/ ./
+COPY data/bulb-profiles.json /build/data/bulb-profiles.json
 COPY --from=assets /app/frontend/public ./public
 RUN npm run build
 
