@@ -9,7 +9,7 @@ import WallDrag from './WallDrag'
 import WindowPiece from './WindowPiece'
 import type { WallAnchor } from './wallDragGeometry'
 import { fixtureIntensity, fixtureColor } from './lighting'
-import { liftToSupport, isAnchored, settleScene } from './placement'
+import { clampItemToRoom, liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
 import Daylight from './Daylight'
 import RoomShell from './RoomShell'
@@ -268,6 +268,7 @@ function Placed({
         x: Math.round((p.x - offset.current.x) * 20) / 20,
         z: Math.round((p.z - offset.current.z) * 20) / 20,
       }
+      next = clampItemToRoom(next, product, scene)
       next = liftToSupport(next, scene, catalog)
       current.current = next
       setPreview(next)

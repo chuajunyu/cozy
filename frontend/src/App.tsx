@@ -6,7 +6,7 @@ import { presetWindow, windowPresets } from './windowPresets'
 import RoomCustomization, { WallLightControls } from './RoomCustomization'
 import { isWallFixture, normalizeWallFixture } from './wallFixtures'
 import { fixtureOutput, validBulbSettings } from './lighting'
-import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } from './placement'
+import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene, validItemGeometry } from './placement'
 
 const dimensionCm = (meters: number) => Number((meters * 100).toFixed(1))
 const mattressSize = (width: number, depth: number) => `${Math.round(width * 100)} × ${Math.round(depth * 100)} cm`
@@ -235,14 +235,19 @@ export default function App() {
     return !!state && edit({ type: 'room.update', room: { ...state.room, wallpapers: next.wallpapers, floorColor: next.floorColor, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
   }
   function move(next: Item) {
-    const preview = settleScene({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) }, scene, catalog)
+    const attempted = { ...scene, items: scene.items.map(i => i.id === next.id ? next : i) }
+    const preview = settleScene(attempted, scene, catalog)
     if (preview.error) {
       const moving = catalog.find(p => p.id === next.productId)
       setNotice(moving && isWallFixture(moving)
         ? 'Keep the wall object inside the wall, clear of windows, doors and other furniture.'
         : moving?.placement?.surfaceKind === 'mattress'
         ? `This mattress is ${mattressSize(moving.dimensions[0], moving.dimensions[2])}. Drop it over an empty bed with a deck at least this size, or choose a bed under Mattress placement. It keeps its actual size and cannot overhang the frame.`
-        : 'No stable landing here. Keep the whole base on a surface, clear of other furniture and room edges.')
+        : moving && !validItemGeometry(next, moving, scene, catalog)
+        ? `${moving.name} does not fit fully inside the room at this angle.`
+        : moving && !validDoors(attempted, catalog)
+        ? `Keep ${moving.name} clear of the area needed for the door to swing open.`
+        : preview.error)
       return
     }
     const landed = preview.scene.items.find(i => i.id === next.id)!

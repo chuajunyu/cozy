@@ -75,6 +75,24 @@ function rectangle(item: Item, product: Product): Rectangle {
   }
 }
 
+/** Keep a dragged footprint inside the room, including at arbitrary rotations. */
+export function clampItemToRoom(item: Item, product: Product, scene: Pick<Scene, 'width' | 'depth'>): Item {
+  if (isAnchored(product)) return item
+  const box = rectangle(item, product)
+  const halfWidth = radius(box, [1, 0])
+  const halfDepth = radius(box, [0, 1])
+  const minX = -scene.width / 2 + halfWidth
+  const maxX = scene.width / 2 - halfWidth
+  const minZ = -scene.depth / 2 + halfDepth
+  const maxZ = scene.depth / 2 - halfDepth
+  if (minX > maxX || minZ > maxZ) return item
+  return {
+    ...item,
+    x: Math.min(maxX, Math.max(minX, item.x)),
+    z: Math.min(maxZ, Math.max(minZ, item.z)),
+  }
+}
+
 function attachmentRectangle(item: Item, product: Product) {
   const stem = product.placement?.surfaceKind === 'bouquet' ? product.placement.stemDiameter : undefined
   return stem ? rectangle(item, { ...product, dimensions: [stem, product.dimensions[1], stem] }) : rectangle(item, product)

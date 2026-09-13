@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { canSupportItems, liftToSupport, isAnchored, settleItem, settleScene } from '../tests/legacyCoordinates'
+import { clampItemToRoom, settleItem as settleCentered } from './placement.ts'
 import type { Item, Product, Scene } from './catalog.ts'
 
 const table: Product = {
@@ -40,6 +41,17 @@ const item = (id: string, productId: string, changes: Partial<Item> = {}): Item 
 const room = (items: Item[]): Scene => ({ width: 6, depth: 5, budget: 500, items })
 const tabletop = item('table-1', 'table')
 const tableLamp = item('lamp-1', 'lamp', { x: 2.3, elevation: 0.75, supportId: tabletop.id })
+
+test('dragging near room edges clamps the complete rotated footprint inside', () => {
+  const sofa: Product = { id: 'sofa', name: 'Sofa', category: 'Living', price: 100, dimensions: [1.6, .8, .8], parts: [] }
+  const scene: Scene = { width: 4, depth: 3.5, items: [], budget: 0 }
+  const east = clampItemToRoom({ id: 'sofa-1', productId: sofa.id, x: 1.9, z: 0, rotation: 0, locked: false }, sofa, scene)
+  assert.equal(east.x, 1.2)
+  assert.equal(settleCentered(east, { ...scene, items: [east] }, [sofa])?.x, 1.2)
+  const turned = clampItemToRoom({ ...east, x: 0, z: 1.7, rotation: 90 }, sofa, scene)
+  assert.ok(Math.abs(turned.z - .95) < 1e-10)
+  assert.equal(settleCentered(turned, { ...scene, items: [turned] }, [sofa])?.z, turned.z)
+})
 
 test('unsupported items fall to the floor and discard stale support links', () => {
   const floating = item('chair-1', 'chair', { elevation: 1.2, supportId: 'missing' })
