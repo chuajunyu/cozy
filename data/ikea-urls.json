@@ -1014,5 +1014,90 @@
     "category": "Lighting",
     "productType": "Floor lamp",
     "discoveredFrom": "https://www.ikea.com/sg/en/cat/floor-lamps-10731/"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vatnestroem-pocket-sprung-mattress-firm-natural-40476411/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/afjaell-foam-mattress-firm-white-70568635/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vagstranda-pocket-sprung-mattress-extra-firm-light-blue-50450750/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-firm-light-blue-90450710/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/anneland-hybrid-mattress-firm-white-40481709/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vesteroey-pocket-sprung-mattress-extra-firm-light-blue-50470060/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue-10552114/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/malm-bed-frame-high-white-luroey-s99009450/",
+    "category": "Bedroom",
+    "productType": "Bed"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-firm-light-blue-00470010/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/afjaell-foam-mattress-medium-firm-white-20568647/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-extra-firm-light-blue-00469907/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/malm-bed-frame-high-white-00274924/",
+    "category": "Bedroom",
+    "productType": "Bed"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vesteroey-pocket-sprung-mattress-firm-light-blue-20450643/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vadsoe-sprung-mattress-extra-firm-light-blue-40453589/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/vestmarka-sprung-mattress-firm-light-blue-70451273/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/agotnes-foam-mattress-firm-light-blue-80480859/",
+    "category": "Bedroom",
+    "productType": "Mattress"
+  },
+  {
+    "url": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-firm-light-blue-30450671/",
+    "category": "Bedroom",
+    "productType": "Mattress"
   }
 ]

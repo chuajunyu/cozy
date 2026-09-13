@@ -910,6 +910,7 @@ footer span {
 }
 .collection-source {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 15px;
 }
@@ -1045,3 +1046,99 @@ footer span {
   color: #929a82;
   width: 100%;
 }
+
+.sunlight-panel { padding: 24px; border-top: 1px solid #dedfd4; background: #f5f5ec; }
+.sunlight-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.sunlight-heading h3 { margin: 0; font-size: 16px; }
+.sunlight-heading p, .sunlight-panel details p { font-size: 12px; color: #7a7c70; }
+.sunlight-heading strong { font-size: 24px; font-variant-numeric: tabular-nums; color: #667952; }
+.sun-time { display: grid; gap: 10px; font-size: 12px; }
+.sun-time input { width: 100%; accent-color: #b89e62; }
+.sun-presets, .window-walls { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+.sun-presets button, .window-walls button { flex: 1; padding: 9px; border: 1px solid #dedfd4; border-radius: 8px; background: #fffef8; font-size: 12px; }
+.sunlight-panel button[aria-pressed="true"] { background: #687c57; color: white; }
+.sun-status { font-size: 12px; color: #667952; min-height: 18px; }
+.sunlight-panel details { border-top: 1px solid #dedfd4; padding-top: 14px; margin: 16px 0; }
+.sunlight-panel summary { cursor: pointer; font-size: 13px; }
+.sunlight-panel summary span { float: right; color: #858879; }
+.window-enabled { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.window-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.window-inputs label { display: grid; gap: 8px; font-size: 12px; }
+.window-inputs input { width: 100%; accent-color: #687c57; }
+.sunlight-panel > small { display: block; font-size: 10px; line-height: 1.6; color: #858879; }
+.compass-label { display: inline-block; padding: 3px 6px; background: #ffffffe0; border-radius: 5px; font: 10px sans-serif; color: #627050; }
+@media (max-width: 600px) { .sunlight-panel { padding: 16px; } .window-inputs { grid-template-columns: 1fr; } }
+
+/* Keep the result visible while adjusting the controls underneath it. */
+.studio > .viewport { position: sticky; top: 0; z-index: 2; height: min(50vh, 480px); min-height: 260px; background: #eceedf; }
+.workspace { overflow: clip; }
+
+.daylight-progress { display: block; white-space: nowrap; background: #faf9efed; border: 1px solid #dfe3d7; border-radius: 12px; padding: 6px 10px; font-size: 10px; color: #667952; }
+
+.placement-controls { padding: 14px 22px; border-top: 1px solid #e4e6db; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #f2f4e9; font-size: 12px; }
+.placement-controls label { display: flex; align-items: center; gap: 8px; }
+.placement-controls select { max-width: 270px; padding: 7px; border: 1px solid #dedfd4; border-radius: 7px; background: #fffef8; }
+.placement-controls small { flex-basis: 100%; color: #7a806c; line-height: 1.5; }
+.placement-controls .mattress-size-warning { color: #846331; background: #f5e9cd; border-radius: 6px; padding: 9px 11px; }
+.bed-pair { flex-basis: 100%; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: 12px; border: 1px solid #d9e2ce; border-radius: 8px; background: #f8faf1; }
+.bed-pair > span { flex: 1; min-width: 140px; font-size: 11px; line-height: 1.5; }
+.bed-pair > button { font-size: 11px; }
+@media(max-width:600px) { .placement-controls { padding: 14px; } .placement-controls select { max-width: 230px; } }
+
+.alternatives { margin-bottom: 22px; min-width: 0; }
+.alternatives-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.alternatives-heading .eyebrow { color: #889377; font-size: 8px; letter-spacing: 1.6px; margin-bottom: 7px; }
+.alternatives-heading h2 { font-size: 19px; letter-spacing: -.6px; }
+.alternatives-heading h2 span { color: #8d9781; font-size: 11px; font-weight: 400; margin-left: 5px; }
+.alternatives-symbol { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: #edf1e3; color: #6a7f55; font-size: 23px; }
+.alternatives-current { margin-top: 14px; font-size: 10px; color: #7a826e; line-height: 1.6; }
+.alternatives-current strong { font-weight: 500; color: #4c5842; }
+.alternatives-hint { font-size: 10px; color: #828b75; line-height: 1.7; margin: 7px 0 16px; }
+.alternatives-list { display: grid; gap: 10px; }
+.alternative-card { border: 1px solid #e0e5d7; border-radius: 10px; background: #fffefa; padding: 10px; display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 10px; align-items: start; }
+.alternative-art { background: #fff; border-radius: 6px; overflow: hidden; height: 84px; display: grid; place-items: center; }
+.alternative-art img, .alternative-art svg { display: block; width: 100%; height: 100%; object-fit: contain; }
+.alternative-info { min-width: 0; }
+.alternative-source { font-size: 8px; letter-spacing: .8px; color: #89947b; }
+.alternative-info h3 { font-size: 11px; line-height: 1.5; font-weight: 500; margin: 4px 0; overflow-wrap: anywhere; }
+.alternative-info > p { font-size: 9px; color: #8a9280; line-height: 1.5; }
+.alternative-price { margin-top: 7px; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 7px; row-gap: 2px; }
+.alternative-price strong { font-size: 11px; font-weight: 600; }
+.alternative-price span { font-size: 9px; color: #7c896d; }
+.alternative-try { grid-column: 1 / -1; display: flex; justify-content: center; gap: 10px; align-items: center; width: 100%; border-color: #dce4d1; background: #eef2e6; color: #4d653c; font-size: 11px; padding: 8px; }
+.alternative-try:not(:disabled):hover { background: #e2ead6; border-color: #a6b793; }
+.alternative-try:disabled { color: #89907f; background: #f3f3ec; opacity: .8; cursor: not-allowed; }
+.alternative-error, .alternative-price-note { grid-column: 1 / -1; font-size: 9px; line-height: 1.6; color: #8a7a61; }
+.alternatives-empty { font-size: 11px; line-height: 1.8; padding: 14px; background: #f3f5ec; border-radius: 8px; color: #7f8972; }
+.alternatives-more { width: 100%; font-size: 10px; border: 0; background: none; color: #61764d; margin-top: 8px; padding: 10px; }
+@media (min-width: 1151px) {
+  .designer.has-alternatives { position: sticky; top: 12px; align-self: start; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: thin; }
+}
+@media (max-width: 1150px) {
+  .studio > .alternatives { padding: 18px; border-top: 1px solid #e0e5d7; border-bottom: 1px solid #e0e5d7; margin: 0; background: #f8f9f1; }
+  .studio > .alternatives .alternatives-list { display: flex; overflow-x: auto; gap: 12px; padding: 2px 2px 10px; scroll-snap-type: x proximity; }
+  .studio > .alternatives .alternative-card { flex: 0 0 235px; align-content: start; scroll-snap-align: start; }
+  .studio > .alternatives .alternatives-current { margin-top: 9px; }
+  .studio > .alternatives .alternatives-hint { margin-bottom: 12px; }
+  .studio > .alternatives .alternatives-more { margin: 0; padding-bottom: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .alternative-try { transition: background .15s, border-color .15s; }
+}
+
+.door-entry { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; border-top: 1px solid #dedfd4; background: #f5f5ec; }
+.door-entry > div { display: grid; gap: 5px; }
+.door-entry strong { font-size: 13px; }
+.door-entry span { font-size: 11px; color: #7a806c; }
+.door-entry button { white-space: nowrap; font-size: 12px; }
+.door-controls { padding: 20px 24px; background: #f0f3e6; border-top: 1px solid #dedfd4; }
+.door-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.door-heading h3 { font-size: 16px; margin: 0; }
+.door-heading p { font-size: 11px; color: #7a806c; margin-top: 6px; }
+.door-heading button { background: #687c57; color: white; font-size: 12px; }
+.door-controls .window-walls button[aria-pressed='true'] { background: #687c57; color: white; }
+.door-controls label { display: grid; gap: 10px; font-size: 12px; }
+.door-controls input { width: 100%; accent-color: #687c57; }
+.door-status { margin: 14px 0 10px; color: #5d744a; font-size: 12px; }
+.door-controls small { display: block; color: #7a806c; font-size: 10px; line-height: 1.6; }
+@media (max-width: 600px) { .door-entry, .door-controls { padding: 16px; } }
