@@ -1,0 +1,114 @@
+{
+  "ikea-20595132": {
+    "modelRotation": [
+      90,
+      0,
+      0
+    ],
+    "dimensionsMeters": {
+      "width": 0.18013730645179749,
+      "height": 0.30308082699775696,
+      "depth": 0.12341525164629275
+    },
+    "dimensionSources": {
+      "width": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "height": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "depth": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image"
+    },
+    "dimensionsMeasuredFromModel": true,
+    "emitter": [
+      0,
+      0.15,
+      0.035
+    ],
+    "evidence": "Raw GLB lies on its wall bracket (Y depth, Z height); +90 degrees about X makes +Z face into room. Rotated bounds agree with IKEA W18 H30 D12 cm within 3%. Bamboo body and bracket checked against product photo.",
+    "sourceUrl": "https://www.ikea.com/sg/en/p/varptross-wall-lamp-wired-in-installation-bamboo-20595132/",
+    "referenceImage": "https://www.ikea.com/sg/en/images/products/varptross-wall-lamp-wired-in-installation-bamboo__1509492_pe1009731_s5.jpg",
+    "reviewedAt": "2026-09-13",
+    "lightSimulation": "Single point-source approximation. Output is published lumens where available; bulb-dependent outputs remain explicitly assumed."
+  },
+  "ikea-30472022": {
+    "modelRotation": [
+      90,
+      0,
+      0
+    ],
+    "dimensionsMeters": {
+      "width": 0.16010597348213196,
+      "height": 0.15972373634576797,
+      "depth": 0.17029587924480438
+    },
+    "dimensionSources": {
+      "width": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "height": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "depth": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image"
+    },
+    "dimensionsMeasuredFromModel": true,
+    "emitter": [
+      0,
+      0.08,
+      0.055
+    ],
+    "evidence": "Raw GLB has mounting base at minimum Y; +90 degrees about X puts it against wall. Globe diameter matches IKEA 16 cm and projection matches 17 cm within 1%; front/back checked against product photo.",
+    "sourceUrl": "https://www.ikea.com/sg/en/p/solklint-wall-lamp-wired-in-installation-brass-grey-clear-glass-30472022/",
+    "referenceImage": "https://www.ikea.com/sg/en/images/products/solklint-wall-lamp-wired-in-installation-brass-grey-clear-glass__0842280_pe778928_s5.jpg",
+    "reviewedAt": "2026-09-13",
+    "lightSimulation": "Single point-source approximation. Output is published lumens where available; bulb-dependent outputs remain explicitly assumed."
+  },
+  "ikea-10531485": {
+    "modelRotation": [
+      0,
+      0,
+      0
+    ],
+    "dimensionsMeters": {
+      "width": 0.5,
+      "height": 0.5001774297361408,
+      "depth": 0.07025915011763573
+    },
+    "dimensionSources": {
+      "width": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "height": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "depth": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image"
+    },
+    "dimensionsMeasuredFromModel": true,
+    "emitter": [
+      0,
+      0.25,
+      -0.01
+    ],
+    "evidence": "GLB is upright; circular silhouette matches IKEA diameter 50 cm and depth 7 cm within 1%. Upright circle silhouette checked in the room against the IKEA reference image.",
+    "sourceUrl": "https://www.ikea.com/sg/en/p/varmblixt-led-wall-lamp-white-metal-circle-10531485/",
+    "referenceImage": "https://www.ikea.com/sg/en/images/products/varmblixt-led-wall-lamp-white-metal-circle__1116838_pe872594_s5.jpg",
+    "reviewedAt": "2026-09-13",
+    "lightSimulation": "Single point-source approximation. Output is published lumens where available; bulb-dependent outputs remain explicitly assumed."
+  },
+  "ikea-80520431": {
+    "modelRotation": [
+      0,
+      0,
+      0
+    ],
+    "dimensionsMeters": {
+      "width": 0.10088271647691727,
+      "height": 0.26520249247550964,
+      "depth": 0.1067870482802391
+    },
+    "dimensionSources": {
+      "width": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "height": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image",
+      "depth": "Measured oriented IKEA GLB bounds; checked against published dimensions and product image"
+    },
+    "dimensionsMeasuredFromModel": true,
+    "emitter": [
+      0,
+      0.14,
+      0.025
+    ],
+    "evidence": "GLB is upright. Height and depth agree with IKEA 26.5 and 10.6 cm within 1%; total model width 10.09 cm versus listed 9.2 cm is within 10%. Use full model bounds for clearance; do not compress model to listed width. Upright glass shade checked in the room against the IKEA reference image.",
+    "sourceUrl": "https://www.ikea.com/sg/en/p/havsdun-led-wall-lamp-dimmable-white-frosted-glass-white-80520431/",
+    "referenceImage": "https://www.ikea.com/sg/en/images/products/havsdun-led-wall-lamp-dimmable-white-frosted-glass-white__1034603_pe837795_s5.jpg",
+    "reviewedAt": "2026-09-13",
+    "lightSimulation": "Single point-source approximation. Output is published lumens where available; bulb-dependent outputs remain explicitly assumed."
+  }
+}
