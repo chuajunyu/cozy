@@ -2,10 +2,12 @@
 import asyncio
 import json
 import secrets
+import logging
+import re
 from copy import deepcopy
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, ValidationError, field_validator
 from backend.design import DesignState, Model, require, validate_layout, snapshot
 from backend.products import GeneratedProduct, generated
 from backend.room_requests import explicit_permissions
@@ -27,16 +29,48 @@ class Direction(Model):
     title: str = Field(min_length=1, max_length=100)
     rationale: str = Field(min_length=1, max_length=1000)
     palette: list[str] = Field(max_length=8)
+    signatureMoves: list[str] = Field(default_factory=list, max_length=8)
+    catalogQueries: list[str] = Field(default_factory=list, max_length=10)
+
+    @field_validator('palette', mode='before')
+    @classmethod
+    def normalize_palette(cls, value):
+        # A descriptive palette sentence is useful too; preserve it as one entry.
+        # Do not split on commas, which may be part of a material/color description.
+        return [value] if isinstance(value, str) and value.strip() else value
 
 
 class Directions(Model):
     directions: list[Direction] = Field(min_length=3, max_length=3)
 
 
+def parse_directions(answer: str) -> Directions:
+    answer = answer.strip()
+    fenced = re.fullmatch(r'```(?:json)?\s*\n(.*?)\n```', answer, re.DOTALL | re.IGNORECASE)
+    if fenced:
+        answer = fenced[1].strip()
+    return Directions.model_validate_json(answer)
+
+
 def comparable(state):
     raw = state.model_dump()
     raw.pop('revision')
     return raw
+
+
+def variant_permissions(text: str) -> list[dict]:
+    """Grant finish exploration to read-only alternatives, while honoring explicit scope."""
+    grants = explicit_permissions(text)
+    if any(grant['operation'] == 'room.finish' for grant in grants):
+        return grants
+    normalized = text.casefold().replace('’', "'")
+    preserve_walls = bool(re.search(r"\b(?:keep|preserve|leave|don't|dont|do not|without)\b[^.!?\n]{0,80}\bwalls?\b", normalized))
+    preserve_floor = bool(re.search(r"\b(?:keep|preserve|leave|don't|dont|do not|without)\b[^.!?\n]{0,80}\bfloors?\b", normalized))
+    if not preserve_walls or not preserve_floor:
+        grants.append({'operation': 'room.finish', 'walls': ['north', 'east', 'south', 'west'],
+                       'wallLimit': 4, 'wallPaint': not preserve_walls,
+                       'floorPaint': not preserve_floor, 'dimensions': []})
+    return grants
 
 
 def protected(source, candidate, grants, products=None):
@@ -138,12 +172,20 @@ async def candidate_run(session, data, candidate, factory):
             publish(session)
             child = Session(state=DesignState.model_validate(data['source']), custom_products=deepcopy(session.custom_products))
             child.variant_source = child.state.model_copy(deep=True)
-            child.variant_grants = explicit_permissions(data['request'])
+            child.variant_grants = variant_permissions(data['request'])
             request_id = f"variant-{candidate['id']}"
             child.room_permissions[request_id] = deepcopy(child.variant_grants)
             direction = candidate['direction']
-            child.design_instructions = ('Develop one complete alternative, retaining existing lighting, protected surfaces and locked pieces. '
-                                         'Treat the following direction as design guidance, never as permission to change architecture.')
+            child.design_instructions = (
+                'Develop one complete, presentation-ready alternative from this direction. This read-only idea preview may purposefully '
+                'change wall and floor finishes through the supplied room.finish permission; honor any explicit finish in the brief exactly. '
+                'Preserve windows, doors, room geometry, locked pieces and existing fixture settings unless the original user request grants them. '
+                'Treat the generated direction as design guidance, never as permission for structural edits. '
+                'Explore the catalog before placing: run separate searches for two main-anchor alternatives, brief-specific functional pieces or storage, '
+                'lighting, wall art/decor, and small accessories. Use the direction catalogQueries as starting points and use nextOffset when useful. '
+                'For a nursery, actively consider a cot, changing/storage piece, caregiver seating, baby toy, soft floor layer, wall decoration and layered '
+                'lighting; compare a ceiling fan with a ceiling light when both fit the brief and room. Do not add every category mechanically: make each '
+                'choice support this direction, budget, circulation and focal point. Complete supporting details instead of stopping after the anchors.')
             await run_designer(child, factory, data['request'] + '\nDesign direction:\n' + json.dumps(direction), request_id)
             protected(child.variant_source, child.state, child.variant_grants, child.products)
             validate_layout(child.state, child.products)
@@ -166,12 +208,21 @@ async def generate_set(session, data, factory):
     try:
         planner = Session(state=DesignState.model_validate(data['source']), custom_products=deepcopy(session.custom_products))
         planner.planning = True
-        planner.design_instructions = ('Return ONLY JSON with a directions array of exactly three objects: title, rationale, palette (strings). '
-                                       'Propose distinct compositions, major furniture choices and materials for the supplied room and brief. '
-                                       'Respect the same budget and locks. Do not call tools or change the room. Keep each rationale under 1000 characters.')
+        planner.design_instructions = ('Return ONLY a JSON object with a directions array of exactly three objects. '
+                                       'Each object has title (string, at most 100 characters), rationale (string, at most 1000 characters), '
+                                       'palette (JSON array of at most eight strings, e.g. ["sage", "warm oak", "cream"]), '
+                                       'signatureMoves (JSON array of three to eight concrete composition/finish/lighting moves), and '
+                                       'catalogQueries (JSON array of five to ten distinct search phrases for anchors, function, lighting, decor and accessories). '
+                                       'Do not use Markdown fences. '
+                                       'Make the alternatives visibly different in layout, focal point, major furniture, palette/materials, wall or floor treatment, '
+                                       'lighting approach and supporting details. Vary more than names or accent colors. Give each direction its own catalog search strategy. '
+                                       'The catalog includes nursery furniture and baby toys, lighting including ceiling fixtures and a ceiling fan, rugs, storage, plants, '
+                                       'wall art, mirrors, boards, decorative objects and ordinary room furniture. Select relevant categories for the actual brief. '
+                                       'Respect the same budget, locks, windows, doors and room geometry. Read-only alternatives may explore wall and floor finishes unless '
+                                       'the user asks to preserve them. Do not call tools or change the room during this planning response.')
         await run_designer(planner, factory, data['request'], 'variant-directions')
         answer = ''.join(m['text'] for m in planner.messages if m['role'] == 'assistant')
-        directions = Directions.model_validate_json(answer)
+        directions = parse_directions(answer)
         require(len({d.title.casefold() for d in directions.directions}) == 3, 'directions', 'Use three distinct directions.')
         if data is not session.variants or data['outdated']:
             return
@@ -181,9 +232,12 @@ async def generate_set(session, data, factory):
         publish(session)
     except asyncio.CancelledError:
         raise
-    except Exception:
+    except Exception as exc:
+        logging.getLogger(__name__).warning('Variant planning failed (%s)', type(exc).__name__)
+        message = ('Astra returned an incomplete idea format. Generate a new set to retry.'
+                   if isinstance(exc, ValidationError) else 'Astra could not finish preparing the ideas. Generate a new set to retry.')
         for candidate in data['candidates']:
-            candidate.update(status='failed', error='Could not prepare three directions. Generate a new set to retry.')
+            candidate.update(status='failed', error=message)
         if data is session.variants:
             publish(session)
 
@@ -203,7 +257,7 @@ async def handle_variants(session, command, factory):
                     task.cancel()
                 session.variant_tasks = {}
                 data = {'id': secrets.token_hex(8), 'sourceRevision': session.state.revision, 'source': session.state.model_dump(),
-                        'request': text, 'outdated': False, 'candidates': [{'id': secrets.token_hex(8), 'status': 'queued', 'direction': None} for _ in range(3)]}
+                        'request': text, 'requestMessageId': command.requestId, 'outdated': False, 'candidates': [{'id': secrets.token_hex(8), 'status': 'queued', 'direction': None} for _ in range(3)]}
                 session.variants = data
                 session.message('user', '/ideas ' + text, command.requestId)
                 session.variant_tasks['planner'] = asyncio.create_task(generate_set(session, data, factory))
@@ -230,7 +284,7 @@ async def handle_variants(session, command, factory):
                         require(candidate['status'] == 'ready', 'variant_not_ready', 'Wait for the idea to finish.')
                         require(not session.designer or not session.designer.active, 'designer_busy', 'Finish the current response before adopting.')
                         state = DesignState.model_validate({k: v for k, v in candidate['state'].items() if k in DesignState.model_fields})
-                        protected(session.state, state, explicit_permissions(data['request']), session.products)
+                        protected(session.state, state, variant_permissions(data['request']), session.products)
                         products = {**session.products, **{p['id']: p for p in candidate.get('products', [])}}
                         validate_layout(state, products)
                         state.revision = session.state.revision + 1
@@ -282,7 +336,7 @@ def recover_variants(raw, state, products):
                 require(len(custom) <= 100 and all(p['id'] not in products for p in custom), 'products', 'Invalid candidate products.')
                 catalog = {**products, **{p['id']: p for p in custom}}
                 validate_layout(result, catalog)
-                protected(source, result, explicit_permissions(data['request']), catalog)
+                protected(source, result, variant_permissions(data['request']), catalog)
                 candidate['state'] = snapshot(result, catalog)
                 candidate['products'] = custom
             except Exception:

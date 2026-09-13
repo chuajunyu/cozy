@@ -61,10 +61,18 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
         })
       })
       return <CutawayWall key={wall} wall={wall} top={top} position={position} rotation={rotation}>
-        {blocks.filter(([a,b,c,d]) => b > a && d > c).map(([a,b,c,d], i) => <mesh key={i} position={[(a+b)/2-length/2, (c+d)/2, 0]} castShadow receiveShadow>
-          <boxGeometry args={[b-a, d-c, 0.1]} />
-          <WallpaperMaterial pattern={scene.wallpapers?.[wall]} color={wallColor(scene, wall)} visible={true} width={b-a} height={d-c} left={a} bottom={c} />
-        </mesh>)}
+        {blocks.filter(([a,b,c,d]) => b > a && d > c).map(([a,b,c,d], i) => {
+          // North/south walls cover the corner ends of the east/west walls.
+          // Sink the bottom edge into the slab to avoid a rasterized hairline.
+          const capEnds = wall === 'north' || wall === 'south'
+          const left = capEnds && a === 0 ? -.1 : a
+          const right = capEnds && b === length ? length + .1 : b
+          const bottom = c === 0 ? -.002 : c
+          return <mesh key={i} position={[(left+right)/2-length/2, (bottom+d)/2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[right-left, d-bottom, 0.1]} />
+            <WallpaperMaterial pattern={scene.wallpapers?.[wall]} color={wallColor(scene, wall)} visible={true} width={right-left} height={d-bottom} left={left} bottom={bottom} />
+          </mesh>
+        })}
         {showCompass && <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>}
       </CutawayWall>
     })}

@@ -243,6 +243,11 @@ and voice explain these limits when relevant and continue with supported request
 See [design evaluation cases](docs/dogfood-evaluation.md) for the paired quality
 review; automated and simulated checks do not establish live design quality.
 
+Wall and floor finishes remain permission-gated. Direct finish requests and themed
+whole-room transformations such as “reimagine this as a blue room” grant finish
+exploration; a color preference, brightness request or furniture/layout instruction
+alone leaves the existing finishes unchanged. “Keep the walls/floor” always wins.
+
 ## Verify
 
 ```powershell
@@ -368,11 +373,13 @@ In Ask Astra, type `/ideas <brief>` or select **Three ideas** in the existing ch
 composer and send your prompt. There is no separate prompt box. With `/ideas` alone,
 the current room brief is reused. The resulting cards appear in the conversation.
 Generating three ideas runs one direction-planning response and three
-isolated designer runs, at most two candidates concurrently. This incurs additional
+isolated designer runs concurrently. This incurs additional
 Astra usage. Candidate previews are read-only, share the mounted canvas, and do
 not change the active room until Use this design. Adoption revalidates constraints
-and creates one undo step. Existing locks, lighting and unrequested architecture
-remain protected. Editing the active room invalidates the current set. Generate
+and creates one undo step. The three directions use separate catalog search strategies
+and may explore wall and floor finishes; explicit finish requests take precedence and
+the user can ask to preserve existing finishes. Existing locks, lighting fixtures and
+structural architecture remain protected. Editing the active room invalidates the current set. Generate
 a fresh set to adopt an alternative after editing. Failed candidates can be retried;
 cancellation retains completed candidates.
 

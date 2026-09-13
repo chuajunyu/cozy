@@ -131,10 +131,6 @@ function FixtureLight({
         distance={7}
         decay={2}
       />
-      <mesh>
-        <sphereGeometry args={[0.035, 12, 8]} />
-        <meshBasicMaterial color={color} toneMapped={false} />
-      </mesh>
     </group>
   )
 }
@@ -413,18 +409,18 @@ export default function Room({
         shadow-camera-far={50}
       />
           <mesh position={[0, -0.1, 0]} receiveShadow>
-            <boxGeometry args={[scene.width + 0.16, 0.2, scene.depth + 0.16]} />
+            <boxGeometry args={[scene.width + 0.2, 0.2, scene.depth + 0.2]} />
             <meshStandardMaterial color={floorColor(scene)} />
           </mesh>
-          {Array.from({ length: Math.ceil(scene.width / 0.25) }, (_, i) => (
+          {Array.from({ length: Math.max(0, Math.ceil(scene.width / 0.25) - 1) }, (_, i) => (
             <mesh
               key={i}
               receiveShadow
               rotation={[-Math.PI / 2, 0, 0]}
-              position={[-scene.width / 2 + i * 0.25, 0.001, 0]}
+              position={[-scene.width / 2 + (i + 1) * 0.25, 0.001, 0]}
             >
-              <planeGeometry args={[0.008, scene.depth]} />
-              <meshStandardMaterial color={new Color(floorColor(scene)).multiplyScalar(.8)} />
+              <planeGeometry args={[0.002, scene.depth]} />
+              <meshStandardMaterial color={new Color(floorColor(scene)).multiplyScalar(.94)} />
             </mesh>
           ))}
           <RoomShell scene={shown} catalog={catalog} top={top} showCompass={showCompass} />

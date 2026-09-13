@@ -14,8 +14,35 @@ def test_general_or_prohibited_requests_grant_nothing(text):
     assert explicit_permissions(text) == []
 
 
+@pytest.mark.parametrize('text', [
+    'I like blue. Reimagine this as a blue room.',
+    'Transform the nursery into a playful Scandinavian space.',
+    'Give the living room a warm modern makeover.',
+])
+def test_whole_room_theme_reimagination_implies_finishes(text):
+    grants = explicit_permissions(text)
+    finish = next(grant for grant in grants if grant['operation'] == 'room.finish')
+    assert finish['wallPaint'] and finish['floorPaint'] and set(finish['walls']) == {'north', 'east', 'south', 'west'}
+
+
+@pytest.mark.parametrize('text', [
+    'I like blue', 'Use a blue theme', 'Move the cot and chair',
+    'Reimagine the room by only moving the furniture',
+])
+def test_preferences_and_layout_requests_do_not_imply_finishes(text):
+    assert not any(grant['operation'] == 'room.finish' for grant in explicit_permissions(text))
+
+
+def test_reimagination_respects_preserved_surfaces():
+    grant = next(grant for grant in explicit_permissions('Reimagine this as a blue room but keep the walls') if grant['operation'] == 'room.finish')
+    assert not grant['wallPaint'] and grant['floorPaint']
+    assert not any(grant['operation'] == 'room.finish' for grant in explicit_permissions('Reimagine this as a blue room but keep the walls and floor'))
+
+
 @pytest.mark.parametrize('text', ['Give me a room with blue walls', 'Paint the walls blue',
-                                 'I would like blue walls', 'Can you make the walls blue'])
+                                 'I would like blue walls', "I'd like blue walls",
+                                 'Can you make the walls blue', 'Can we have blue walls',
+                                 'Update the walls to blue', 'Use blue walls'])
 def test_explicit_walls_in_brief(text):
     grants = explicit_permissions(text)
     assert len(grants) == 1 and grants[0]['wallPaint']

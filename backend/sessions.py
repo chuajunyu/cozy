@@ -46,7 +46,7 @@ class Session:
     room_permissions: dict = field(default_factory=dict)
     variants: dict | None = None
     variant_tasks: dict = field(default_factory=dict)
-    variant_semaphore: asyncio.Semaphore = field(default_factory=lambda: asyncio.Semaphore(2))
+    variant_semaphore: asyncio.Semaphore = field(default_factory=lambda: asyncio.Semaphore(3))
     variant_source: Any = None
     variant_grants: list = field(default_factory=list)
     design_instructions: str = ''

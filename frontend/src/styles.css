@@ -358,10 +358,23 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
 .variant-cards { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 0; }
 .variant-card { flex: 0 0 230px; scroll-snap-align: start; border: 1px solid #d8dccf; border-radius: 12px; padding: 10px; font-size: 12px; }
 .variant-card.selected { border-color: #53634a; background: #edf0e5; }
+.variant-card.is-working { border-color: #c5cfb8; background: linear-gradient(145deg, #fbfbf5, #f1f4e9); }
 .variant-card p { margin: 8px 0; }
 .variant-preview { width: 100%; padding: 0; border: 0; background: transparent; text-align: left; }
 .variant-preview img { width: 100%; height: 140px; object-fit: contain; background: #e7e7de; border-radius: 8px; }
 .variant-placeholder { height: 100px; display: grid; place-content: center; color: #75866a; background: #eeefe8; border-radius: 8px; }
+.variant-loading { position: relative; overflow: hidden; background: linear-gradient(110deg, #e8ecdf 20%, #f7f8f1 42%, #e8ecdf 64%); background-size: 250% 100%; animation: variant-shimmer 2.8s ease-in-out infinite; }
+.variant-progress { display: grid; justify-items: center; gap: 9px; min-width: 175px; color: #526447; font-weight: 650; }
+.variant-progress > span:last-child { animation: variant-copy-in .45s ease both; }
+.variant-orbit { position: relative; display: block; width: 34px; height: 20px; }
+.variant-orbit i { position: absolute; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: #71855e; animation: variant-dot 1.15s ease-in-out infinite; }
+.variant-orbit i:nth-child(1) { left: 2px; }
+.variant-orbit i:nth-child(2) { left: 14px; animation-delay: .14s; }
+.variant-orbit i:nth-child(3) { left: 26px; animation-delay: .28s; }
+@keyframes variant-dot { 0%, 65%, 100% { transform: translateY(0); opacity: .42; } 32% { transform: translateY(-5px); opacity: 1; } }
+@keyframes variant-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+@keyframes variant-copy-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .variant-loading, .variant-orbit i, .variant-progress > span:last-child { animation: none; } }
 .room-preview-badge { position: absolute; top: 82px; right: 24px; max-width: min(280px, calc(100% - 120px)); padding: 12px 14px; display: grid; gap: 5px; background: #fffefaee; border: 1px solid #b6c3aa; border-radius: 12px; box-shadow: 0 4px 18px #35402912; color: #43563a; }
 .room-preview-label { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 .room-preview-label svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; }

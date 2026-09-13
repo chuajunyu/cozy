@@ -9,7 +9,24 @@ from backend.lighting import preset_settings, PROFILES
 from backend.sessions import Session
 from backend.studio import StudioCommand, handle_studio
 from backend.tests.test_studio import add, edit
-from backend.variants import VariantCommand, handle_variants, recover_variants, protected
+from backend.variants import VariantCommand, handle_variants, recover_variants, protected, variant_permissions
+
+
+def test_planner_accepts_descriptive_palettes_and_fenced_json():
+    from backend.variants import parse_directions
+    from pydantic import ValidationError
+    entries = [{'title': title, 'rationale': 'A distinct composition.', 'palette': 'Cream, warm oak and sage.'}
+               for title in ['Calm', 'Contrast', 'Playful']]
+    for raw in [json.dumps({'directions': entries}), '```json\n' + json.dumps({'directions': entries}) + '\n```']:
+        parsed = parse_directions(raw)
+        assert parsed.directions[0].palette == ['Cream, warm oak and sage.']
+    entries[0]['palette'] = ['sage', 'oak']
+    assert parse_directions(json.dumps({'directions': entries})).directions[0].palette == ['sage', 'oak']
+    with pytest.raises(ValidationError):
+        parse_directions(json.dumps({'directions': entries[:2]}))
+    entries[0]['palette'] = {'invalid': 'shape'}
+    with pytest.raises(ValidationError):
+        parse_directions(json.dumps({'directions': entries}))
 
 
 def test_lighting_atomic_undo_duplicates_and_profiles():
@@ -126,7 +143,7 @@ def test_variants_isolation_concurrency_adoption_and_recovery():
         await handle_variants(s, VariantCommand(type='variants.generate', requestId='ideas', baseRevision=s.state.revision, text='A calm workspace'), VariantDesigner)
         await finish(s)
         assert s.state == before
-        assert VariantDesigner.maximum == 2
+        assert VariantDesigner.maximum == 3
         assert VariantDesigner.sources == [before.model_dump()] * 3
         data = s.variants
         assert all(c['status'] == 'ready' for c in data['candidates'])
@@ -186,3 +203,13 @@ def test_variant_protection_and_cancel_fence():
         assert all(c['status'] == 'cancelled' for c in s.variants['candidates'])
         assert s.state == source
     asyncio.run(run())
+
+
+def test_variant_previews_can_explore_finishes_without_relaxing_chat_permissions():
+    exploratory = variant_permissions('Create three nursery ideas')
+    finish = next(grant for grant in exploratory if grant['operation'] == 'room.finish')
+    assert finish['wallPaint'] and finish['floorPaint'] and finish['wallLimit'] == 4
+    assert not any(grant['operation'] == 'room.finish' for grant in variant_permissions('Create three nursery ideas but keep the walls and floor'))
+    scoped = variant_permissions('Create three nursery ideas with a blue north wall')
+    finish = next(grant for grant in scoped if grant['operation'] == 'room.finish')
+    assert finish['walls'] == ['north'] and finish['wallPaint'] and not finish['floorPaint']

@@ -40,7 +40,7 @@ export type Command = {
     | 'variants.generate' | 'variants.cancel' | 'variants.retry' | 'variants.adopt' | 'lighting.apply' | 'room.update' | 'fixture.update' | 'room.clear' | 'room.undo' | 'catalog.import' | 'session.restore' | 'session.restore.preview' | 'item.replace'
   setId?: string; candidateId?: string
   sunHour?: number; fixtures?: Record<string, NonNullable<Slot['light']>>
-  text?: string; action?: 'comment' | 'like' | 'reroll' | 'reroll_unlocked'
+  text?: string; action?: 'comment' | 'like' | 'unlike' | 'reroll' | 'reroll_unlocked'
   slotIds?: string[]; expectedProducts?: Record<string, string>; locked?: boolean; budget?: number | null
   baseRevision?: number; slotId?: string; catalogId?: string; expectedProduct?: string
   x?: number; z?: number; rotation?: number; elevation?: number
@@ -55,4 +55,4 @@ export type Backup = { version: 2 | 3 | 4; variants?: VariantSet | null; state: 
 export type RestorePreview = { previewId: string; state: Backup['state'] | null; adjustments: { text: string; slotId?: string; locked?: boolean }[]; blockers: string[] }
 
 export type VariantCandidate = { id: string; status: 'queued' | 'generating' | 'ready' | 'failed' | 'cancelled' | 'interrupted'; direction: { title: string; rationale: string; palette: string[] } | null; state?: DesignState; products?: Product[]; error?: string }
-export type VariantSet = { id: string; sourceRevision: number; source: Backup['state']; request: string; outdated: boolean; candidates: VariantCandidate[] }
+export type VariantSet = { id: string; requestMessageId?: string; sourceRevision: number; source: Backup['state']; request: string; outdated: boolean; candidates: VariantCandidate[] }

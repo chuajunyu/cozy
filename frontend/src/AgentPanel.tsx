@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
+import { ideaMessageId } from './ideaMessage'
 import ReactMarkdown from 'react-markdown'
 import type { useConnection } from './useConnection'
 import ObjectPill from './ObjectPill'
@@ -13,6 +14,7 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
   replacementTarget: string | null; onReplacementOpened: () => void
 }) {
   const { state, catalog, messages, status, agentStatus, activity, deliveries, send, reconnect } = connection
+  const ideasAnchor = ideaMessageId(connection.variants, messages)
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     try { return localStorage.getItem('cozy.voice.enabled') === 'true' } catch { return false }
   })
@@ -59,15 +61,19 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
     </div>
     {status !== 'connected' && <button onClick={reconnect}>Reconnect</button>}
     <div className="agent-messages" role="log" aria-label="Design conversation" aria-live="polite">
-      {!messages.length && <p className="muted">Describe your room. Astra can build a concept around the pieces you add.</p>}
+      {!messages.length && !connection.variants && <p className="muted">Describe your room. Astra can build a concept around the pieces you add.</p>}
+      {connection.variants && !ideasAnchor && <div className="idea-exchange">
+        <article className="chat-user"><small>YOU</small><ReactMarkdown>{`/ideas ${connection.variants.request}`}</ReactMarkdown></article>
+        {ideas}
+      </div>}
       {messages.map(raw => {
         const m = displayMessage(raw, state, catalog)
         if (m.kind === 'activity') return <ChatActivity key={m.id} message={m} state={state} deliveries={deliveries} onSelect={onSelect} working={agentStatus === 'working'} />
-        return <article key={m.id} className={`chat-${m.role}`}><small>{m.role === 'user' ? 'YOU' : m.role === 'assistant' ? 'ASTRA' : 'STUDIO'}</small>
+        return <Fragment key={m.id}><article className={`chat-${m.role}`}><small>{m.role === 'user' ? 'YOU' : m.role === 'assistant' ? 'ASTRA' : 'STUDIO'}</small>
           {!!m.references?.length && <div className="object-references">{m.references.map(reference => <ObjectPill key={reference.slotId} reference={reference} available={!!state?.slots[reference.slotId]} onSelect={() => onSelect(reference.slotId)} />)}</div>}
           <ReactMarkdown>{m.text}</ReactMarkdown>{m.role === 'user' && deliveries[m.id] && <span className="delivery-status">{deliveryLabel(deliveries[m.id])}</span>}</article>
+          {m.id === ideasAnchor && ideas}</Fragment>
       })}
-      {ideas}
     </div>
     <div ref={composer} className="chat-input-area">
       <div className="chat-input-mode">

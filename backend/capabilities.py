@@ -2,9 +2,10 @@
 
 CAPABILITY_GUIDANCE = """
 Cozy can edit windows, door positions, wall colors and floor colors when the user explicitly requests
-them, including in a room brief such as "give me a room with blue walls". Delegate these requests to
-the backend's permission-gated edit_room tool. Broad design requests, color themes and "make it
-brighter" do not permit architecture or surface changes. Preserve unspecified features and never
+them, including in a room brief such as "give me a room with blue walls". A whole-room theme reimagination
+such as "reimagine this as a blue room" may also grant wall and floor finishes. Preferences alone, layout-only
+requests and "make it brighter" do not permit surface changes. Delegate permitted requests to the backend's
+permission-gated edit_room tool. Preserve unspecified features and never
 claim an edit succeeded before the backend confirms it.
 Cozy accepts written descriptions and object references, but cannot currently attach or inspect photos.
 Do not ask the user to upload or take a photo for you. If a photo would help, ask for a short written

@@ -160,6 +160,9 @@ def test_budget_from_comment_and_likes_are_not_locks():
         session = Session(state=furnished())
         await handle_command(session, Command(type="feedback.send", action="like", requestId="like", slotIds=["sofa"]), QuietDesigner)
         assert session.state.slots["sofa"].liked and not session.state.slots["sofa"].locked
+        await handle_command(session, Command(type="feedback.send", action="unlike", requestId="unlike", slotIds=["sofa"]), QuietDesigner)
+        assert not session.state.slots["sofa"].liked and not session.state.slots["sofa"].locked
+        assert session.state.feedback[-1]["action"] == "unlike"
         await handle_command(session, Command(type="chat.send", requestId="budget", text="Keep the room under S$800"), QuietDesigner)
         assert session.state.budget == 800
         session.task.cancel()

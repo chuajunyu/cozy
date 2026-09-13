@@ -18,7 +18,7 @@ class Command(Model):
     baseRevision: int | None = None
     requestId: str = Field(min_length=1, max_length=100)
     text: str = Field(default="", max_length=6000)
-    action: Literal["comment", "like", "reroll", "reroll_unlocked"] = "comment"
+    action: Literal["comment", "like", "unlike", "reroll", "reroll_unlocked"] = "comment"
     slotIds: list[str] = Field(default_factory=list, max_length=100)
     expectedProducts: dict[str, str] = Field(default_factory=dict)
     locked: bool = True
@@ -51,7 +51,7 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
             session.publish(session.requests[command.requestId])
             return
         if command.baseRevision is not None:
-            conversational = command.type == 'chat.send' or (command.type == 'feedback.send' and command.action in {'comment', 'like'})
+            conversational = command.type == 'chat.send' or (command.type == 'feedback.send' and command.action in {'comment', 'like', 'unlike'})
             unchanged_targets = bool(command.slotIds) and all(can_rebase(session.revisions.get(command.baseRevision), session.state, id) for id in command.slotIds)
             require(command.baseRevision == session.state.revision or conversational or unchanged_targets,
                     "stale_revision", "This piece changed while you were editing. Review it and try again.")
@@ -91,6 +91,11 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
                 for id in slots:
                     state.slots[id].liked = True
                 text = "I like these choices (soft preference, not a lock): " + ", ".join(slots)
+            elif command.action == "unlike":
+                require(bool(slots), "missing_target", "Select a liked piece.")
+                for id in slots:
+                    state.slots[id].liked = False
+                text = "Remove my soft preference for these choices: " + ", ".join(slots)
             elif command.action in {"reroll", "reroll_unlocked"}:
                 require(all(not state.slots[id].door for id in slots), 'architecture_permission', 'Doors are room elements; request their edits explicitly in chat.')
                 require(bool(slots), "missing_target", "Select an unlocked recommendation to replace.")
@@ -124,6 +129,8 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
             display = 'Keep these pieces in place.' if command.locked else 'Allow changes to these pieces.'
         elif command.type == 'feedback.send' and command.action == 'like':
             display = 'I like these choices.'
+        elif command.type == 'feedback.send' and command.action == 'unlike':
+            display = 'I removed my preference for these choices.'
         elif command.type == 'feedback.send' and command.action in {'reroll', 'reroll_unlocked'}:
             display = 'Find alternatives.' + (' ' + command.text if command.text else '')
         session.message("user", display, command.requestId, references)
@@ -134,7 +141,7 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
             del session.requests[next(iter(session.requests))]
         session.publish(ack)
         # Quiet likes/locks after completion need no API call; future prompts include this state.
-        should_run = command.type == "chat.send" or (command.type == "feedback.send" and command.action != "like") or (session.task is not None and not session.task.done() and session.designer.active)
+        should_run = command.type == "chat.send" or (command.type == "feedback.send" and command.action not in {"like", "unlike"}) or (session.task is not None and not session.task.done() and session.designer.active)
         if should_run:
             if session.task is None or session.task.done():
                 session.designer = designer_factory(session)

@@ -4,11 +4,30 @@ import re
 
 WALLS = ['north', 'east', 'south', 'west']
 DIRECTION = r'(?:north|east|south|west)'
-VERBS = r'apply|use|switch|add|create|install|place|put|move|relocate|reposition|resize|widen|narrow|remove|delete|open|close|set|change|paint|repaint|recolor|recolour|color|colour|make|give|design|build|decorate|furnish|want'
-PREFIX = r'(?:(?:please|can you|could you|would you|will you|i want you to)\s+)*'
+VERBS = r'apply|use|switch|add|create|install|place|put|move|relocate|reposition|resize|widen|narrow|remove|delete|open|close|set|change|update|paint|repaint|recolor|recolour|color|colour|make|give|have|design|build|decorate|furnish|want'
+PREFIX = r"(?:(?:please|can you|could you|would you|will you|can we|could we|let's|i want you to)\s+)*"
 NEGATIVE = r"\b(?:not|never|without|avoid|don't|dont|do not|shouldn't|cannot|can't|keep|preserve|leave)\b"
 COLOR = r'(?:#[0-9a-f]{6}|blue|white|black|red|green|yellow|pink|purple|orange|brown|gray|grey|beige|cream|sage|sand|terracotta|charcoal|navy|teal|oak|walnut|slate|stone)'
 SURFACE = r'(?<![-\w])(?:walls?|floors?)(?![-\w]|\s+(?:art|lamps?|lights?|shelves|shelf|decor|mounted|cushions?|rugs?))'
+REIMAGINE = r'\b(?:reimagine|redesign|restyle|transform|makeover|make\s+over)\b'
+ROOM_TARGET = r'\b(?:room|space|bedroom|nursery|living\s+room|workspace|home\s+office|dining\s+room)\b'
+THEME_SIGNAL = rf'(?:{COLOR}|\b(?:theme|style|palette|aesthetic|vibe|look|japandi|scandinavian|coastal|industrial|bohemian|boho|minimalist|mid-century|modern|traditional|maximalist|playful|calm|warm|bold|neutral|colou?rful)\b)'
+
+
+def implied_finish_permission(text: str) -> dict | None:
+    """A themed whole-room reimagination implies finishes; layout work does not."""
+    normalized = text.casefold().replace('’', "'")
+    if not (re.search(REIMAGINE, normalized) and re.search(ROOM_TARGET, normalized) and re.search(THEME_SIGNAL, normalized)):
+        return None
+    if re.search(r'\bonly\b[^.!?\n]{0,50}\b(?:move|moving|rearrange|rearranging|layout|furniture)\b', normalized):
+        return None
+    preserve = r"\b(?:keep|preserve|leave|don't|dont|do not|without)\b[^.!?\n]{0,80}\b"
+    wall_paint = not re.search(preserve + r'walls?\b', normalized)
+    floor_paint = not re.search(preserve + r'floors?\b', normalized)
+    if not wall_paint and not floor_paint:
+        return None
+    return {'operation': 'room.finish', 'walls': WALLS, 'wallLimit': 4,
+            'wallPaint': wall_paint, 'floorPaint': floor_paint, 'dimensions': []}
 
 
 def explicit_permissions(text: str, slot_ids: list[str] | None = None) -> list[dict]:
@@ -21,7 +40,7 @@ def explicit_permissions(text: str, slot_ids: list[str] | None = None) -> list[d
         clause = clause.strip()
         if not clause or re.search(NEGATIVE, clause):
             continue
-        clause = re.sub(r'^i (?:would like|want)\b', 'want', clause)
+        clause = re.sub(r"^i(?: would like|'d like| want)\b", 'want', clause)
         match = re.match(rf'{PREFIX}({VERBS})\b(.*)', clause)
         if not match:
             continue
@@ -32,8 +51,8 @@ def explicit_permissions(text: str, slot_ids: list[str] | None = None) -> list[d
             continue
         surfaces = list(re.finditer(SURFACE, rest))
         paint_verb = verb in {'paint', 'repaint', 'recolor', 'recolour', 'color', 'colour'}
-        desired = verb in {'give', 'design', 'build', 'create', 'decorate', 'furnish', 'want', 'make'}
-        finish_actions = verb in {'set', 'change', 'make'}
+        desired = verb in {'use', 'give', 'have', 'design', 'build', 'create', 'decorate', 'furnish', 'want', 'make'}
+        finish_actions = verb in {'set', 'change', 'update', 'make'}
         finish_targets = []
         for surface in surfaces:
             # Explicit paint requests need no predetermined color. Desired-room
@@ -87,4 +106,8 @@ def explicit_permissions(text: str, slot_ids: list[str] | None = None) -> list[d
             permissions.extend({**grant, 'walls': [wall]} for wall in dict.fromkeys(walls))
         else:
             permissions.append(grant)
+    if not any(grant['operation'] == 'room.finish' for grant in permissions):
+        implied = implied_finish_permission(text)
+        if implied:
+            permissions.append(implied)
     return permissions
