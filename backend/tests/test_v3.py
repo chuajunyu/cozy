@@ -198,3 +198,21 @@ def test_explicit_window_request_is_wall_scoped_and_dimensions_are_validated():
     with pytest.raises(DesignError):
         edit_room(s,dict(requestId='h',baseRevision=1,operation='room.resize',height=2))
     assert s.state.room.height == 2.6 and s.state.revision == 1
+
+
+def test_explicit_reset_clears_locked_pieces_and_undo_restores_them():
+    async def run():
+        s = Session()
+        await add(s)
+        s.state.slots['desk'].locked = True
+        before = s.state.model_copy(deep=True)
+        with pytest.raises(DesignError, match='Unlock'):
+            await edit(s, 'room.clear')
+        assert s.state == before
+        await edit(s, 'room.clear', allowLocked=['desk'])
+        assert not s.state.slots
+        assert s.state.room == before.room and s.state.budget == before.budget
+        await edit(s, 'room.undo')
+        assert s.state.slots['desk'].locked
+        assert s.state.slots['desk'].catalogId == before.slots['desk'].catalogId
+    asyncio.run(run())

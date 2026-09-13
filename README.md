@@ -82,7 +82,7 @@ Run one FastAPI worker because sessions are in memory.
   Select a surface before adding a table lamp to place it on top. Fixture settings
   live with the selected lamp; illumination is illustrative, not measured photometry.
 - Click the cost summary for budget editing and the room's piece list. The studio
-  menu contains Start fresh and connection details. Escape closes the panel before
+  menu contains Reset room and connection details. Escape closes the panel before
   deselecting a piece. Disconnection, restoration and validation notices remain visible.
 - Describe a room to Astra. It streams explanations and places coordinated groups.
   Select an item or use a group's Comment button to scope feedback; Whole room
@@ -93,7 +93,8 @@ Run one FastAPI worker because sessions are in memory.
   settings, locks, placement and fixture changes. The shared history keeps 30
   steps. Undo pauses the agent and fences late tool results before restoring;
   send a new prompt to resume. Chat, likes and catalog imports are not undo steps.
-  Start fresh clears an unlocked room and is itself undoable.
+  Reset room explicitly removes all pieces, including locked pieces, and is undoable.
+  It preserves room dimensions and budget.
 
 The floor is at y=0 and x/z coordinates are centered on the room. Product dimensions
 are named width/height/depth in backend meters; generated JSON uses [width, height,
@@ -111,10 +112,14 @@ after an hour; a backend restart resets all sessions. This is a local prototype,
 not an authenticated multi-user persistence service.
 
 Accepted snapshots and approved custom geometry are backed up to this browser's
-`localStorage` under `cozy.studio.v3`. After a reset, the UI offers Restore saved
-room, Download backup, or Archive and start fresh. Restore validates the entire
-backup on the server and only applies to an empty new session. Missing products,
+`localStorage` under `cozy.studio.v3`. New empty sessions automatically restore the
+saved room through a server-owned preview and apply step. Routine session expiry
+and backend restarts do not produce banners. Reconnect retries automatically with
+backoff from 1 to 10 seconds; the last rendered room remains visible while recovering.
+A live nonempty server room always wins over the device backup. Missing products,
 assets or invalid layouts reject the whole restore; the original backup remains.
+Only failed recovery shows a short notice, with retry/download options in the studio
+menu. Reset room archives a failed save and replaces it only after server acceptance.
 Archiving preserves the old save separately before allowing new edits.
 
 Legacy `cozy-studio-v1` saves migrate corner coordinates to centered coordinates,
@@ -141,6 +146,7 @@ storage is optional; the UI reports write failures while preserving backend stat
   Chat events include `chat.message`, `chat.delta`, `agent.status`, `feedback.ack`,
   `design.group` and `design.completed`. Receipt, upstream submission, queued
   steering and applied feedback are distinguished. Errors leave the socket usable.
+- `room.clear` accepts `allowLocked` IDs for an explicit reset; ordinary clears still protect locks.
 - Frames are bounded: 32 KB ordinary commands, 510 KB imports, 2 MB restores.
   The original echo command remains supported for transport checks.
 
@@ -206,10 +212,28 @@ Permissions expire on completion, cancellation, undo, or a later request.
 
 Restore first produces a server-owned preview of adjustments and blockers.
 Applying requires its `previewId`, the current revision, and an empty session.
-Required changes to locked objects must be explicitly selected in the preview;
+Automatic recovery includes the required locked adjustment IDs in the apply command;
 locks survive restoration. Version 2 and legacy saves remain untouched. Version 3
 backups include windows, solar time and supports, but never workers, textures,
 permissions or undo history. Legacy brightness is accepted but ignored by rendering.
 
 Daylight is computed in a browser worker from authoritative room dimensions and
 openings. Worker errors leave editing available and expose a Retry daylight button.
+
+## Demo notices
+
+Normal recovery is automatic. The canvas can briefly show Opening your room,
+Reconnecting, Saving, daylight progress, or Astra activity. No session-expired or
+saved-room confirmation banner appears.
+
+Actionable notices remain for invalid placements, locked/stale edits, budget or
+item/fixture limits, unavailable Astra, failed recovery, and failed device saving.
+Technical connection/recovery details are under Studio menu > Connection & collection.
+Replacement uses an explicit dialog; mattress-fit and model-loading information
+appear with the affected piece. Reset room is explicit and undoable.
+
+The backend needs outbound HTTPS/WSS access to OpenAI in addition to the local
+frontend/backend ports. A sandboxed backend may accept browser connections while
+its Astra connection fails with ConnectionRefusedError. Restart it in a process
+with outbound network access; changing local ports or rotating keys does not fix
+that restriction.

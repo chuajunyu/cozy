@@ -74,7 +74,8 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             if command.type == "room.undo":
                 require(bool(session.history), "empty_history", "There is no room change to undo.")
             if command.type == "room.clear":
-                require(not any(s.locked for s in session.state.slots.values()), "locked", "Unlock pieces before clearing the room.")
+                locked = {s.id for s in session.state.slots.values() if s.locked}
+                require(locked <= set(command.allowLocked), "locked", "Unlock pieces before clearing the room.")
             if command.type == "session.restore":
                 require(session.state.revision == 0 and not session.state.slots, "restore_conflict", "A live room cannot be replaced by a backup.")
                 require(command.previewId is not None, 'missing_preview', 'Preview the backup before restoring it.')

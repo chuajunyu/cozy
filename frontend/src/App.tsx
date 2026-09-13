@@ -124,7 +124,6 @@ export default function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [panel, selected])
-  const [allowLocked, setAllowLocked] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [source, setSource] = useState('IKEA')
@@ -137,7 +136,7 @@ export default function App() {
   const [top, setTop] = useState(false)
   const [notice, setNotice] = useState('')
   const connection = useConnection()
-  const { state, catalog: wireCatalog, status, send, reconnect, error, pending, backup, restore, dismissBackup } = connection
+  const { state, catalog: wireCatalog, status, send, reconnect, error, pending, backup, restore, recoveryError, diagnostic, resetRoom } = connection
   const catalog = useMemo(() => wireCatalog.map(toStudioProduct), [wireCatalog])
   useEffect(() => { setNotice('') }, [state?.revision])
   const scene: Scene = useMemo(() => ({
@@ -150,7 +149,7 @@ export default function App() {
   }), [state])
   const reviewCount = connection.reviewCount + wireCatalog.filter(p => !p.readyForPreview).length
   function edit(command: Command) {
-    if (backup) { setNotice('Restore or archive your saved room first.'); return false }
+    if (backup) return false
     return send({ ...command, baseRevision: command.baseRevision ?? state?.revision })
   }
   const item = scene.items.find((i) => i.id === selected)
@@ -215,7 +214,7 @@ export default function App() {
     }
   }
   function add(p: Product) {
-    if (status !== 'connected' || pending || backup) { setNotice('Connect and finish pending changes before adding furniture.'); return }
+    if (status !== 'connected' || pending || backup) return
     if (p.door) {
       const id = crypto.randomUUID()
       const offsets = [.5, .25, .75, 0, 1, ...Array.from({ length: 19 }, (_, i) => (i + 1) / 20)]
@@ -355,16 +354,9 @@ export default function App() {
         </div>
       </header>
       <div className="status-stack">
-      {backup && <div className="restore-banner" role="status"><strong>A saved room is available.</strong><span>Restore it through the server, or archive it and start fresh.</span><button disabled={pending || status !== 'connected'} onClick={restore}>Restore saved room</button><button onClick={dismissBackup}>Archive and start fresh</button><button onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([backup], { type: 'application/json' })); a.download = 'cozy-room-backup.json'; a.click(); URL.revokeObjectURL(a.href) }}>Download backup</button></div>}
-      {connection.restorePreview && <section className="restore-banner" aria-label="Restore preview">
-        <strong>Review saved-room adjustments</strong>
-        {connection.restorePreview.adjustments.map((a, i) => <div key={i}>{a.text}{a.locked && a.slotId && <label><input type="checkbox" checked={allowLocked.includes(a.slotId)} onChange={e => setAllowLocked(old => e.target.checked ? [...old, a.slotId!] : old.filter(id => id !== a.slotId))} /> Allow this locked item to settle; keep its lock afterward</label>}</div>)}
-        {connection.restorePreview.blockers.map(b => <p role="alert" key={b}>{b}</p>)}
-        <button disabled={pending || !!connection.restorePreview.blockers.length || connection.restorePreview.adjustments.some(a => a.locked && !allowLocked.includes(a.slotId!))} onClick={() => connection.applyRestore(allowLocked)}>Apply restored room</button>
-      </section>}
+        {recoveryError && <div className="notice" role="status"><span>{recoveryError}</span><button onClick={() => openPanel('menu')}>Recovery options</button></div>}
+        {(notice || error) && <div className="notice" role="status"><span>{error || notice}</span><button onClick={() => { setNotice(''); connection.dismissError() }} aria-label="Dismiss notification">×</button></div>}
 
-        {(notice || error) && <div className="notice" role="status"><span>{error || notice}</span>{!error && <button onClick={() => setNotice('')} aria-label="Dismiss notification">×</button>}</div>}
-        {status !== 'connected' && <div className="connection-banner" role="status"><span>Room is read-only · {status === 'connecting' ? 'Connecting…' : 'Disconnected'}</span><button onClick={reconnect}>Reconnect</button></div>}
         {state?.validationIssues.map(issue => <p role="alert" className="validation-banner" key={issue}>{issue}</p>)}
       </div>
       <main className="workspace">
@@ -401,7 +393,7 @@ export default function App() {
               <button aria-label="Deselect piece" onClick={() => setSelected(null)}>×</button>
             </div>
           </div>}
-          <div className="canvas-bottomline"><span className="canvas-instructions">Drag a piece to move · Drag space to orbit · Scroll to zoom</span><span role="status">{connection.agentStatus === 'working' ? connection.activity : pending ? 'Saving…' : status === 'connected' ? 'All changes saved locally' : ''}</span></div>
+          <div className="canvas-bottomline"><span className="canvas-instructions">Drag a piece to move · Drag space to orbit · Scroll to zoom</span><span role="status">{status !== 'connected' ? 'Reconnecting…' : backup && !recoveryError ? 'Opening your room…' : connection.agentStatus === 'working' ? connection.activity : pending ? 'Saving…' : ''}</span></div>
         </section>
         <PanelHost panel={panel} expanded={expanded} onExpand={() => setExpanded(v => !v)} onClose={closePanel}>
           <div hidden={panel !== 'catalog'}>        <div className="catalog">
@@ -812,8 +804,11 @@ export default function App() {
           </div>
           <div hidden={panel !== 'replace'}><fieldset disabled={blocked}>{alternativesPanel || <p className="panel-empty">Select a piece to find alternatives.</p>}{item && !product?.door && <button className="primary wide" disabled={blocked || item.locked} onClick={askReplacement}>Ask Astra for another option</button>}</fieldset></div>
           <div hidden={panel !== 'menu'} className="studio-menu">
-            <button disabled={blocked || !scene.items.length} onClick={() => { if (edit({ type: 'room.clear' })) { setSelected(null); closePanel(); setNotice('Room cleared. Undo restores the previous room.') } }}>Start fresh</button>
-            <details><summary>Connection & collection</summary><p>{status} · {completeIkea.length} IKEA pieces ready · {reviewCount} awaiting review</p><button onClick={reconnect}>Refresh connection and collection</button></details>
+            <button className="danger" disabled={status !== 'connected' || pending || (!scene.items.length && !backup)} onClick={() => { if (resetRoom()) { setSelected(null); closePanel(); setNotice('Room reset. Undo brings your pieces back.') } }}>Reset room</button>
+            <p className="muted">Remove all pieces, including locked ones. Room dimensions and budget stay the same. Undo restores the previous arrangement.</p>
+            {recoveryError && backup && <section className="recovery-options"><h3>Saved room</h3><p className="muted">Your original save is still on this device.</p><button disabled={pending || status !== 'connected'} onClick={restore}>Try opening again</button><button onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([backup], { type: 'application/json' })); a.download = 'cozy-room-backup.json'; a.click(); URL.revokeObjectURL(a.href) }}>Download saved room</button></section>}
+
+            <details><summary>Connection & collection</summary>{diagnostic && <p>{diagnostic}</p>}<p>{status} · {completeIkea.length} IKEA pieces ready · {reviewCount} awaiting review</p><button onClick={reconnect}>Refresh connection and collection</button></details>
             <p className="muted">Accepted changes are backed up on this device. Undo pauses the designer.</p>
           </div>
         </PanelHost>

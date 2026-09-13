@@ -41,7 +41,7 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, r
       <textarea id="design-message" value={text} onChange={e => setText(e.target.value)} maxLength={6000} rows={3} placeholder="A calm bedroom with a workspace…" />
       <button className="primary" disabled={blocked || !text.trim()}>{agentStatus === 'working' ? 'Send feedback' : 'Send to Astra'}</button>
     </form>
-    <p className="feedback-stage" role="status">{feedbackStage && `Update ${feedbackStage}`}</p>
+    <p className="feedback-stage" role="status">{feedbackStage && !['applied', 'incorporated'].includes(feedbackStage) ? `Update ${feedbackStage}` : ''}</p>
 
     <details className="design-concept"><summary>Design concept & pieces</summary>
     {state?.concept.summary && <div className="concept-summary"><h3>{state.concept.title}</h3><p>{state.concept.summary}</p><small>{[...state.concept.palette, ...state.concept.materials].join(' · ')}</small></div>}
