@@ -258,12 +258,6 @@ commands still use one in-flight write at a time. Same-object conflicts require
 retrying against the current object; Lock remains the explicit way to preserve
 an exact product and pose across future design iterations. Undo and Reset pause
 Astra as before.
-## Wall colors
-
-**Make it yours** paints each compass wall or all walls using presets or a custom
-hex color. Paint affects reflected daylight. `room.wallColors` is validated by the
-shared backend, saved in backups and included in undo; older rooms use defaults.
-
 ## Expanded IKEA Singapore collection
 
 448 product records cover study, living, dining, kitchen trolleys/islands, storage
@@ -283,3 +277,13 @@ these products require: `slot.wallMount = {wall, offset, height}` uses centre
 height in meters, with server-derived placement, locking, undo and saved anchors.
 Catalog `modelRotation` applies quarter turns before model fitting. Fixture output
 remains illustrative; wall décor lacking reviewed mounting stays out of placement.
+
+## Room surfaces
+
+Open **Room setup → Surfaces** to color all walls, one compass wall, or the floor.
+Presets apply immediately. Custom color and Restore default are inside the
+optional Custom color disclosure and affect only the selected surface.
+Colors affect the rendered material and reflected daylight, survive device
+backup and server restoration, and support Undo. Older saves use natural oak
+for the floor. Wall lamps live in Add furniture; select one and open More for
+wall, position and height controls. Other furniture keeps its normal drag controls.

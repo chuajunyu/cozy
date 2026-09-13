@@ -1,3 +1,4 @@
+import { floorColor, defaultFloorColor, validPaintColor } from './roomFinishes.ts'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { initialCatalog, parseProduct } from './catalog.ts'
@@ -98,4 +99,26 @@ test('imported wall lights require consistent placement and cannot support furni
   assert.deepEqual(parseProduct(lamp), lamp)
   for (const change of [{ placement: { mode: 'floor' } }, { placement: { mode: 'wall', canSupport: true } }, { lighting: { ...lamp.lighting, mount: 'floor' } }])
     assert.throws(() => parseProduct({ ...lamp, ...change }))
+})
+
+
+test('floor finish survives settling and uses safe defaults for old rooms', () => {
+  assert.equal(floorColor(scene), defaultFloorColor)
+  const painted = { ...scene, floorColor: '#79553e', wallColors: { north: '#be7967' } }
+  const restored = settleScene(JSON.parse(JSON.stringify(painted)), scene, [lamp])
+  assert.equal(restored.error, undefined)
+  assert.equal(floorColor(restored.scene), '#79553e')
+  assert.equal(restored.scene.wallColors?.north, '#be7967')
+  for (const color of ['red', '#fff', null, 42]) assert.equal(validPaintColor(color), false)
+  assert.ok(settleScene({ ...scene, floorColor: 'red' }, scene, [lamp]).error)
+  const walnut = paintReflectance(floorColor(painted))
+  assert.ok(walnut[0] > walnut[1] && walnut[1] > walnut[2])
+})
+
+
+test('server null wall anchors do not block ordinary furniture', () => {
+  const ordinary: Product = { ...lamp, id: 'ordinary', lighting: undefined, placement: { mode: 'floor' } }
+  const item = { id: 'ordinary', productId: ordinary.id, x: 0, z: 0, rotation: 0, locked: false, wallMount: null }
+  const next = { ...scene, items: [item as unknown as Item] }
+  assert.equal(settleScene(next, scene, [ordinary]).error, undefined)
 })

@@ -39,6 +39,7 @@ class WallMount(Model):
 
 
 class Room(Model):
+    floorColor: str = Field(default='#c7ac88', pattern=r'^#[0-9a-fA-F]{6}$')
     wallColors: dict[Literal['north', 'east', 'south', 'west'], Annotated[str, Field(pattern=r'^#[0-9a-fA-F]{6}$')]] = Field(default_factory=dict)
     width: float = Field(default=4, ge=2, le=12)
     depth: float = Field(default=3.5, ge=2, le=12)

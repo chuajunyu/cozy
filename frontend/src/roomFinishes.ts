@@ -1,6 +1,16 @@
 import type { Scene, Vec3 } from './catalog.ts'
 import { walls, type Wall } from './sunlight.ts'
 
+export const defaultFloorColor = '#c7ac88'
+
+export function validPaintColor(value: unknown): value is string {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+}
+
+export function floorColor(scene: Pick<Scene, 'floorColor'>) {
+  return scene.floorColor ?? defaultFloorColor
+}
+
 export const defaultWallColors: Record<Wall, string> = {
   north: '#eee9df', east: '#eee9df', south: '#eee9df', west: '#dadfd3',
 }

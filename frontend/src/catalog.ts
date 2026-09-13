@@ -71,6 +71,7 @@ export type Scene = {
   windows?: RoomWindow[]
   sunHour?: number
   daylight?: number
+  floorColor?: string
   wallColors?: Partial<Record<Wall, string>>
   items: Item[]
 }

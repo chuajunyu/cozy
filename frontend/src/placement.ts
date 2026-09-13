@@ -1,7 +1,7 @@
 import type { Item, Product, Scene } from './catalog.ts'
 import { normalizeDoor, validDoorAnchor, validDoors } from './doors.ts'
 import { isWallFixture, normalizeWallFixture, validWallFixture } from './wallFixtures.ts'
-import { validWallColors } from './roomFinishes.ts'
+import { validPaintColor, validWallColors } from './roomFinishes.ts'
 
 const EPSILON = 0.005
 const DEFAULT_HEIGHT = 2.6
@@ -145,7 +145,7 @@ function contains(support: Rectangle, item: Rectangle) {
 }
 
 export function validItemGeometry(item: Item, product: Product, scene: Scene, catalog: Product[] = []) {
-  if (isWallFixture(product) ? !validWallFixture(item, product, scene, catalog) : item.wallMount !== undefined) return false
+  if (isWallFixture(product) ? !validWallFixture(item, product, scene, catalog) : item.wallMount != null) return false
   if (product.door) return validDoorAnchor(item, product, scene)
   if (item.door !== undefined) return false
   const y = item.elevation ?? 0
@@ -265,6 +265,8 @@ export function settleScene(
   const resolved = new Map<string, Item>()
   const processing = new Set<string>()
   let error: string | undefined
+  if (next.floorColor !== undefined && !validPaintColor(next.floorColor))
+    return { scene: previous, error: 'Choose a valid six-digit hex color for the floor.' }
   if (next.wallColors !== undefined && !validWallColors(next.wallColors))
     return { scene: previous, error: 'Choose a valid six-digit hex color for each wall.' }
   if (nextItems.size !== next.items.length)

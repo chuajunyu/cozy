@@ -19,7 +19,7 @@ export type Slot = {
   wallMount?: import('./catalog').Item['wallMount']; supportId: string | null; door: { wall: 'north' | 'east' | 'south' | 'west'; offset: number; open: boolean } | null
 }
 export type DesignState = {
-  revision: number; room: { width: number; depth: number; height: number; daylight: number; wallColors?: import('./catalog').Scene['wallColors']; windows: import('./sunlight').RoomWindow[]; sunHour: number }
+  revision: number; room: { width: number; depth: number; height: number; daylight: number; floorColor?: string; wallColors?: import('./catalog').Scene['wallColors']; windows: import('./sunlight').RoomWindow[]; sunHour: number }
   brief: string; budget: number | null
   concept: { title: string; summary: string; palette: string[]; materials: string[] }
   slots: Record<string, Slot>; total: number; complete: boolean

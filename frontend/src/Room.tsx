@@ -1,3 +1,4 @@
+import { floorColor } from './roomFinishes'
 import { fitZoom } from './cameraFit'
 import { dragState } from './dragState'
 import { isWallFixture } from './wallFixtures'
@@ -25,7 +26,7 @@ import {
   Html,
   useGLTF,
 } from '@react-three/drei'
-import { Group, Mesh, Plane, Vector3, OrthographicCamera as ThreeCamera } from 'three'
+import { Color, Group, Mesh, Plane, Vector3, OrthographicCamera as ThreeCamera } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { normalizeModel } from './model'
 import ProceduralFurniture from './Furniture'
@@ -376,7 +377,7 @@ export default function Room({
       />
           <mesh position={[0, -0.1, 0]} receiveShadow>
             <boxGeometry args={[scene.width + 0.16, 0.2, scene.depth + 0.16]} />
-            <meshStandardMaterial color="#c7ac88" />
+            <meshStandardMaterial color={floorColor(scene)} />
           </mesh>
           {Array.from({ length: Math.ceil(scene.width / 0.25) }, (_, i) => (
             <mesh
@@ -386,7 +387,7 @@ export default function Room({
               position={[-scene.width / 2 + i * 0.25, 0.001, 0]}
             >
               <planeGeometry args={[0.008, scene.depth]} />
-              <meshStandardMaterial color="#b99c78" />
+              <meshStandardMaterial color={new Color(floorColor(scene)).multiplyScalar(.8)} />
             </mesh>
           ))}
           <RoomShell scene={scene} catalog={catalog} top={top} showCompass={showCompass} />

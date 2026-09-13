@@ -65,3 +65,26 @@ def test_invalid_paint_rejects_and_old_rooms_default():
     for colors in [{'ceiling':'#ffffff'}, {'north':'red'}, {'west':'url(evil)'}, {'north':None}]:
         with pytest.raises(ValidationError):
             Room(wallColors=colors)
+
+
+def test_floor_color_validated_and_preserved_through_edit_undo_restore():
+    assert Room().floorColor == '#c7ac88'
+    for color in ['red', '#fff', '#ffffff00', None, 123, 'url(evil)']:
+        with pytest.raises(ValidationError):
+            Room(floorColor=color)
+
+    async def run():
+        s = Session()
+        await edit(s, 'room.update', room={**s.state.room.model_dump(), 'floorColor': '#79553e', 'wallColors': {'west': '#dadfd3'}})
+        await add(s)
+        saved = json.loads(s.state.model_dump_json())
+        assert s.state.room.floorColor == '#79553e'
+        await edit(s, 'room.update', room={**s.state.room.model_dump(), 'floorColor': '#596064'})
+        await edit(s, 'room.undo')
+        assert s.state.room.floorColor == '#79553e'
+        restored = Session()
+        await edit(restored, 'session.restore', backup={'version': 3, 'state': saved, 'products': []})
+        assert restored.state.room.floorColor == '#79553e'
+        assert restored.state.room.wallColors == {'west': '#dadfd3'}
+        assert 'desk' in restored.state.slots
+    asyncio.run(run())

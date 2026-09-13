@@ -143,10 +143,10 @@ export default function App() {
   useEffect(() => { setNotice('') }, [state?.revision])
   const scene: Scene = useMemo(() => ({
     width: state?.room.width ?? 4, depth: state?.room.depth ?? 3.5, height: state?.room.height ?? 2.6,
-    wallColors: state?.room.wallColors, windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
+    floorColor: state?.room.floorColor, wallColors: state?.room.wallColors, windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
     items: Object.values(state?.slots ?? {}).filter(s => s.catalogId).map(s => ({
       id: s.id, productId: s.catalogId!, x: s.x, z: s.z, rotation: s.rotation, locked: s.locked,
-      wallMount: s.wallMount, supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
+      wallMount: s.wallMount ?? undefined, supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
     })),
   }), [state])
   const reviewCount = connection.reviewCount + wireCatalog.filter(p => !p.readyForPreview).length
@@ -200,7 +200,7 @@ export default function App() {
       if (i.door) return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, door: i.door, wallMount: i.wallMount })
       return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, x: i.x, z: i.z, rotation: i.rotation, elevation: i.elevation, supportId: i.supportId ?? null })
     }
-    return !!state && edit({ type: 'room.update', room: { ...state.room, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
+    return !!state && edit({ type: 'room.update', room: { ...state.room, floorColor: next.floorColor, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
   }
   function move(next: Item) {
     const preview = settleScene({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) }, scene, catalog)
