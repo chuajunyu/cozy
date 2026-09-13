@@ -136,7 +136,7 @@ def total(state: DesignState, products: dict | None = None) -> float:
     return sum(products[s.catalogId]["price"] for s in state.slots.values() if s.catalogId and not products[s.catalogId].get('door'))
 
 
-def validate_layout(state: DesignState, products: dict | None = None) -> None:
+def validate_layout(state: DesignState, products: dict | None = None, *, check_budget: bool = True) -> None:
     products = BY_ID if products is None else products
     from backend.placement import validate_architecture, validate_supports, valid_support
     validate_architecture(state, products)
@@ -178,7 +178,7 @@ def validate_layout(state: DesignState, products: dict | None = None) -> None:
             overlap = abs(slot.x - other.x) < (width + ow) / 2 - 1e-6 and abs(slot.z - other.z) < (depth + od) / 2 - 1e-6
             require(not overlap, "overlap", f"{slot.id} overlaps {other.id}. Leave room between solid footprints.")
         footprints.append((slot, width, depth, p["floorLayer"], p["height"]))
-    require(state.budget is None or total(state, products) <= state.budget, "over_budget",
+    require(not check_budget or state.budget is None or total(state, products) <= state.budget, "over_budget",
             f"The arrangement costs S${total(state, products):.0f}, exceeding the S${state.budget} budget.")
 
 
@@ -255,7 +255,11 @@ def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = 
         old.replacing = False
     from backend.placement import settle_state
     candidate = settle_state(candidate, state, products)
-    validate_layout(candidate, products)
+    validate_layout(candidate, products, check_budget=False)
+    # A lowered target must allow Astra to make incremental savings, without
+    # increasing an existing overrun or exceeding a budget it already meets.
+    require(candidate.budget is None or total(candidate, products) <= max(candidate.budget, total(state, products)),
+            "over_budget", "Stay within the budget, or reduce the current cost before adding more.")
     candidate.revision += 1
     return candidate
 
@@ -266,9 +270,9 @@ def snapshot(state: DesignState, products: dict | None = None) -> dict:
     result["total"] = total(state, products)
     issues = []
     try:
-        validate_layout(state, products)
+        validate_layout(state, products, check_budget=False)
     except DesignError as exc:
         issues.append(str(exc))
     result["validationIssues"] = issues
-    result["complete"] = not issues and bool(state.slots) and all(s.catalogId and not s.replacing for s in state.slots.values())
+    result["complete"] = not issues and (state.budget is None or result["total"] <= state.budget) and bool(state.slots) and all(s.catalogId and not s.replacing for s in state.slots.values())
     return deepcopy(result)

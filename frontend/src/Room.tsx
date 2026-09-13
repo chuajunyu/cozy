@@ -338,6 +338,7 @@ export default function Room({
   top,
   fitRequest = 0,
   showCompass = false,
+  lightingPreview = false,
 }: {
   scene: Scene
   catalog: Product[]
@@ -347,6 +348,7 @@ export default function Room({
   top: boolean
   fitRequest?: number
   showCompass?: boolean
+  lightingPreview?: boolean
 }) {
   const [drag, setDrag] = useState(false)
   const sun = sunAt(scene.sunHour ?? 9)
@@ -391,7 +393,7 @@ export default function Room({
             </mesh>
           ))}
           <RoomShell scene={scene} catalog={catalog} top={top} showCompass={showCompass} />
-          <Daylight room={scene} catalog={catalog} />
+          <Daylight room={scene} catalog={catalog} paused={drag || lightingPreview} />
           {scene.items.map((item) => {
             const p = catalog.find((p) => p.id === item.productId)
             return p?.door ? <DoorPiece key={item.id} item={item} product={p} scene={scene} selected={selected === item.id} onSelect={onSelect} /> : p ? (

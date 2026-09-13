@@ -30,9 +30,8 @@ vec3 roomIrradiance(vec3 position, vec3 n) {
 
 /** Spatial irradiance probes integrate diffuse sky and multi-bounce daylight.
  * The directional light separately supplies the unscattered solar beam. */
-export default function Daylight({ room, catalog }: { room: Scene; catalog: Product[] }) {
+export default function Daylight({ room, catalog, paused = false }: { room: Scene; catalog: Product[]; paused?: boolean }) {
   const { scene, gl, invalidate } = useThree()
-  const [pending, setPending] = useState(true)
   const [failed, setFailed] = useState(false)
   const [retry, setRetry] = useState(0)
   const worker = useRef<Worker | null>(null)
@@ -60,8 +59,7 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
   useEffect(() => {
     let instance: Worker
     try { instance = new Worker(new URL('./daylight.worker.ts', import.meta.url), { type: 'module' }) }
-    catch { setFailed(true); setPending(false); return }
-    setPending(true)
+    catch { setFailed(true); return }
     worker.current = instance
     instance.onmessage = ({ data }) => {
       busy.current = false
@@ -71,7 +69,7 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
         busy.current = true
       }
       if (data.id !== revision.current) return
-      if (data.error) { setFailed(true); setPending(false); return }
+      if (data.error) { setFailed(true); return }
       const result = data.result as { coefficients: Float32Array; meanIrradiance: number }
       for (let c = 0; c < 4; c++) {
         const pixels = textures[c].image.data as Float32Array
@@ -81,11 +79,10 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
       }
       // Fixture switches never change the exposure of existing daylight.
       gl.toneMappingExposure = daylightExposure(result.meanIrradiance)
-      setPending(false)
       setFailed(false)
       invalidate()
     }
-    instance.onerror = () => { instance.terminate(); worker.current = null; busy.current = false; setFailed(true); setPending(false) }
+    instance.onerror = () => { instance.terminate(); worker.current = null; busy.current = false; setFailed(true) }
     return () => {
       instance.terminate()
       worker.current = null
@@ -104,8 +101,18 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
   }, [gl, invalidate, textures, retry])
   useEffect(() => () => { for (const texture of textures) texture.dispose() }, [textures])
 
+  useEffect(() => {
+    // Keep the last completed bounce lighting while direct shadows preview the gesture.
+    // Invalidate outstanding results so a pre-drag job cannot change exposure mid-drag.
+    ++revision.current
+    if (timer.current) clearTimeout(timer.current)
+    queued.current = null
+    signature.current = ''
+    invalidate()
+  }, [paused, invalidate])
+
   useFrame(() => {
-    if (!worker.current) return
+    if (!worker.current || paused) return
     uniforms.daylightExtent.value.set(room.width, room.height ?? 2.6, room.depth)
     scene.updateMatrixWorld(true)
     const boxes: TransportInput['boxes'] = []
@@ -166,7 +173,7 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
     if (signature.current === key) return
     signature.current = key
     const id = ++revision.current
-    setPending(true)
+    queued.current = null
     if (timer.current) clearTimeout(timer.current)
     // Immediately discard previous lighting when all apertures close or at night.
     if ((!input.windows.length && !input.doors?.length) || !sun.intensity) {
@@ -177,7 +184,7 @@ export default function Daylight({ room, catalog }: { room: Scene; catalog: Prod
     timer.current = setTimeout(() => {
       if (busy.current) queued.current = { id, input }
       else { worker.current?.postMessage({ id, input }); busy.current = true }
-    }, 120)
+    }, 250)
   })
-  return pending || failed ? <Html position={[0, (room.height ?? 2.6) + .15, 0]} center><span className="daylight-progress">{failed ? <>Daylight calculation unavailable <button onClick={() => { setFailed(false); setRetry(n => n + 1); invalidate() }}>Retry daylight</button></> : 'Updating daylight…'}</span></Html> : null
+  return failed ? <Html position={[0, (room.height ?? 2.6) + .15, 0]} center><span className="daylight-progress">Daylight calculation unavailable <button onClick={() => { setFailed(false); setRetry(n => n + 1); invalidate() }}>Retry daylight</button></span></Html> : null
 }

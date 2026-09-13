@@ -33,7 +33,7 @@ def preview_restore(session, command):
     try:
         # Calculate all changes, including locked changes, without accepting them.
         proposed = settle_state(state, state, products, migration=True, allow_locked=list(state.slots))
-        validate_layout(proposed, products)
+        validate_layout(proposed, products, check_budget=False)
         for id, s in proposed.slots.items():
             old = state.slots[id]
             if pose(old) != pose(s) or old.supportId != s.supportId:

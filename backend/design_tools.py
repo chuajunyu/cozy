@@ -44,6 +44,8 @@ requested products; other unlocked pieces may move slightly (up to 0.5 m per axi
 Continue filling pending planned slots while rerolling; do not abandon the rest of the room.
 Do not repeat the current product as a replacement. If no suitable alternative exists, explain the
 constraint and ask which preference the user wants to relax. Never silently unlock or exceed budget.
+If the existing room already exceeds a newly lowered budget, reduce its cost in steps;
+do not increase the overrun or claim the design is finished until it meets the target.
 Feedback may arrive while you work: acknowledge it naturally and adapt to the latest state.
 Refer to objects by their product names or readable labels in conversation, never by slot UUIDs.
 Manual edits can happen while you work. Treat stale_revision as a request to read the latest state,

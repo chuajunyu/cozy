@@ -1,12 +1,21 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Product, Scene } from './catalog'
 import { doorOpenings } from './doors'
 import { defaultWindows, directSun, walls, windowGeometry, type Wall, type RoomWindow } from './sunlight'
 
-export default function SunlightControls({ scene, catalog, onChange, mode }: { scene: Scene; catalog: Product[]; onChange: (scene: Scene) => void; mode: 'windows' | 'lighting' }) {
+export default function SunlightControls({ scene, catalog, onChange, onSunPreview, mode }: { scene: Scene; catalog: Product[]; onChange: (scene: Scene) => void; onSunPreview?: (hour: number | null) => void; mode: 'windows' | 'lighting' }) {
   const [wall, setWall] = useState<Wall>('east')
+  const [draftHour, setDraftHour] = useState<number | null>(null)
+  const draft = useRef<number | null>(null)
+  const finishSun = (cancel = false) => {
+    const value = draft.current
+    draft.current = null
+    setDraftHour(null)
+    onSunPreview?.(null)
+    if (!cancel && value !== null && value !== (scene.sunHour ?? 9)) onChange({ ...scene, sunHour: value })
+  }
   const windows = scene.windows ?? defaultWindows
-  const hour = scene.sunHour ?? 9
+  const hour = draftHour ?? scene.sunHour ?? 9
   const doors = scene.items.filter(item => catalog.find(product => product.id === item.productId)?.door)
   const openDoors = doorOpenings(scene, catalog)
   const direct = [
@@ -24,7 +33,13 @@ export default function SunlightControls({ scene, catalog, onChange, mode }: { s
   return <section className="sunlight-panel" aria-label={mode === 'windows' ? 'Windows' : 'Sunlight'}>
     {mode === 'lighting' && <>
     <div className="sunlight-heading"><div><h3>Windows & sunlight</h3><p>Follow the light through your room.</p></div><strong>{time}</strong></div>
-    <label className="sun-time">Time of day<input aria-label="Time of day" type="range" min="6" max="20" step="0.5" value={hour} onChange={e => onChange({ ...scene, sunHour: Number(e.target.value) })} /></label>
+    <label className="sun-time">Time of day<input aria-label="Time of day" type="range" min="6" max="20" step="0.5" value={hour}
+      onPointerDown={e => e.currentTarget.setPointerCapture(e.pointerId)}
+      onChange={e => { const value = Number(e.target.value); draft.current = value; setDraftHour(value); onSunPreview?.(value) }}
+      onPointerUp={() => finishSun()} onPointerCancel={() => finishSun(true)}
+      onLostPointerCapture={() => { if (draft.current !== null) finishSun(true) }}
+      onKeyUp={e => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) finishSun() }}
+      onKeyDown={e => { if (e.key === 'Escape') finishSun(true) }} onBlur={() => finishSun()} /></label>
     <div className="sun-presets">{[[9, 'Morning'], [12, 'Noon'], [16, 'Afternoon'], [20, 'Night']].map(([value, label]) => <button key={value} aria-pressed={hour === value} onClick={() => onChange({ ...scene, sunHour: Number(value) })}>{label}</button>)}</div>
     <p className="sun-status" role="status">{status}{!!doors.length && <span> {openDoors.length} of {doors.length} {doors.length === 1 ? 'door' : 'doors'} open.</span>}</p>
     </>}

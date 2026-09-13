@@ -118,7 +118,7 @@ def test_restore_preview_preserves_original_and_requires_locked_selection():
     asyncio.run(run())
 
 
-def test_replacement_carries_children_resets_preferences_and_rolls_back_budget():
+def test_manual_replacement_carries_children_and_allows_over_budget_target():
     async def run():
         s = Session()
         await add(s)
@@ -130,11 +130,6 @@ def test_replacement_carries_children_resets_preferences_and_rolls_back_budget()
         s.state.rejected['desk'] = [{'catalogId':'sample-desk','reason':'Change'}]
         s.state.rerollTargets = ['desk']
         s.state.budget = 200
-        before = s.state.model_dump()
-        with pytest.raises(DesignError, match='exceeding'):
-            await edit(s,'item.replace',slotId='desk',expectedProduct='sample-desk',catalogId=p['id'])
-        assert s.state.model_dump() == before
-        s.state.budget = 1000
         await edit(s,'item.replace',slotId='desk',expectedProduct='sample-desk',catalogId=p['id'])
         assert s.state.slots['lamp'].elevation == .9
         assert not s.state.slots['desk'].liked and not s.state.slots['desk'].replacing

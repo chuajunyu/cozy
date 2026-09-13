@@ -68,6 +68,10 @@ Run one FastAPI worker because sessions are in memory.
 - The room fills the workspace. Add furniture, Ask Astra, Room setup and Lighting
   open one panel at a time. Panels become expandable bottom sheets below 900px.
   Closing or switching panels preserves chat drafts and collection filters.
+  Drag the sidebar's left edge to adjust its width; on smaller screens, drag the
+  sheet's top edge to adjust its height. Sizes persist while switching panels.
+  The focused handle also supports arrow keys, Home/End, and Enter to reset;
+  double-clicking the handle restores its default size.
 - Browse and filter the IKEA collection or samples, then add pieces directly to
   the room. The furniture lab and separate model-preview scene have been removed.
   Repeated GLB instances have independent transforms; Draco, WebP textures and
@@ -162,7 +166,11 @@ validated before committing. Room-wide changes retain strict revision checks;
 conversation accepts current state while expected-product guards protect its targets.
 clients never rewind to an older snapshot. Atomic validation checks IDs, categories,
 renderable assets, bounds, height, collisions, locks, rejected products, fixture
-limits and budget. Rugs may overlap solids; height-separated objects can stack.
+limits. Manual budgets are targets, with red cost and over-budget indicators;
+they never block setting a lower target, editing, undo or saved-room recovery.
+Enter a budget and choose Save budget; typing does not submit intermediate values.
+Astra stays within budget, or makes incremental savings when already over it.
+Rugs may overlap solids; height-separated objects can stack.
 A targeted reroll preserves unrelated products and permits small moves of unlocked
 surrounding pieces for fit. A lower budget stated in chat can flag the old room
 while the agent repairs it; direct invalid manual room edits are rejected.
@@ -234,6 +242,16 @@ openings. Worker errors leave editing available and expose a Retry daylight butt
 Normal recovery is automatic. The canvas can briefly show Opening your room,
 Reconnecting, Saving, daylight progress, or Astra activity. No session-expired or
 saved-room confirmation banner appears.
+
+Actionable notices float below the header and can be dismissed without resizing
+the room canvas or shifting the controls.
+
+The sunlight slider previews direct sun locally and saves once on release (or
+keyboard completion). During sunlight and furniture drags, the last completed
+reflected lighting stays visible. Bounce lighting updates after the gesture
+settles, without a routine progress popup. Escape cancels a sunlight preview.
+The outside background follows this solar time too: bright by day, warm around
+sunset, and dark blue at night, including while previewing the sunlight slider.
 
 Actionable notices remain for invalid placements, locked/stale edits, budget or
 item/fixture limits, unavailable Astra, failed recovery, and failed device saving.

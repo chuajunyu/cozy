@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from backend.design import DoorAnchor, Model, Slot, Window, require, validate_layout
+from backend.design import DoorAnchor, Model, Slot, Window, require, total, validate_layout
 from backend.placement import settle_state
 
 
@@ -100,7 +100,9 @@ def edit_room(session, raw):
                 require(command.door.open == slot.door.open, 'architecture_permission', 'Opening or closing the door requires its own explicit request.')
                 slot.door = command.door
     state = settle_state(state, session.state, session.products)
-    validate_layout(state, session.products)
+    validate_layout(state, session.products, check_budget=False)
+    require(state.budget is None or total(state, session.products) <= max(state.budget, total(session.state, session.products)),
+            'over_budget', 'Stay within the budget, or reduce the current cost before adding more.')
     state.revision += 1
     session.accept(state)
     grants.remove(grant)

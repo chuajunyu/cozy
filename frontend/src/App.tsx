@@ -1,3 +1,4 @@
+import BudgetControls from './BudgetControls'
 import RoomCustomization, { WallLightControls } from './RoomCustomization'
 import { isWallFixture, normalizeWallFixture } from './wallFixtures'
 import { fixtureOutput } from './lighting'
@@ -5,13 +6,14 @@ import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } 
 
 const mattressSize = (width: number, depth: number) => `${Math.round(width * 100)} × ${Math.round(depth * 100)} cm`
 import SunlightControls from './SunlightControls'
+import { worldBackground } from './worldBackground'
 import { defaultWindows } from './sunlight'
 import { walls } from './sunlight'
 import { normalizeDoor, validDoors } from './doors'
 import DoorControls from './DoorControls'
 import Alternatives from './FurnitureAlternatives'
 import { findAlternatives, replaceItem } from './alternatives'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Room from './Room'
 import PanelHost from './PanelHost'
 import { escapeWorkspace, type Panel } from './workspace'
@@ -136,6 +138,7 @@ export default function App() {
 
 
   const [top, setTop] = useState(false)
+  const [sunPreview, setSunPreview] = useState<number | null>(null)
   const [notice, setNotice] = useState('')
   const connection = useConnection()
   const { state, catalog: wireCatalog, status, send, reconnect, error, pending, backup, restore, recoveryError, diagnostic, resetRoom } = connection
@@ -351,6 +354,7 @@ export default function App() {
     setMaxPrice('')
   }
   const blocked = status !== 'connected' || pending || !!backup
+  const atmosphere = worldBackground(sunPreview ?? scene.sunHour ?? 9)
   const expected = item ? { [item.id]: item.productId } : {}
   function askReplacement() {
     if (!item || item.locked) return
@@ -376,9 +380,9 @@ export default function App() {
         {state?.validationIssues.map(issue => <p role="alert" className="validation-banner" key={issue}>{issue}</p>)}
       </div>
       <main className="workspace">
-        <section className="studio" aria-label="Room canvas">
+        <section className="studio" aria-label="Room canvas" style={{ '--world-glow': atmosphere.glow, '--world-sky': atmosphere.sky, '--world-text': atmosphere.text } as CSSProperties}>
           <div className="viewport">
-            <Room scene={scene} catalog={catalog} selected={selected} onSelect={setSelected}
+            <Room scene={sunPreview === null ? scene : { ...scene, sunHour: sunPreview }} lightingPreview={sunPreview !== null} catalog={catalog} selected={selected} onSelect={setSelected}
               onMove={!blocked ? move : () => setNotice('Reconnect and finish pending changes before editing.')}
               top={top} fitRequest={fitRequest} showCompass={panel === 'setup'} />
           </div>
@@ -411,7 +415,7 @@ export default function App() {
           </div>}
           <div className="canvas-bottomline"><span className="canvas-instructions">Drag a piece to move · Drag space to orbit · Scroll to zoom</span><span role="status">{status !== 'connected' ? 'Reconnecting…' : backup && !recoveryError ? 'Opening your room…' : connection.agentStatus === 'working' ? connection.activity : pending ? 'Saving…' : ''}</span></div>
         </section>
-        <PanelHost panel={panel} expanded={expanded} onExpand={() => setExpanded(v => !v)} onClose={closePanel}>
+        <PanelHost panel={panel} expanded={expanded} onExpand={() => setExpanded(v => !v)} onResizeExpanded={setExpanded} onClose={closePanel}>
           <div hidden={panel !== 'catalog'}>        <div className="catalog">
           <div className="panel-heading">
             <h2>The collection</h2>
@@ -615,38 +619,8 @@ export default function App() {
 
               </div>
 </fieldset></div>
-          <div hidden={panel !== 'lighting'}><fieldset disabled={blocked}><SunlightControls scene={scene} catalog={catalog} onChange={commit} mode="lighting" /></fieldset></div>
-          <div hidden={panel !== 'budget'}>          <div className="budget">
-            <div>
-              <label htmlFor="budget">Room budget</label>
-              <span>
-                {money(total)} <small>{scene.budget ? `/ ${money(scene.budget)}` : '/ no limit'}</small>
-              </span>
-            </div>
-            {scene.budget > 0 && <progress max={scene.budget} value={total} />}
-            <p className={scene.budget > 0 && total > scene.budget ? 'over' : ''}>
-              {!scene.budget ? 'No budget set' : total > scene.budget
-                ? `${money(total - scene.budget)} over budget`
-                : `${money(scene.budget - total)} left for the finishing touches`}
-            </p>
-            <div className="budget-input">
-              <span>Set budget · S$</span>
-              <input
-                id="budget"
-                disabled={blocked}
-                aria-label="Room budget in SGD"
-                type="number"
-                min="0"
-                max="100000"
-                value={scene.budget}
-                onChange={(e) => {
-                  const v = Number(e.target.value)
-                  if (Number.isFinite(v) && v >= 0 && v <= 100000)
-                    commit({ ...scene, budget: v })
-                }}
-              />
-            </div>
-          </div>
+          <div hidden={panel !== 'lighting'}><fieldset disabled={blocked}><SunlightControls scene={scene} catalog={catalog} onChange={commit} onSunPreview={setSunPreview} mode="lighting" /></fieldset></div>
+          <div hidden={panel !== 'budget'}><BudgetControls budget={scene.budget} total={total} disabled={blocked} onSave={budget => edit({ type: 'room.update', budget })} />
           <div className="room-list">
             <p className="eyebrow">
               IN YOUR ROOM <span>{scene.items.length}</span>

@@ -61,7 +61,7 @@ def test_rug_under_furniture_and_exact_budget():
     assert snapshot(state)["total"] == 695
     state.budget = 695
     apply_patch(state, patch(state, placement("table", "table-oak", 0, .15)))
-    with pytest.raises(DesignError, match="exceeding"):
+    with pytest.raises(DesignError, match="budget"):
         apply_patch(state, patch(state, placement("table", "table-walnut", 0, .15)))
 
 
@@ -179,7 +179,7 @@ def test_lowered_budget_prevents_false_completion():
     state = furnished()
     state.budget = 500
     result = snapshot(state)
-    assert not result["complete"] and result["validationIssues"]
+    assert not result["complete"] and not result["validationIssues"]
     assert len(state.slots) == 3  # Preserve visible room while a new valid group is prepared.
 
 
@@ -191,3 +191,14 @@ def test_like_is_recorded_for_specific_product_not_its_replacement():
         updated = apply_patch(session.state, patch(session.state, placement("table", "table-cream", 0, .1)))
         assert not updated.slots["table"].liked
     asyncio.run(run())
+
+
+def test_astra_can_reduce_an_existing_overrun_but_cannot_increase_it():
+    state = furnished()
+    state.budget = 100
+    cheaper = apply_patch(state, patch(state, remove=['table']))
+    assert snapshot(cheaper)['total'] < snapshot(state)['total']
+    assert snapshot(cheaper)['total'] > 100
+    with pytest.raises(DesignError) as error:
+        apply_patch(state, patch(state, placement('table', 'table-walnut', 0, .15)))
+    assert error.value.code == 'over_budget'

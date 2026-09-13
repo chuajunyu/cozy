@@ -93,8 +93,9 @@ def test_locks_budget_resize_clear_and_undo():
         for kind in ("item.delete", "item.update", "room.clear"):
             with pytest.raises(DesignError, match="[Uu]nlock"):
                 await edit(s, kind, slotId="desk", expectedProduct="sample-desk", x=.1)
-        with pytest.raises(DesignError, match="exceeding"):
-            await edit(s, "room.update", budget=10)
+        await edit(s, "room.update", budget=10)
+        assert s.state.budget == 10
+        await edit(s, "room.undo")
         await edit(s, "room.undo")
         assert not s.state.slots["desk"].locked
         await edit(s, "item.update", slotId="desk", expectedProduct="sample-desk", x=1.2)
@@ -255,4 +256,23 @@ def test_startup_ack_waits_for_response_created():
         await d.handle_event({"type": "response.created", "response": {"id": "r1"}})
         assert (await queue.get())["stage"] == "applied"
         assert d.creating_request is None
+    asyncio.run(run())
+
+
+def test_over_budget_room_can_be_edited_restored_and_undone():
+    async def run():
+        s = Session()
+        await add(s)
+        await edit(s, 'room.update', budget=10)
+        await edit(s, 'item.update', slotId='desk', expectedProduct='sample-desk', x=.3)
+        saved = json.loads(s.state.model_dump_json())
+        restored = Session()
+        await edit(restored, 'session.restore', backup={'version':3, 'state':saved, 'products':[]})
+        assert restored.state.budget == 10
+        assert restored.state.slots['desk'].x == .3
+        assert restored.snapshot()['validationIssues'] == []
+        await edit(s, 'room.update', budget=None)
+        assert s.state.budget is None
+        await edit(s, 'room.undo')
+        assert s.state.budget == 10
     asyncio.run(run())

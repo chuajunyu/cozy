@@ -194,7 +194,7 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                         if parent:
                             require(state.slots[old.id].supportId == parent.id, 'support_fit', 'The replacement must preserve supporting surfaces.')
                     require(bool(slot.wallMount) or abs(state.slots[slot.id].elevation-slot.elevation) <= .005, 'support_fit', 'The replacement must retain its mounting height.')
-            validate_layout(state, products)
+            validate_layout(state, products, check_budget=False)
             if kind == "room.undo":
                 session.history.pop()
             elif kind == "session.restore":
