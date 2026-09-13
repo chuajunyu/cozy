@@ -1,8 +1,36 @@
 import { Html } from '@react-three/drei'
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { Group, Mesh, MeshStandardMaterial, Vector3 } from 'three'
 import type { Product, Scene, Vec3 } from './catalog'
 import { doorGeometry } from './doors'
 import { defaultWindows, walls, windowGeometry } from './sunlight'
 import { wallColor } from './roomFinishes'
+import { wallVisible } from './wallVisibility'
+import type { Wall } from './sunlight'
+
+function CutawayWall({ wall, top, children, position, rotation }: { wall: Wall; top: boolean; children: React.ReactNode; position: Vec3; rotation: Vec3 }) {
+  const group = useRef<Group>(null)
+  const direction = useRef(new Vector3())
+  const visible = useRef<boolean | undefined>(undefined)
+  const lastTop = useRef(top)
+  useFrame(({ camera }) => {
+    camera.getWorldDirection(direction.current)
+    const next = wallVisible(wall, direction.current.x, direction.current.z, top, lastTop.current === top ? visible.current : undefined)
+    lastTop.current = top
+    visible.current = next
+    // Keep meshes mounted/casting shadows; suppress only camera writes and picking.
+    group.current?.traverse(object => {
+      if (!(object instanceof Mesh) || !(object.material instanceof MeshStandardMaterial)) return
+      object.material.colorWrite = next
+      object.material.depthWrite = next
+      object.raycast = next ? Mesh.prototype.raycast : noRaycast
+    })
+  })
+  return <group ref={group} position={position} rotation={rotation}>{children}</group>
+}
+
+const noRaycast: Mesh['raycast'] = () => {}
 
 export default function RoomShell({ scene, catalog, top, showCompass = false }: { scene: Scene; catalog: Product[]; top: boolean; showCompass?: boolean }) {
   const windows = scene.windows ?? defaultWindows
@@ -10,7 +38,6 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
     {walls.map(wall => {
       const wallWindows = windows.filter(window => window.wall === wall)
       const length = wall === 'north' || wall === 'south' ? scene.width : scene.depth
-      const visible = !top && (wall === 'north' || wall === 'west')
       const rotation: Vec3 = [0, wall === 'east' || wall === 'west' ? Math.PI / 2 : 0, 0]
       const position: Vec3 = wall === 'north' ? [0, 0, -scene.depth / 2 - 0.05] : wall === 'south' ? [0, 0, scene.depth / 2 + 0.05] : wall === 'west' ? [-scene.width / 2 - 0.05, 0, 0] : [scene.width / 2 + 0.05, 0, 0]
       // Every doorway remains a hole in the wall; its opaque leaf closes it.
@@ -33,13 +60,13 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
             ? [] : [[start, end, bottom, top]]
         })
       })
-      return <group key={wall} position={position} rotation={rotation}>
-        {blocks.filter(([a,b,c,d]) => b > a && d > c).map(([a,b,c,d], i) => <mesh key={i} raycast={visible ? undefined : () => {}} position={[(a+b)/2-length/2, (c+d)/2, 0]} castShadow receiveShadow>
+      return <CutawayWall key={wall} wall={wall} top={top} position={position} rotation={rotation}>
+        {blocks.filter(([a,b,c,d]) => b > a && d > c).map(([a,b,c,d], i) => <mesh key={i} position={[(a+b)/2-length/2, (c+d)/2, 0]} castShadow receiveShadow>
           <boxGeometry args={[b-a, d-c, 0.1]} />
-          <meshStandardMaterial color={wallColor(scene, wall)} colorWrite={visible} depthWrite={visible} />
+          <meshStandardMaterial color={wallColor(scene, wall)} />
         </mesh>)}
         {showCompass && <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>}
-      </group>
+      </CutawayWall>
     })}
     {/* Cutaway roof is invisible to the camera, but blocks sunlight from bypassing windows. */}
     <mesh raycast={() => {}} position={[0,(scene.height ?? 2.6)+.06,0]} castShadow>

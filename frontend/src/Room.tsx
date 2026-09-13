@@ -11,6 +11,7 @@ import { liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
 import Daylight from './Daylight'
 import RoomShell from './RoomShell'
+import RoomCompass, { CompassBearing } from './RoomCompass'
 import DoorPiece, { DoorVisual } from './DoorPiece'
 import { sunAt, defaultWindows, validWindows, type RoomWindow, type Wall } from './sunlight'
 import {
@@ -363,6 +364,7 @@ export default function Room({
   disabled?: boolean
 }) {
   const [drag, setDrag] = useState(false)
+  const compass = useRef<HTMLDivElement>(null)
   const [wallDraft, setWallDraft] = useState<{ item?: Item; window?: RoomWindow; source?: Wall } | null>(null)
   const shown = wallDraft ? { ...scene,
     items: scene.items.map(item => item.id === wallDraft.item?.id ? wallDraft.item : item),
@@ -374,7 +376,7 @@ export default function Room({
     : normalizeWallFixture({ ...item, wallMount: { wall: anchor.wall, offset: anchor.offset, height: anchor.center } }, product, scene)
   const sun = sunAt(scene.sunHour ?? 9)
   return (
-    <Canvas
+    <><Canvas
       shadows
       frameloop="demand"
       dpr={[1, 1.5]}
@@ -459,6 +461,7 @@ export default function Room({
           })}
       <Camera top={top} width={scene.width} height={scene.height ?? 2.6}
         depth={scene.depth} disabled={drag || !!wallDraft} fitRequest={fitRequest} />
-    </Canvas>
+      <CompassBearing dial={compass} />
+    </Canvas><RoomCompass dial={compass} /></>
   )
 }

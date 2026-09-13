@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown'
 import type { useConnection } from './useConnection'
 import ObjectPill from './ObjectPill'
 import VoiceControls from './VoiceControls'
+import ChatActivity from './ChatActivity'
+import { deliveryLabel } from './delivery'
 import { displayMessage, objectReference } from './chatReferences'
 
 export default function AgentPanel({ connection, selected, onSelect, disabled, active, replacementTarget, onReplacementOpened }: {
@@ -10,7 +12,7 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
   onSelect: (id: string | null) => void; disabled: boolean; active: boolean
   replacementTarget: string | null; onReplacementOpened: () => void
 }) {
-  const { state, catalog, messages, status, agentStatus, activity, feedbackStage, send, reconnect } = connection
+  const { state, catalog, messages, status, agentStatus, activity, deliveries, send, reconnect } = connection
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     try { return localStorage.getItem('cozy.voice.enabled') === 'true' } catch { return false }
   })
@@ -58,10 +60,10 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
       {!messages.length && <p className="muted">Describe your room. Astra can build a concept around the pieces you add.</p>}
       {messages.map(raw => {
         const m = displayMessage(raw, state, catalog)
-        if (m.kind === 'activity') return <div key={m.id} className="chat-activity"><span aria-hidden="true">↳</span><span>{m.text}</span>{m.references?.map(reference => <ObjectPill key={reference.slotId} reference={reference} available={!!state?.slots[reference.slotId]} onSelect={() => onSelect(reference.slotId)} />)}</div>
+        if (m.kind === 'activity') return <ChatActivity key={m.id} message={m} state={state} deliveries={deliveries} onSelect={onSelect} working={agentStatus === 'working'} />
         return <article key={m.id} className={`chat-${m.role}`}><small>{m.role === 'user' ? 'YOU' : m.role === 'assistant' ? 'ASTRA' : 'STUDIO'}</small>
           {!!m.references?.length && <div className="object-references">{m.references.map(reference => <ObjectPill key={reference.slotId} reference={reference} available={!!state?.slots[reference.slotId]} onSelect={() => onSelect(reference.slotId)} />)}</div>}
-          <ReactMarkdown>{m.text}</ReactMarkdown></article>
+          <ReactMarkdown>{m.text}</ReactMarkdown>{m.role === 'user' && deliveries[m.id] && <span className="delivery-status">{deliveryLabel(deliveries[m.id])}</span>}</article>
       })}
     </div>
     <label className="voice-toggle"><input type="checkbox" checked={voiceEnabled} onChange={event => {
@@ -79,7 +81,6 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
       <textarea id="design-message" value={text} onChange={e => setText(e.target.value)} maxLength={6000} rows={3} placeholder="A calm bedroom with a workspace…" />
       <button className="primary" disabled={blocked || !text.trim() || scope.some(id => !state?.slots[id])}>{agentStatus === 'working' ? 'Send feedback' : 'Send to Astra'}</button>
     </form>
-    <p className="feedback-stage" role="status">{feedbackStage && !['applied', 'incorporated'].includes(feedbackStage) ? `Update ${feedbackStage}` : ''}</p>
 
     <details className="design-concept"><summary>Design concept & pieces</summary>
     {state?.concept.summary && <div className="concept-summary"><h3>{state.concept.title}</h3><p>{state.concept.summary}</p><small>{[...state.concept.palette, ...state.concept.materials].join(' · ')}</small></div>}

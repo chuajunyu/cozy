@@ -8,14 +8,15 @@ from backend.catalog import search
 from backend.design import ConceptUpdate, DesignError, DesignPatch, apply_patch, snapshot, update_concept
 from backend.sessions import Session
 from backend.architecture import RoomEdit, edit_room
+from backend.capabilities import CAPABILITY_GUIDANCE
 
 
 TOOLS = [
-    {'type': 'function', 'name': 'edit_room', 'description': 'Edit architecture only for an explicit current user request. Use the requestId and permitted operation from get_design_state roomEditPermissions. Broad design requests never allow architecture changes.', 'parameters': RoomEdit.model_json_schema(), 'strict': False},
+    {'type': 'function', 'name': 'edit_room', 'description': 'Edit windows, doors, wall/floor colors, room size or solar time ONLY for an explicit current user request. Read get_design_state roomEditPermissions and use its requestId and operation. room.finish patches only requested wallColors/floorColor. For window.update, wall is the CURRENT wall and window contains the desired destination/size; preserve other properties. Grants are single-use; broad design requests never permit these edits.', 'parameters': RoomEdit.model_json_schema(), 'strict': False},
     {"type": "function", "name": "get_design_state", "description": "Read authoritative room, concept, feedback, rejected candidates, locks and current revision. Always read after feedback or a rejected patch.",
      "parameters": {"type": "object", "properties": {}, "additionalProperties": False}, "strict": True},
     {"type": "function", "name": "search_catalog", "description": "Find available, locally renderable IKEA and demo products. IKEA prices are dated SGD offers; sample prices are illustrative. Query ranks complementary style/material preferences; dimensions and price filter results.",
-     "parameters": {"type": "object", "properties": {"category": {"type": "string"}, "max_price": {"type": "number", "minimum": 0}, "max_width": {"type": "number", "minimum": 0}, "query": {"type": "string"}}, "additionalProperties": False}, "strict": False},
+     "parameters": {"type": "object", "properties": {"category": {"type": "string"}, "max_price": {"type": "number", "minimum": 0}, "max_width": {"type": "number", "minimum": 0}, "query": {"type": "string"}, "offset": {"type": "integer", "minimum": 0, "description": "Use nextOffset with the same filters and query to explore more matches."}}, "additionalProperties": False}, "strict": False},
     {"type": "function", "name": "update_concept", "description": "Establish a cohesive whole-room concept and stable planned slots grouped by zone. Plan anchors and supports up front (typically 5-10 pieces); saves no furniture yet. Existing slots merge by ID; omission does not remove them. Budget is user-owned and not editable here.",
      "parameters": ConceptUpdate.model_json_schema(), "strict": False},
     {"type": "function", "name": "apply_design_patch", "description": "Atomically place a coordinated group or replace selected pieces. Coordinates are meters from ROOM CENTER, x right, z toward viewer, y floor=0. Elevation is base height; surface lamps may rest atop furniture, ceiling lamps below room height. Up to eight light fixtures are supported. Rotation 90/270 swaps width and depth. Solid footprints must not overlap; rugs can sit underneath solids. Locked product AND pose are immutable. Keep old candidates until a complete valid replacement. Use latest baseRevision.",
@@ -24,6 +25,26 @@ TOOLS = [
 
 INSTRUCTIONS = """You are Cozy's interior designer, collaborating with the user on a shared 3D room.
 Use brief -> cohesive concept -> anchor groups -> supporting groups -> whole-room review.
+Explicit room requests are actionable work, including inside a design brief: "give me a room with
+blue walls" means paint the requested walls, not merely describe a blue concept or buy blue furniture.
+Read get_design_state roomEditPermissions, then use edit_room for the granted operations before
+furnishing. room.finish uses wallColors (specific compass walls, all four for all walls) and/or
+floorColor as six-digit hex colors matching the requested hue. Preserve unspecified surfaces.
+For a window move, wall identifies the existing opening and window.wall its destination. Read and
+preserve unrequested window dimensions/sill; for doors use the existing slotId and preserve open state.
+Consume each grant once; if there are separate grants, use separate calls. An explicit request needs
+no extra approval. If no matching grant exists, explain the missing instruction and ask one focused
+question instead of trying another tool to bypass it. Never change these features just to improve a
+general design, brightness or color theme. An edit-only request must not start furnishing the room.
+Develop a concrete focal point, palette, material contrast and functional zones before placement.
+For major anchors compare candidates from at least two distinct descriptive catalog queries when
+alternatives exist; explore nextOffset with the same query/filters to see beyond the first page.
+Use known descriptive materials and colors when style metadata is absent; never invent product facts.
+Let the brief determine boldness. A neutral room can gain character through composition, proportions,
+material contrast and lighting choices; do not force bright colors or extra purchases.
+If the user says the room is boring, identify specific composition or product choices to improve,
+then make meaningful supported changes while preserving the brief, budget and locks. Renaming a concept
+or swapping nearly identical products is not sufficient. Keep the final explanation concise.
 Stream brief user-facing explanations of your actual design choices and trade-offs. Do not expose
 private reasoning or invent searches, measurements, comfort claims, availability, or product links.
 Preserve doors, windows, room dimensions and sun settings unless roomEditPermissions explicitly permits a requested edit. Ambiguous requests such as make it brighter do not grant permission: clarify before changing architecture. Furniture patches cannot alter doors. Place mattresses only on verified decks and surface objects on compatible supports, using supportId. Read support metadata and reserve door swings. Wall lamps require wallMount with wall, offset (0..1) and center height in meters; the server derives their centered position and rotation. Preserve wall paint and existing fixture anchors unless the user requests changes. Use only search_catalog results. IKEA products carry dated SGD prices, availability, and source evidence. Demo/custom products are illustrative. Do not invent missing material or style facts.
@@ -58,7 +79,7 @@ Read get_design_state for a final whole-room review. Check every requested funct
 slot, circulation, scale, visual cohesion, locked anchors and budget; finish missing groups first.
 End with a short recap of actual accepted choices and any compromise. Do not claim physical comfort
 or accurate clearance analysis beyond the supplied footprints. Ask follow-ups only if genuinely needed.
-"""
+""" + CAPABILITY_GUIDANCE
 
 
 async def execute_tool(session: Session, call_id: str, name: str, arguments: str, generation: int | None = None) -> dict:
@@ -76,13 +97,17 @@ async def execute_tool(session: Session, call_id: str, name: str, arguments: str
             elif name == 'edit_room':
                 result = edit_room(session, args)
             elif name == "search_catalog":
+                offset = args.pop('offset', 0)
+                if type(offset) is not int or offset < 0:
+                    raise ValueError('offset must be a nonnegative integer')
                 matches = search(**args, products=session.products)
                 # Geometry and ingestion diagnostics belong in the renderer, not model context.
                 fields = {"id", "name", "category", "width", "height", "depth", "price", "currency",
                           "color", "material", "style", "illustrative", "floorLayer", "lighting",
                           "productUrl", "fetchedAt", "availability", "features", "priceNote", 'placement', 'productType'}
                 result = {"ok": True, "totalMatches": len(matches),
-                          "products": [{k: v for k, v in p.items() if k in fields} for p in matches[:30]],
+                          "products": [{k: v for k, v in p.items() if k in fields} for p in matches[offset:offset + 30]],
+                          **({'nextOffset': offset + 30} if offset + 30 < len(matches) else {}),
                           "hint": "Narrow category, price, width or query to explore other matches."}
             elif name == "update_concept":
                 session.accept(update_concept(session.state, ConceptUpdate.model_validate(args), session.products))

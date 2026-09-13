@@ -113,6 +113,16 @@ restart the backend after creating the first build. Vite development is unchange
 - Manual room edits appear as compact activity rows (for example, You moved with a
   named object pill), not Astra speech. They remain in authoritative room context
   and steer active work silently; an edit alone never starts a new design response.
+  Edits less than five seconds apart update one activity row. Repeated rotations
+  collapse to one action; moving and rotating a piece combines both actions.
+  Multi-piece and multi-setting bursts expand into named summaries. A new chat
+  message, Undo, Reset or restore closes the burst. Every accepted edit still saves,
+  steers active work immediately and retains its own undo step. Activity summaries
+  recover with a live session; they are not stored in device conversation backups.
+  Written messages have individual delivery receipts. Activity shows Saved to room
+  while Astra is idle, or Received by Astra after its latest edit reaches Astra.
+  Receipt means the update reached the model, not that a requested change is complete.
+  Disconnects mark unfinished delivery uncertain; reconnect clears transient receipts.
 - Describe a room to Astra. It streams explanations and places coordinated groups.
   Select an item or use a group's Comment button to scope feedback. Named object
   pills show the targets in the composer and sent messages; click one to select
@@ -132,6 +142,10 @@ depth]. The renderer centers GLBs and normalizes their bounds without changing t
 cached source scene. Rendering remains on demand with DPR capped at 1.5 and one
 1024 x 1024 directional shadow map. A model load error shows a selectable fallback
 without taking down other room items.
+
+Walls facing the camera automatically cut away as you orbit; Top view hides all
+wall surfaces. Cutaway walls still block light and cast shadows but do not block
+selection. Doors, windows and wall lamps remain visible and editable.
 
 ## Sessions and device backups
 
@@ -176,6 +190,12 @@ storage is optional; the UI reports write failures while preserving backend stat
   Chat messages optionally include `references: [{slotId, name, category}]`; names
   are captured at send time and survive replacement/deletion. Model feedback retains
   internal target IDs separately from the visible message.
+  Activity messages may include `activity: {changes, editCount, latestRequestId,
+  steering}`. Each change has a stable `key`, deduplicated `actions`, a readable
+  `label`, optional object `reference` and final toggle `detail`. Updated bursts
+  reuse their `chat.message` ID; clients replace that message in place. Delivery
+  receipts match `latestRequestId`, so older acknowledgments cannot confirm newer
+  edits. Existing `text` and `references` remain available as a fallback.
   Chat events include `chat.message`, `chat.delta`, `agent.status`, `feedback.ack`,
   `design.group` and `design.completed`. Receipt, upstream submission, queued
   steering and applied feedback are distinguished. Errors leave the socket usable.
@@ -207,6 +227,21 @@ bounded catalog search and atomic tools; `astra.py` manages Responses WebSocket
 streaming and steering. Completed tool calls are deduplicated, and canceled runs
 cannot commit late results. Session limits include 100 room slots, 100 custom
 products, 50 chat messages, 100 feedback entries and 500 deduplication records.
+
+The designer's `search_catalog` tool ranks explicit descriptive fields, weights
+name/style/material/color above general description/category/features, and breaks
+ties by product ID. URLs, IDs and ingestion diagnostics do not affect relevance.
+Each response includes `totalMatches` and at most 30 products. Supply its optional
+`nextOffset` as `offset` with unchanged query and filters for the next page;
+`offset` defaults to zero and must be a nonnegative integer. Empty results have no
+`nextOffset`. Availability, local renderability, size and price filters still apply.
+
+Astra develops a focal point, palette, material contrast and functional zones using
+the existing catalog. It cannot inspect photos, model raised platforms/custom
+built-ins, search external inspiration or save independent room variants. Text
+and voice explain these limits when relevant and continue with supported requests.
+See [design evaluation cases](docs/dogfood-evaluation.md) for the paired quality
+review; automated and simulated checks do not establish live design quality.
 
 ## Verify
 
@@ -248,9 +283,29 @@ and share one undo step. A locked dependent blocks a move that would affect it.
 Similar pieces uses a manual replacement command without starting a model call.
 
 Astra's separate `edit_room` tool requires permission from the current explicit
-chat request. For example, “Add a north-facing window” permits that operation;
-“make it brighter” does not. Ordinary design requests keep architecture fixed.
+chat or delegated voice request. “Give me a room with blue walls” permits wall
+paint; “change the floor color to white” permits floor paint; “make it brighter”
+does not grant either. Ordinary design requests keep architecture and finishes fixed.
+The `room.finish` operation accepts a partial `wallColors` map and/or `floorColor`
+in six-digit hex. Only the requested surfaces may change. Named walls restrict
+the grant; an unspecified singular wall permits one wall. Unsupported or ambiguous
+phrasing may need a focused clarification. Explicit requests need no second approval.
+Window and door edits support repositioning: `wall` identifies the existing source,
+and the nested `window` or `door` anchor identifies the destination. A move request
+does not permit window resizing or toggling a door. Locks, occupied window walls,
+placement validation and revision checks still apply.
 Permissions expire on completion, cancellation, undo, or a later request.
+
+A small green compass stays visible in the room viewport. Its north arrow follows
+the camera, with upright N/E/S/W labels, including in top view and on mobile.
+It updates during demand-rendered frames without changing room state or intercepting
+dragging and selection.
+
+To reuse an existing backend environment file from another checkout, start the real
+backend with `python -m uvicorn backend.main:app --env-file <existing-env-path>`
+and the desired host/port. Keep that environment file ignored; the frontend never
+receives the API key. Use `backend.main:app`, rather than the browser simulator,
+for actual Astra requests (these incur API usage).
 
 Restore first produces a server-owned preview of adjustments and blockers.
 Applying requires its `previewId`, the current revision, and an empty session.

@@ -2,6 +2,7 @@
 
 from typing import Any
 import json
+import re
 from backend.products import ROOT, generated, load_ikea
 
 
@@ -51,10 +52,20 @@ BY_ID = {item["id"]: item for item in CATALOG}
 
 def search(category: str | None = None, max_price: float | None = None,
            max_width: float | None = None, query: str = "", products: dict | None = None) -> list[dict[str, Any]]:
-    matches = [p for p in (products or BY_ID).values() if p.get("canRecommend", True) and (not category or p["category"] == category)
+    matches = [p for p in (BY_ID if products is None else products).values() if p.get("canRecommend", True) and p.get('readyForPreview', True) and (not category or p["category"] == category)
                and (max_price is None or p["price"] <= max_price)
                and (max_width is None or p["width"] <= max_width)]
-    words = query.lower().split()
-    return sorted(matches, key=lambda p: -sum(word in str(p).lower() for word in words))
+    words = set(re.findall(r'\w+', query.casefold()))
+    def score(p: dict) -> int:
+        total = 0
+        for field, weight in [('name', 4), ('style', 4), ('material', 4), ('color', 4),
+                              ('description', 1), ('category', 1), ('features', 1)]:
+            value = p.get(field) or ''
+            if isinstance(value, list):
+                value = ' '.join(str(v) for v in value)
+            tokens = set(re.findall(r'\w+', str(value).casefold()))
+            total += weight * len(words & tokens)
+        return total
+    return sorted(matches, key=lambda p: (-score(p), p['id']))
 
 CATALOG_SUMMARY = {"reviewCount": len(json.loads((ROOT / "data/ikea-review.json").read_text(encoding="utf-8"))["products"])}

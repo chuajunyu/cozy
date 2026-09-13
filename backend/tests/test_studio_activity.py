@@ -17,7 +17,7 @@ def test_activity_is_named_replayable_and_only_records_accepted_edits():
         command = await edit(session, 'item.update', slotId='desk', expectedProduct='sample-desk', x=.2)
         message = session.messages[-1]
         assert message['role'] == 'system' and message['kind'] == 'activity'
-        assert message['text'] == 'You moved'
+        assert message['text'] == 'You added and moved'
         assert message['references'][0]['name'] == session.products['sample-desk']['name']
         assert 'silently' in session.state.feedback[-1]['text']
         count = len(session.messages)
@@ -28,7 +28,8 @@ def test_activity_is_named_replayable_and_only_records_accepted_edits():
         assert len(session.messages) == count
         await edit(session, 'item.delete', slotId='desk', expectedProduct='sample-desk')
         assert session.messages[-1]['references'] == message['references']
-        assert session.envelope()['messages'][-1]['text'] == 'You removed'
+        assert session.envelope()['messages'][-1]['text'] == 'You added, then moved, then removed'
+        assert len(session.messages) == 1
     asyncio.run(run())
 
 
@@ -81,6 +82,6 @@ def test_active_designer_receives_manual_context_without_a_chat_bubble():
         steer = designer.connection.steers[0]['input']
         assert 'silently' in steer and 'Latest authoritative state' in steer
         assert not designer.connection.creates
-        assert session.messages[-1]['text'] == 'You moved'
+        assert session.messages[-1]['text'] == 'You added and moved'
         assert all(m['role'] == 'system' for m in session.messages)
     asyncio.run(run())

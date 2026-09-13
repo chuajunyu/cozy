@@ -114,7 +114,7 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
         session.state = state
         if command.type in {'chat.send', 'feedback.send'}:
             session.room_permissions.clear()
-            grants = explicit_permissions(command.text) if command.type == 'chat.send' or command.action == 'comment' else []
+            grants = explicit_permissions(command.text, slots) if command.type == 'chat.send' or command.action == 'comment' else []
             if grants:
                 session.room_permissions[command.requestId] = grants
         references = [{"slotId": id, "name": session.products.get(state.slots[id].catalogId, {}).get("name") or state.slots[id].label,

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
+import { deliveryReducer } from './delivery'
 import { acceptSnapshot } from './snapshot'
 import { backupKey, makeBackup } from './backup'
 import { automaticRestore, readSavedRoom } from './recovery'
@@ -28,7 +29,7 @@ export function useConnection() {
   const [agentStatus, setAgentStatus] = useState('idle')
   const [activity, setActivity] = useState('Ready when you are')
   const [error, setError] = useState('')
-  const [feedbackStage, setFeedbackStage] = useState('')
+  const [deliveries, dispatchDelivery] = useReducer(deliveryReducer, {})
   const [reviewCount, setReviewCount] = useState(0)
   const [backup, setBackup] = useState<string | null>(null)
   const [recoveryError, setRecoveryError] = useState('')
@@ -41,7 +42,7 @@ export function useConnection() {
   const recoveryAttempt = useRef<string | null>(null)
   const retryCount = useRef(0)
   const pendingRequest = useRef<string | null>(null)
-  const latestRequest = useRef<string | null>(null)
+  const chatRequests = useRef(new Set<string>())
 
   useEffect(() => {
     let retryTimer: ReturnType<typeof setTimeout> | undefined
@@ -53,6 +54,7 @@ export function useConnection() {
       connection.send(JSON.stringify({ type: 'session.init', ...saved.current }))
     }
     connection.onclose = () => {
+      dispatchDelivery({ type: 'disconnect' })
       setStatus('disconnected'); setPending(false); pendingRequest.current = null
       previewRequest.current = null; restoreRequest.current = null; recoveryAttempt.current = null
       retryTimer = setTimeout(() => setAttempt(value => value + 1), Math.min(1000 * 2 ** retryCount.current++, 10000))
@@ -63,6 +65,7 @@ export function useConnection() {
         const payload = JSON.parse(event.data)
         switch (payload.type) {
           case 'session.ready':
+            dispatchDelivery({ type: 'reset' }); chatRequests.current.clear()
             saved.current = { sessionId: payload.sessionId, messages: payload.messages }
             setSessionId(payload.sessionId)
             retryCount.current = 0
@@ -100,12 +103,15 @@ export function useConnection() {
           case 'command.ack':
             if (payload.requestId === pendingRequest.current) { setPending(false); pendingRequest.current = null }
             if (payload.requestId === restoreRequest.current) { setBackup(null); setRecoveryError(''); restoreRequest.current = null }
-            setFeedbackStage('applied')
             break
           case 'voice.warning':
             setError(payload.message)
             break
           case 'chat.message':
+            if (payload.message.activity) {
+              const activity = payload.message.activity
+              dispatchDelivery({ type: 'track', requestId: activity.latestRequestId, owner: payload.message.id, kind: 'activity', stage: activity.steering ? 'received' : 'saved' })
+            }
             setMessages(previous => previous.some(m => m.id === payload.message.id)
               ? previous.map(m => m.id === payload.message.id ? payload.message : m)
               : [...previous, payload.message].slice(-50))
@@ -121,15 +127,15 @@ export function useConnection() {
           case 'agent.status': setAgentStatus(payload.status); setActivity(payload.activity); break
           case 'feedback.ack':
             if (payload.requestId === pendingRequest.current) { setPending(false); pendingRequest.current = null }
-            if (payload.requestId === latestRequest.current) setFeedbackStage(payload.stage)
+            dispatchDelivery({ type: 'ack', requestId: payload.requestId, stage: payload.stage })
             break
           case 'error':
             setDiagnostic(payload.message)
             if (payload.requestId && [previewRequest.current, restoreRequest.current].includes(payload.requestId)) {
               setRecoveryError('Your saved room couldn’t be opened.')
               previewRequest.current = null; restoreRequest.current = null
-            } else setError(payload.message)
-            setFeedbackStage('failed')
+            } else if (!chatRequests.current.has(payload.requestId) && payload.code !== 'steering_failed') setError(payload.message)
+            dispatchDelivery({ type: 'error', requestId: payload.requestId })
             if (!payload.requestId || payload.requestId === pendingRequest.current) { setPending(false); pendingRequest.current = null }
             break
           case 'connection.resync': setAttempt(value => value + 1); break
@@ -159,12 +165,17 @@ export function useConnection() {
     if (socket.current?.readyState !== WebSocket.OPEN) { setError('Reconnect before sending an update.'); return false }
     try {
       const requestId = crypto.randomUUID()
-      latestRequest.current = requestId
+      const conversational = command.type === 'chat.send' || (command.type === 'feedback.send' && (!command.action || command.action === 'comment' || command.action.startsWith('reroll')))
+      if (conversational) {
+        chatRequests.current.add(requestId)
+        if (chatRequests.current.size > 50) chatRequests.current.delete(chatRequests.current.values().next().value!)
+        dispatchDelivery({ type: 'track', requestId, owner: requestId, kind: 'chat', stage: 'sending' })
+      }
       if (manual) { pendingRequest.current = requestId; setPending(true) }
       if (command.type === 'session.restore') restoreRequest.current = requestId
       if (command.type === 'session.restore.preview') previewRequest.current = requestId
       socket.current.send(JSON.stringify({ ...command, baseRevision: command.baseRevision ?? stateRef.current?.revision, requestId }))
-      setFeedbackStage('sending'); setError('')
+      setError('')
       return true
     } catch { pendingRequest.current = null; setPending(false); setError('That update could not be sent. Please reconnect.'); return false }
   }, [])
@@ -201,5 +212,5 @@ export function useConnection() {
     setBackup(null); setRecoveryError(''); setError('')
     return true
   }
-  return { sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, feedbackStage, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
+  return { sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, deliveries, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
 }

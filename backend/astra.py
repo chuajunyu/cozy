@@ -50,6 +50,7 @@ class AstraDesigner:
     async def run(self) -> None:
         session = self.session
         if self.client is None and not os.getenv("OPENAI_API_KEY"):
+            self.fail_pending()
             session.publish({"type": "error", "code": "missing_key", "message": "Configure OPENAI_API_KEY on the backend to design with Astra."})
             session.set_status("error", "Astra is not configured")
             return
@@ -65,6 +66,7 @@ class AstraDesigner:
             session.set_status("idle", "Design paused; your room is preserved")
             raise
         except Exception as exc:
+            self.fail_pending()
             cause = exc
             while isinstance(cause, BaseExceptionGroup):
                 cause = cause.exceptions[0]
@@ -133,6 +135,20 @@ class AstraDesigner:
     def ack(self, request: dict, stage: str) -> None:
         self.session.publish({"type": "feedback.ack", "requestId": request["requestId"], "stage": stage})
 
+    def fail_pending(self) -> None:
+        """End outstanding delivery indicators when the designer cannot connect."""
+        pending = [*self.waiting, *self.sent_steers, *self.accepted.values()]
+        if self.creating_request:
+            pending.append(self.creating_request)
+        while not self.inbox.empty():
+            pending.append(self.inbox.get_nowait())
+        for request in {r['requestId']: r for r in pending}.values():
+            self.ack(request, 'failed')
+        self.waiting.clear()
+        self.sent_steers.clear()
+        self.accepted.clear()
+        self.creating_request = None
+
     async def read_events(self) -> None:
         async for sdk_event in self.connection:
             event = sdk_event if isinstance(sdk_event, dict) else sdk_event.model_dump()
@@ -163,7 +179,7 @@ class AstraDesigner:
         elif kind == "response.output_text.delta":
             session.delta(event["item_id"], event["delta"], internal=self.voice_turn)
         elif kind == "response.output_item.added" and event["item"].get("type") == "function_call":
-            activities = {"search_catalog": "Comparing catalog options", "get_design_state": "Reviewing your room and preferences", "update_concept": "Establishing the whole-room concept", "apply_design_patch": "Checking a coordinated furniture group"}
+            activities = {"search_catalog": "Comparing catalog options", "get_design_state": "Reviewing your room and preferences", "update_concept": "Establishing the whole-room concept", "apply_design_patch": "Checking a coordinated furniture group", "edit_room": "Applying your requested room changes"}
             session.set_status("working", activities.get(event["item"].get("name"), "Developing your design"))
         elif kind == "response.output_item.done" and event["item"].get("type") == "function_call":
             response_id = event.get("response_id") or self.active_id
@@ -181,7 +197,7 @@ class AstraDesigner:
                 request = self.sent_steers.popleft()
             if request:
                 self.ack(request, "failed")
-            session.publish({"type": "error", "code": "steering_failed", "message": "Astra could not apply that update yet. The backend has preserved your locks and feedback. Send a follow-up to retry."})
+            session.publish({"type": "error", "code": "steering_failed", **({'requestId': request['requestId']} if request else {}), "message": "Astra could not apply that update yet. The backend has preserved your locks and feedback. Send a follow-up to retry."})
         elif kind == "response.steer.pending":
             parent = event["steer"]["previous_response_id"]
             results = []

@@ -80,3 +80,55 @@ def test_websocket_tls_has_verified_roots_without_native_ca_bundle(monkeypatch):
     assert configured.check_hostname
     assert configured.verify_mode == ssl.CERT_REQUIRED
     assert configured.cert_store_stats()['x509_ca'] > 0
+
+
+def test_steering_failure_is_scoped_to_its_request_and_other_updates_continue():
+    async def run():
+        session = Session()
+        queue = asyncio.Queue()
+        session.subscribers.add(queue)
+        designer = AstraDesigner(session)
+        designer.connection = FakeTransport()
+        await designer.handle_event({'type': 'response.created', 'response': {'id': 'first'}})
+        for request in ['a', 'b']:
+            await designer.steer({'requestId': request, 'text': request})
+            await designer.handle_event({'type': 'response.steer.accepted', 'steer': {'id': request}})
+        await designer.handle_event({'type': 'response.steer.failed', 'steer': {'id': 'a'}})
+        assert 'b' in designer.accepted
+        await designer.handle_event({'type': 'response.created', 'response': {'id': 'next', 'previous_response_id': 'first'}})
+        events = []
+        while not queue.empty():
+            events.append(queue.get_nowait())
+        assert any(e.get('code') == 'steering_failed' and e['requestId'] == 'a' for e in events)
+        assert any(e['type'] == 'feedback.ack' and e['requestId'] == 'b' and e['stage'] == 'applied' for e in events)
+    asyncio.run(run())
+
+
+def test_canceled_generation_ignores_late_receipts_and_text():
+    async def run():
+        session = Session()
+        designer = AstraDesigner(session)
+        designer.connection = FakeTransport()
+        session.generation += 1
+        await designer.handle_event({'type': 'response.created', 'response': {'id': 'late'}})
+        await designer.handle_event({'type': 'response.output_text.delta', 'item_id': 'late', 'delta': 'obsolete'})
+        assert not session.messages and designer.active_id is None
+    asyncio.run(run())
+
+
+def test_unconfigured_designer_fails_pending_delivery_without_api_call(monkeypatch):
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    async def run():
+        session = Session()
+        queue = asyncio.Queue()
+        session.subscribers.add(queue)
+        designer = AstraDesigner(session)
+        designer.submit('a', 'Design my room')
+        designer.submit('b', 'Also add a desk')
+        await designer.run()
+        events = []
+        while not queue.empty():
+            events.append(queue.get_nowait())
+        assert [(e['requestId'], e['stage']) for e in events if e['type'] == 'feedback.ack'] == [('a', 'failed'), ('b', 'failed')]
+        assert designer.inbox.empty()
+    asyncio.run(run())

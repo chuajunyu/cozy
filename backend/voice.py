@@ -16,6 +16,7 @@ from backend.astra import astra_tls_context
 from backend.design import DesignError
 from backend.protocol import Command, handle_command
 from backend.sessions import Session
+from backend.capabilities import CAPABILITY_GUIDANCE
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -34,7 +35,7 @@ Delegate all room changes, catalog searches, prices, and questions about the act
 Never claim a change succeeded before the backend confirms it. Clarify ambiguous requests.
 When the user corrects a request, delegate the correction too. You can keep conversing
 while work runs. Speech interruption or ending voice does not cancel room work.
-"""
+""" + CAPABILITY_GUIDANCE
 
 
 class VoiceServiceError(RuntimeError):

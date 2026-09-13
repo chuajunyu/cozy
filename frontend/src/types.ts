@@ -29,7 +29,10 @@ export type DesignState = {
   rerollTargets: string[] | null; undoCount: number
 }
 export type ObjectReference = { slotId: string; name: string; category: string }
-export type ChatMessage = { id: string; role: 'user' | 'assistant' | 'system'; text: string; references?: ObjectReference[]; kind?: 'activity' }
+export type ActivityChange = { key: string; actions: string[]; label: string; reference: ObjectReference | null; detail: string | null }
+export type ChatMessage = { id: string; role: 'user' | 'assistant' | 'system'; text: string; references?: ObjectReference[]; kind?: 'activity'; activity?: {
+  changes: ActivityChange[]; editCount: number; latestRequestId: string; steering: boolean
+} }
 export type Command = {
   type: 'chat.send' | 'feedback.send' | 'item.lock' | 'item.add' | 'item.update' | 'item.delete'
     | 'room.update' | 'fixture.update' | 'room.clear' | 'room.undo' | 'catalog.import' | 'session.restore' | 'session.restore.preview' | 'item.replace'

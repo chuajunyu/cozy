@@ -10,7 +10,7 @@ from backend.placement import alternative_kind, inferred_support, settle_state
 from backend.products import GeneratedProduct, generated
 from backend.sessions import Session
 from backend.concurrency import can_rebase
-from backend.studio_activity import describe_activity
+from backend.studio_activity import activity_change, describe_activity
 
 
 class Backup(Model):
@@ -208,7 +208,10 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             if kind not in {"catalog.import", "session.restore", "room.undo"}:
                 state.feedback.append({"text": text, "slotIds": [command.slotId] if command.slotId else []})
                 state.feedback = state.feedback[-100:]
-            activity = describe_activity(kind, command.slotId, session.state, state, products)
+            change = activity_change(kind, command.slotId, session.state, state, products)
+            activity = describe_activity(kind, command.slotId, session.state, state, products) if kind in {'room.undo', 'room.clear'} else None
+            if kind in {'room.undo', 'room.clear', 'session.restore'}:
+                session.close_activity()
             session.state = state
             session.custom_products = custom
             if kind in {"catalog.import", "session.restore"}:
@@ -221,5 +224,8 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             session.publish(ack)
             if activity:
                 session.message('system', activity[0], command.requestId, activity[1], kind='activity')
-            if session.designer and session.task and not session.task.done() and session.designer.active:
+            steering = bool(session.designer and session.task and not session.task.done() and session.designer.active)
+            if change:
+                session.record_activity(change, command.requestId, steering=steering)
+            if steering:
                 session.designer.submit(command.requestId, text, background=True)

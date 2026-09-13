@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from backend.design import DesignState, snapshot
 from backend.catalog import BY_ID, CATALOG_SUMMARY
+from backend.studio_activity import merge_activity
 
 
 class SavedReference(BaseModel):
@@ -52,6 +53,8 @@ class Session:
     requests: dict[str, dict] = field(default_factory=dict)
     status: str = "idle"
     activity: str = "Ready when you are"
+    activity_burst: str | None = None
+    activity_touched: float = 0
     voice_active: bool = False
     designer: Any = None
     task: asyncio.Task | None = None
@@ -94,11 +97,34 @@ class Session:
         self.status, self.activity = status, activity
         self.publish({"type": "agent.status", "status": status, "activity": activity})
 
-    def message(self, role: str, text: str, id: str | None = None, references: list[dict] | None = None, *, kind: str | None = None) -> str:
+    def close_activity(self) -> None:
+        self.activity_burst = None
+
+    def record_activity(self, change: dict, request_id: str, *, steering: bool, now: float | None = None) -> None:
+        now = time.monotonic() if now is None else now
+        previous = next((m for m in self.messages if m['id'] == self.activity_burst), None)
+        if previous and (now - self.activity_touched >= 5 or
+                         (len(previous['activity']['changes']) >= 50 and
+                          all(c['key'] != change['key'] for c in previous['activity']['changes']))):
+            previous = None
+        changes = merge_activity(previous['activity']['changes'] if previous else [], change)
+        references = [c['reference'] for c in changes if c['reference']]
+        text = ('You ' + changes[0]['label'][0].lower() + changes[0]['label'][1:] if len(changes) == 1
+                else f"Updated {len(references)} pieces" if len(references) == len(changes)
+                else 'Updated your room')
+        metadata = {'changes': changes, 'editCount': (previous['activity']['editCount'] if previous else 0) + 1,
+                    'latestRequestId': request_id, 'steering': steering}
+        self.activity_burst = self.message('system', text, previous['id'] if previous else request_id,
+                                           references, kind='activity', activity=metadata)
+        self.activity_touched = now
+
+    def message(self, role: str, text: str, id: str | None = None, references: list[dict] | None = None, *, kind: str | None = None, activity: dict | None = None) -> str:
         id = id or secrets.token_hex(8)
-        message = {"id": id, "role": role, "text": text, **({"references": references} if references else {}), **({"kind": kind} if kind else {})}
+        message = {"id": id, "role": role, "text": text, **({"references": references} if references else {}), **({"kind": kind} if kind else {}), **({'activity': activity} if activity else {})}
         existing = next((i for i, item in enumerate(self.messages) if item["id"] == id), None)
         if existing is None:
+            if role in {'user', 'assistant'}:
+                self.close_activity()
             self.messages.append(message)
         else:
             self.messages[existing] = message
@@ -109,6 +135,7 @@ class Session:
     def delta(self, id: str, text: str, *, internal: bool = False) -> None:
         message = next((m for m in self.messages if m["id"] == id), None)
         if message is None:
+            self.close_activity()
             self.messages.append({"id": id, "role": "assistant", "text": "", **({"internal": True} if internal else {})})
             self.messages = self.messages[-50:]
             message = self.messages[-1]
