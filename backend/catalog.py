@@ -1,6 +1,8 @@
 """Curated demo furniture. Prices are illustrative SGD, not live retail quotes."""
 
 from typing import Any
+import json
+from backend.products import ROOT, generated, load_ikea
 
 
 def product(id: str, name: str, category: str, size: tuple[float, float, float],
@@ -40,13 +42,19 @@ CATALOG = [
     product("plant-olive", "Olive plant in clay pot", "plant", (.35, .35, .95), 35, "#718260", "terracotta", "natural"),
     product("plant-fern", "Fern in sand pot", "plant", (.3, .3, .7), 25, "#84916a", "ceramic", "natural"),
 ]
+for item in CATALOG:
+    item.update(collection=item['category'].replace('_', ' ').title(), readyForPreview=True, canRecommend=True)
+CATALOG += [generated(p, 'sample-') for p in json.loads((ROOT / 'data/samples.json').read_text())]
+CATALOG += load_ikea()
 BY_ID = {item["id"]: item for item in CATALOG}
 
 
 def search(category: str | None = None, max_price: float | None = None,
-           max_width: float | None = None, query: str = "") -> list[dict[str, Any]]:
-    matches = [p for p in CATALOG if (not category or p["category"] == category)
+           max_width: float | None = None, query: str = "", products: dict | None = None) -> list[dict[str, Any]]:
+    matches = [p for p in (products or BY_ID).values() if p.get("canRecommend", True) and (not category or p["category"] == category)
                and (max_price is None or p["price"] <= max_price)
                and (max_width is None or p["width"] <= max_width)]
     words = query.lower().split()
     return sorted(matches, key=lambda p: -sum(word in str(p).lower() for word in words))
+
+CATALOG_SUMMARY = {"reviewCount": len(json.loads((ROOT / "data/ikea-review.json").read_text(encoding="utf-8"))["products"])}

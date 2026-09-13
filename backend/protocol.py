@@ -13,10 +13,11 @@ from backend.sessions import Session
 
 class Command(Model):
     type: Literal["chat.send", "feedback.send", "item.lock"]
+    baseRevision: int | None = None
     requestId: str = Field(min_length=1, max_length=100)
     text: str = Field(default="", max_length=6000)
     action: Literal["comment", "like", "reroll", "reroll_unlocked"] = "comment"
-    slotIds: list[str] = Field(default_factory=list, max_length=12)
+    slotIds: list[str] = Field(default_factory=list, max_length=100)
     expectedProducts: dict[str, str] = Field(default_factory=dict)
     locked: bool = True
     budget: float | None = Field(default=None, gt=0, le=1_000_000)
@@ -38,10 +39,17 @@ def explicit_budget(text: str) -> float | None:
 
 
 async def handle_command(session: Session, command: Command, designer_factory=AstraDesigner) -> None:
+    async with session.command_lock:
+        await _handle_command(session, command, designer_factory)
+
+
+async def _handle_command(session: Session, command: Command, designer_factory) -> None:
     async with session.lock:
         if command.requestId in session.requests:
             session.publish(session.requests[command.requestId])
             return
+        if command.baseRevision is not None:
+            require(command.baseRevision == session.state.revision, "stale_revision", "The room changed. Review it and try again.")
         state = session.state.model_copy(deep=True)
         slots = list(dict.fromkeys(command.slotIds))
         if command.action == "reroll_unlocked" and command.type == "feedback.send":
@@ -92,9 +100,11 @@ async def handle_command(session: Session, command: Command, designer_factory=As
                 require(bool(command.text.strip()), "empty_message", "Add a comment or choose a replacement reason.")
                 text = ("Regarding " + ", ".join(slots) + ": " if slots else "") + command.text
         state.feedback.append({"requestId": command.requestId, "type": command.type, "action": command.action,
-                               "slotIds": slots, "text": text})
+                               "slotIds": slots, "products": {id: state.slots[id].catalogId for id in slots}, "text": text})
         state.feedback = state.feedback[-100:]
         state.revision += 1
+        if command.type == "item.lock" or state.budget != session.state.budget:
+            session.remember()
         session.state = state
         session.message("user", text, command.requestId)
         session.broadcast_state()

@@ -12,10 +12,17 @@ class Model(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
 
+class LightSettings(Model):
+    on: bool = True
+    brightness: float = Field(default=.7, ge=0, le=1)
+    color: str = Field(default="#ffd3a0", pattern=r"^#[0-9a-fA-F]{6}$")
+
+
 class Room(Model):
     width: float = Field(default=4, ge=2, le=12)
     depth: float = Field(default=3.5, ge=2, le=12)
     height: float = Field(default=2.6, ge=2, le=5)
+    daylight: float = Field(default=1, ge=0, le=1)
 
 
 class SlotPlan(Model):
@@ -32,6 +39,8 @@ class Slot(SlotPlan):
     x: float = 0
     z: float = 0
     rotation: Literal[0, 90, 180, 270] = 0
+    elevation: float = Field(default=0, ge=0, le=5)
+    light: LightSettings | None = None
     locked: bool = False
     liked: bool = False
     replacing: bool = False
@@ -70,6 +79,8 @@ class Placement(Model):
     x: float
     z: float
     rotation: Literal[0, 90, 180, 270]
+    elevation: float = Field(default=0, ge=0, le=5)
+    light: LightSettings | None = None
     explanation: str = Field(min_length=1, max_length=1500)
 
 
@@ -91,37 +102,56 @@ def require(condition: bool, code: str, message: str) -> None:
         raise DesignError(code, message)
 
 
-def total(state: DesignState) -> float:
-    return sum(BY_ID[s.catalogId]["price"] for s in state.slots.values() if s.catalogId)
+def total(state: DesignState, products: dict | None = None) -> float:
+    products = BY_ID if products is None else products
+    return sum(products[s.catalogId]["price"] for s in state.slots.values() if s.catalogId)
 
 
-def validate_layout(state: DesignState) -> None:
+def validate_layout(state: DesignState, products: dict | None = None) -> None:
+    products = BY_ID if products is None else products
+    require(len(state.slots) <= 100, "item_limit", "A room supports at most 100 items.")
     footprints = []
+    fixtures = 0
     for slot in state.slots.values():
         if not slot.catalogId:
             continue
-        p = BY_ID[slot.catalogId]
+        p = products.get(slot.catalogId)
+        require(p is not None, "unknown_product", f"Unknown product {slot.catalogId}.")
+        require(p.get("readyForPreview", True), "missing_asset", f"{p['name']}: local model is unavailable.")
+        require(p['category'] == slot.category, "category_mismatch", "Product and slot categories must agree.")
+        fixtures += bool(p.get("lighting"))
+        require(fixtures <= 8, "fixture_limit", "A room supports eight light fixtures.")
+        if slot.light:
+            require(bool(p.get("lighting")), "not_fixture", "Only fixtures have light settings.")
+            mode = p["lighting"]["colorMode"]
+            if mode == "fixed":
+                require(slot.light.color.lower() == "#ffd3a0", "fixed_light", "This fixture has fixed light color.")
+            elif mode == "white-spectrum":
+                require(slot.light.color.lower() in {"#ffd3a0", "#fff4dd", "#dceaff"}, "light_color", "Choose a white-spectrum color.")
         width, depth = (p["depth"], p["width"]) if slot.rotation % 180 else (p["width"], p["depth"])
         require(abs(slot.x) + width / 2 <= state.room.width / 2 + 1e-6
                 and abs(slot.z) + depth / 2 <= state.room.depth / 2 + 1e-6,
                 "out_of_bounds", f"{slot.id} extends outside the room. Coordinates use the room center.")
-        require(p["height"] <= state.room.height, "too_tall", f"{slot.id} exceeds room height.")
-        for other, ow, od, layer in footprints:
+        require(slot.elevation + p["height"] <= state.room.height + 1e-6, "too_tall", f"{slot.id} exceeds room height.")
+        for other, ow, od, layer, oh in footprints:
             # Rugs may sit under furniture; two rugs cannot occupy the same floor area.
             if p["floorLayer"] != layer:
                 continue
+            if slot.elevation >= other.elevation + oh - .005 or other.elevation >= slot.elevation + p["height"] - .005:
+                continue
             overlap = abs(slot.x - other.x) < (width + ow) / 2 - 1e-6 and abs(slot.z - other.z) < (depth + od) / 2 - 1e-6
             require(not overlap, "overlap", f"{slot.id} overlaps {other.id}. Leave room between solid footprints.")
-        footprints.append((slot, width, depth, p["floorLayer"]))
-    require(state.budget is None or total(state) <= state.budget, "over_budget",
-            f"The arrangement costs S${total(state):.0f}, exceeding the S${state.budget} budget.")
+        footprints.append((slot, width, depth, p["floorLayer"], p["height"]))
+    require(state.budget is None or total(state, products) <= state.budget, "over_budget",
+            f"The arrangement costs S${total(state, products):.0f}, exceeding the S${state.budget} budget.")
 
 
-def update_concept(state: DesignState, update: ConceptUpdate) -> DesignState:
+def update_concept(state: DesignState, update: ConceptUpdate, products: dict | None = None) -> DesignState:
+    products = BY_ID if products is None else products
     require(update.baseRevision == state.revision, "stale_revision", "Read the latest design state before editing.")
     ids = [s.id for s in update.slots]
     require(len(ids) == len(set(ids)), "duplicate_slot", "Slot IDs must be unique.")
-    categories = {p["category"] for p in BY_ID.values()}
+    categories = {p["category"] for p in products.values()}
     next_state = state.model_copy(deep=True)
     next_state.concept = update.concept
     for plan in update.slots:
@@ -136,12 +166,14 @@ def update_concept(state: DesignState, update: ConceptUpdate) -> DesignState:
         else:
             require(state.rerollTargets is None, "reroll_scope", "A targeted reroll cannot add new slots.")
             next_state.slots[plan.id] = Slot(**plan.model_dump())
+    require(len(next_state.slots) <= 100, "item_limit", "A room supports at most 100 items.")
     # Plans merge by stable slot ID; omission never deletes an accepted item.
     next_state.revision += 1
     return next_state
 
 
-def apply_patch(state: DesignState, patch: DesignPatch) -> DesignState:
+def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = None) -> DesignState:
+    products = BY_ID if products is None else products
     require(patch.baseRevision == state.revision, "stale_revision", "Read the latest design state before editing.")
     ids = [p.slotId for p in patch.placements] + patch.removeSlotIds
     require(bool(ids), "empty_patch", "A group must contain a change.")
@@ -156,10 +188,11 @@ def apply_patch(state: DesignState, patch: DesignPatch) -> DesignState:
     for placement in patch.placements:
         old = candidate.slots.get(placement.slotId)
         require(old is not None, "unknown_slot", "Define the slot using update_concept first.")
-        p = BY_ID.get(placement.catalogId)
+        p = products.get(placement.catalogId)
         require(p is not None, "unknown_product", f"Unknown catalog ID {placement.catalogId}.")
         require(old.category == p["category"], "category_mismatch", "The product must match the slot category.")
-        same = (old.catalogId, old.x, old.z, old.rotation) == (placement.catalogId, placement.x, placement.z, placement.rotation)
+        require(p.get("canRecommend", True) or old.catalogId == placement.catalogId, "not_recommendable", "Choose an available catalog product.")
+        same = (old.catalogId, old.x, old.z, old.rotation, old.elevation) == (placement.catalogId, placement.x, placement.z, placement.rotation, placement.elevation)
         require(not old.locked or same, "locked", f"{old.id} is locked, including its position and rotation.")
         if state.rerollTargets is not None and old.id not in state.rerollTargets and old.catalogId:
             require(old.catalogId == placement.catalogId, "reroll_scope", f"Preserve the product in {old.id}.")
@@ -168,20 +201,27 @@ def apply_patch(state: DesignState, patch: DesignPatch) -> DesignState:
         rejected = {r["catalogId"] for r in state.rejected.get(old.id, [])}
         require(placement.catalogId not in rejected or (old.catalogId == placement.catalogId and not old.replacing),
                 "rejected_product", f"Choose a different product for {old.id}; this candidate was rejected.")
-        for key in ("catalogId", "x", "z", "rotation", "explanation"):
+        if old.catalogId != placement.catalogId:
+            old.liked = False
+        for key in ("catalogId", "x", "z", "rotation", "elevation", "explanation"):
             setattr(old, key, getattr(placement, key))
+        if placement.light is not None:
+            old.light = placement.light
+        elif not p.get("lighting"):
+            old.light = None
         old.replacing = False
-    validate_layout(candidate)
+    validate_layout(candidate, products)
     candidate.revision += 1
     return candidate
 
 
-def snapshot(state: DesignState) -> dict:
+def snapshot(state: DesignState, products: dict | None = None) -> dict:
+    products = BY_ID if products is None else products
     result = state.model_dump()
-    result["total"] = total(state)
+    result["total"] = total(state, products)
     issues = []
     try:
-        validate_layout(state)
+        validate_layout(state, products)
     except DesignError as exc:
         issues.append(str(exc))
     result["validationIssues"] = issues

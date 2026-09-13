@@ -7,12 +7,17 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from backend.design import DesignState, snapshot
+from backend.catalog import BY_ID, CATALOG_SUMMARY
 
 
 @dataclass
 class Session:
     id: str = field(default_factory=lambda: secrets.token_urlsafe(32))
     state: DesignState = field(default_factory=DesignState)
+    custom_products: dict = field(default_factory=dict)
+    history: list[DesignState] = field(default_factory=list)
+    generation: int = 0
+    command_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     subscribers: set[asyncio.Queue] = field(default_factory=set)
     messages: list[dict] = field(default_factory=list)
@@ -24,6 +29,20 @@ class Session:
     task: asyncio.Task | None = None
     previous_response_id: str | None = None
     touched: float = field(default_factory=time.monotonic)
+
+    @property
+    def products(self) -> dict:
+        return {**BY_ID, **self.custom_products}
+
+    def snapshot(self) -> dict:
+        return {**snapshot(self.state, self.products), "undoCount": len(self.history)}
+
+    def remember(self) -> None:
+        self.history = [*self.history[-29:], self.state.model_copy(deep=True)]
+
+    def accept(self, state: DesignState) -> None:
+        self.remember()
+        self.state = state
 
     def publish(self, event: dict) -> None:
         self.touched = time.monotonic()
@@ -38,7 +57,7 @@ class Session:
                 queue.put_nowait(event)
 
     def broadcast_state(self) -> None:
-        self.publish({"type": "design.updated", "state": snapshot(self.state)})
+        self.publish({"type": "design.updated", "state": self.snapshot()})
 
     def set_status(self, status: str, activity: str) -> None:
         self.status, self.activity = status, activity
@@ -62,8 +81,8 @@ class Session:
 
     def envelope(self, reset: bool = False) -> dict:
         return {"type": "session.ready", "sessionId": self.id, "reset": reset,
-                "state": snapshot(self.state), "messages": self.messages,
-                "status": self.status, "activity": self.activity}
+                "state": self.snapshot(), "messages": self.messages,
+                "status": self.status, "activity": self.activity, "catalog": list(self.products.values()), "catalogSummary": CATALOG_SUMMARY}
 
 
 class SessionStore:

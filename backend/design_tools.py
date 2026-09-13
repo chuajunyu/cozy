@@ -12,11 +12,11 @@ from backend.sessions import Session
 TOOLS = [
     {"type": "function", "name": "get_design_state", "description": "Read authoritative room, concept, feedback, rejected candidates, locks and current revision. Always read after feedback or a rejected patch.",
      "parameters": {"type": "object", "properties": {}, "additionalProperties": False}, "strict": True},
-    {"type": "function", "name": "search_catalog", "description": "Find curated, renderable demo products. Prices are illustrative SGD. Query ranks complementary style/material preferences; dimensions and price filter results.",
+    {"type": "function", "name": "search_catalog", "description": "Find available, locally renderable IKEA and demo products. IKEA prices are dated SGD offers; sample prices are illustrative. Query ranks complementary style/material preferences; dimensions and price filter results.",
      "parameters": {"type": "object", "properties": {"category": {"type": "string"}, "max_price": {"type": "number", "minimum": 0}, "max_width": {"type": "number", "minimum": 0}, "query": {"type": "string"}}, "additionalProperties": False}, "strict": False},
     {"type": "function", "name": "update_concept", "description": "Establish a cohesive whole-room concept and stable planned slots grouped by zone. Plan anchors and supports up front (typically 5-10 pieces); saves no furniture yet. Existing slots merge by ID; omission does not remove them. Budget is user-owned and not editable here.",
      "parameters": ConceptUpdate.model_json_schema(), "strict": False},
-    {"type": "function", "name": "apply_design_patch", "description": "Atomically place a coordinated group or replace selected pieces. Coordinates are meters from ROOM CENTER, x right, z toward viewer, y floor=0. Rotation 90/270 swaps width and depth. Solid footprints must not overlap; rugs can sit underneath solids. Locked product AND pose are immutable. Keep old candidates until a complete valid replacement. Use latest baseRevision.",
+    {"type": "function", "name": "apply_design_patch", "description": "Atomically place a coordinated group or replace selected pieces. Coordinates are meters from ROOM CENTER, x right, z toward viewer, y floor=0. Elevation is base height; surface lamps may rest atop furniture, ceiling lamps below room height. Up to eight light fixtures are supported. Rotation 90/270 swaps width and depth. Solid footprints must not overlap; rugs can sit underneath solids. Locked product AND pose are immutable. Keep old candidates until a complete valid replacement. Use latest baseRevision.",
      "parameters": DesignPatch.model_json_schema(), "strict": False},
 ]
 
@@ -24,8 +24,8 @@ INSTRUCTIONS = """You are Cozy's interior designer, collaborating with the user 
 Use brief -> cohesive concept -> anchor groups -> supporting groups -> whole-room review.
 Stream brief user-facing explanations of your actual design choices and trade-offs. Do not expose
 private reasoning or invent searches, measurements, comfort claims, availability, or product links.
-Use only the curated catalog. Its prices and furniture models are illustrative, not real retail quotes.
-Catalog categories are sofa, rug, coffee_table, bed, desk, chair, lamp, shelf, side_table, plant.
+Use only search_catalog results. IKEA products carry dated SGD prices, availability, and source evidence. Demo/custom products are illustrative. Do not invent missing material or style facts.
+Catalog categories are sofa, rug, coffee_table, bed, desk, chair, lamp, shelf, side_table, plant, dining_table, wardrobe, dresser, custom. Search to discover available products.
 Infer routine preferences and explain assumptions. Ask one focused question only when necessary;
 otherwise continue to a complete design without requiring approval for each group.
 Read get_design_state first. The supplied current state overrides assumptions from earlier chat.
@@ -50,8 +50,10 @@ or accurate clearance analysis beyond the supplied footprints. Ask follow-ups on
 """
 
 
-async def execute_tool(session: Session, call_id: str, name: str, arguments: str) -> dict:
+async def execute_tool(session: Session, call_id: str, name: str, arguments: str, generation: int | None = None) -> dict:
     async with session.lock:
+        if generation is not None and generation != session.generation:
+            return {"ok": False, "code": "canceled_generation", "message": "This design run was canceled."}
         if call_id in session.tool_results:
             return session.tool_results[call_id]
         try:
@@ -59,23 +61,30 @@ async def execute_tool(session: Session, call_id: str, name: str, arguments: str
             if not isinstance(args, dict):
                 raise ValueError("Tool arguments must be an object.")
             if name == "get_design_state":
-                result = {"ok": True, "state": snapshot(session.state)}
+                result = {"ok": True, "state": session.snapshot()}
             elif name == "search_catalog":
-                result = {"ok": True, "products": search(**args)}
+                matches = search(**args, products=session.products)
+                # Geometry and ingestion diagnostics belong in the renderer, not model context.
+                fields = {"id", "name", "category", "width", "height", "depth", "price", "currency",
+                          "color", "material", "style", "illustrative", "floorLayer", "lighting",
+                          "productUrl", "fetchedAt", "availability", "features", "priceNote"}
+                result = {"ok": True, "totalMatches": len(matches),
+                          "products": [{k: v for k, v in p.items() if k in fields} for p in matches[:30]],
+                          "hint": "Narrow category, price, width or query to explore other matches."}
             elif name == "update_concept":
-                session.state = update_concept(session.state, ConceptUpdate.model_validate(args))
+                session.accept(update_concept(session.state, ConceptUpdate.model_validate(args), session.products))
                 session.broadcast_state()
-                result = {"ok": True, "state": snapshot(session.state)}
+                result = {"ok": True, "state": session.snapshot()}
             elif name == "apply_design_patch":
                 patch = DesignPatch.model_validate(args)
-                session.state = apply_patch(session.state, patch)
+                session.accept(apply_patch(session.state, patch, session.products))
                 session.broadcast_state()
                 session.publish({"type": "design.group", "explanation": patch.explanation, "slotIds": [p.slotId for p in patch.placements]})
-                result = {"ok": True, "state": snapshot(session.state)}
+                result = {"ok": True, "state": session.snapshot()}
             else:
                 result = {"ok": False, "code": "unknown_tool", "message": "Use one of the provided design tools."}
         except DesignError as exc:
-            result = {"ok": False, "code": exc.code, "message": str(exc), "state": snapshot(session.state)}
+            result = {"ok": False, "code": exc.code, "message": str(exc), "state": session.snapshot()}
         except ValidationError as exc:
             result = {"ok": False, "code": "invalid_arguments", "message": str(exc.errors(include_input=False, include_url=False))}
         except (ValueError, TypeError, RecursionError):

@@ -17,6 +17,7 @@ from backend.sessions import Session
 class AstraDesigner:
     def __init__(self, session: Session, client: Any = None) -> None:
         self.session = session
+        self.generation = session.generation
         self.client = client
         self.connection: Any = None
         self.inbox: asyncio.Queue = asyncio.Queue()
@@ -29,6 +30,7 @@ class AstraDesigner:
         self.outputs: dict[str, list[dict]] = {}
         self.continued: set[str] = set()
         self.turns = 0
+        self.creating_request: dict | None = None
 
     def submit(self, request_id: str, text: str) -> None:
         self.inbox.put_nowait({"requestId": request_id, "text": text})
@@ -72,10 +74,11 @@ class AstraDesigner:
                     self.turns = 0
                     # Recover from authoritative state and saved user-facing conversation.
                     history = [{"role": m["role"], "content": m["text"]} for m in self.session.messages[-20:] if m["role"] in {"user", "assistant"} and m["text"]]
-                    await self.create([{"role": "user", "content": "Current authoritative design state:\n" + json.dumps(snapshot(self.session.state))},
+                    self.creating_request = request
+                    await self.create([{"role": "user", "content": "Current authoritative design state:\n" + json.dumps(self.session.snapshot())},
                                        *history,
                                        {"role": "user", "content": request["text"]}])
-                    self.ack(request, "applied")
+                    self.ack(request, "sent")
                 elif self.active_id:
                     await self.steer(request)
                 else:
@@ -102,7 +105,7 @@ class AstraDesigner:
     async def steer(self, request: dict) -> None:
         request = {**request, "parent": self.active_id}
         await self.connection.response.steer(previous_response_id=self.active_id,
-            input=request["text"] + "\nLatest authoritative state:\n" + json.dumps(snapshot(self.session.state)))
+            input=request["text"] + "\nLatest authoritative state:\n" + json.dumps(self.session.snapshot()))
         self.sent_steers.append(request)
         self.ack(request, "sent")
 
@@ -117,12 +120,17 @@ class AstraDesigner:
         raise RuntimeError("Upstream closed")
 
     async def handle_event(self, event: dict) -> None:
+        if self.generation != self.session.generation:
+            return
         kind = event["type"]
         session = self.session
         if kind == "response.created":
             response = event["response"]
             self.active_id = response["id"]
             self.active = True
+            if self.creating_request:
+                self.ack(self.creating_request, "applied")
+                self.creating_request = None
             parent = response.get("previous_response_id")
             for id, request in list(self.accepted.items()):
                 if request["parent"] == parent:
@@ -183,7 +191,7 @@ class AstraDesigner:
                 self.active = False
                 self.active_id = None
                 async with session.lock:
-                    complete = snapshot(session.state)["complete"]
+                    complete = session.snapshot()["complete"]
                     if complete:
                         session.state.rerollTargets = None
                     session.broadcast_state()
@@ -193,7 +201,7 @@ class AstraDesigner:
             raise RuntimeError("Upstream request failed")
 
     async def complete_tool(self, response_id: str, item: dict) -> None:
-        result = await execute_tool(self.session, item["call_id"], item["name"], item["arguments"])
+        result = await execute_tool(self.session, item["call_id"], item["name"], item["arguments"], self.generation)
         outputs = self.outputs.setdefault(response_id, [])
         if not any(o["call_id"] == item["call_id"] for o in outputs):
             outputs.append({"type": "function_call_output", "call_id": item["call_id"], "output": json.dumps(result)})

@@ -1,70 +1,392 @@
-import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls, OrthographicCamera } from '@react-three/drei'
-import { memo } from 'react'
-import Furniture from './Furniture'
-import type { DesignState, Product } from './types'
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
+import { Canvas, type ThreeEvent, useThree } from '@react-three/fiber'
+import {
+  OrbitControls,
+  OrthographicCamera,
+  Edges,
+  Html,
+  useGLTF,
+} from '@react-three/drei'
+import { Plane, Vector3 } from 'three'
+import { normalizeModel } from './model'
+import ProceduralFurniture from './Furniture'
+import { type Item, type Product, type Scene, validPlacement } from './catalog'
 
-function Camera() {
-  const size = useThree(state => state.size)
-  const zoom = Math.min(size.width / 6.5, size.height / 5.8, 75)
-  return <>
-    <OrthographicCamera makeDefault position={[7, 6, 7]} zoom={zoom} near={0.1} far={60} />
-    <OrbitControls
-      makeDefault
-      target={[0, 0.8, 0]}
-      enablePan={false}
-      minZoom={zoom * 0.6}
-      maxZoom={zoom * 2}
-      minPolarAngle={0.15}
-      maxPolarAngle={Math.PI / 2 - 0.05}
-    />
-  </>
+class ModelBoundary extends Component<
+  { children: ReactNode; product: Product },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? (
+      <group><mesh position={[0, this.props.product.dimensions[1] / 2, 0]}>
+        <boxGeometry args={this.props.product.dimensions} /><meshStandardMaterial color="#c8bba5" wireframe />
+      </mesh><Html center><div className="model-message">Model unavailable. Select to replace or delete.</div></Html></group>
+    ) : (
+      this.props.children
+    )
+  }
 }
+function GlbFurniture({ product }: { product: Product }) {
+  const gltf = useGLTF(product.modelUrl!, '/draco/')
+  const model = useMemo(() => normalizeModel(gltf.scene, product.dimensions), [gltf, product])
+  return <primitive object={model} />
+}
+export function Furniture({ product }: { product: Product }) {
+  if (product.modelUrl)
+    return (
+      <ModelBoundary key={product.modelUrl} product={product}>
+        <Suspense
+          fallback={
+            <Html center>
+              <div className="model-message">Loading furniture…</div>
+            </Html>
+          }
+        >
+          <GlbFurniture product={product} />
+        </Suspense>
+      </ModelBoundary>
+    )
 
-function Room({ lightAngle, state, catalog, selected, onSelect }: { lightAngle: number; state: DesignState | null; catalog: Product[]; selected: string[]; onSelect: (id: string) => void }) {
-  const radians = lightAngle * Math.PI / 180
-
+  if (product.wire && !product.parts.length) return <ProceduralFurniture product={product.wire} />
+  return (
+    <group>
+      {product.parts.map((part, i) => (
+        <mesh
+          key={i}
+          position={part.position}
+          scale={part.shape === 'cylinder' ? part.size : undefined}
+          castShadow
+          receiveShadow
+        >
+          {part.shape === 'box' ? (
+            <boxGeometry args={part.size} />
+          ) : (
+            <cylinderGeometry args={[0.5, 0.5, 1, 24]} />
+          )}
+          <meshStandardMaterial color={part.color} roughness={0.85} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+function FixtureLight({
+  product,
+  settings,
+}: {
+  product: Product
+  settings?: Item['light']
+}) {
+  if (!product.lighting || settings?.on === false) return null
+  const color = settings?.color ?? '#ffd3a0'
+  const brightness = settings?.brightness ?? 0.7
+  const emitter = product.lighting.emitter ?? [
+    0,
+    product.dimensions[1] *
+      (product.lighting.mount === 'ceiling' ? 0.15 : 0.78),
+    0,
+  ]
+  return (
+    <group position={emitter}>
+      <pointLight
+        color={color}
+        intensity={brightness * 12}
+        distance={7}
+        decay={2}
+      />
+      <mesh>
+        <sphereGeometry args={[0.035, 12, 8]} />
+        <meshBasicMaterial color={color} toneMapped={false} />
+      </mesh>
+    </group>
+  )
+}
+function Camera({
+  top,
+  extent,
+  disabled,
+  focusHeight,
+  productView,
+}: {
+  top: boolean
+  extent: number
+  disabled: boolean
+  focusHeight: number
+  productView: boolean
+}) {
+  const { size } = useThree()
+  const zoom = productView
+    ? Math.min(size.width / (extent * 2), size.height / (extent * 1.8), 450)
+    : Math.min(size.width / (extent + 3), size.height / (extent + 3.5), 90)
+  return (
+    <>
+      <OrthographicCamera
+        key={`camera-${top}`}
+        makeDefault
+        position={top ? [0, 12, 0.001] : [8, 8, 8]}
+        zoom={zoom}
+        near={0.1}
+        far={80}
+      />
+      <OrbitControls
+        key={`controls-${top}`}
+        makeDefault
+        enabled={!disabled}
+        target={[0, focusHeight, 0]}
+        enablePan={false}
+        enableRotate={!top}
+        minZoom={zoom * 0.5}
+        maxZoom={zoom * 2.5}
+        maxPolarAngle={Math.PI / 2 - 0.1}
+      />
+    </>
+  )
+}
+function Placed({
+  item,
+  product,
+  scene,
+  catalog,
+  selected,
+  onSelect,
+  onMove,
+  onDrag,
+}: {
+  item: Item
+  product: Product
+  scene: Scene
+  catalog: Product[]
+  selected: boolean
+  onSelect: (id: string) => void
+  onMove: (item: Item) => void
+  onDrag: (drag: boolean) => void
+}) {
+  const [preview, setPreview] = useState<Item | null>(null)
+  const dragging = useRef(false)
+  const offset = useRef({ x: 0, z: 0 })
+  const current = useRef<Item | null>(null)
+  const plane = new Plane(new Vector3(0, 1, 0), 0)
+  const active = preview ?? item
+  const valid = validPlacement(active, scene, catalog)
+  useEffect(
+    () => () => {
+      if (dragging.current) onDrag(false)
+    },
+    [onDrag],
+  )
+  useEffect(() => {
+    if (dragging.current) { dragging.current = false; current.current = null; setPreview(null); onDrag(false) }
+  }, [scene.revision, item.locked, item.productId, onDrag])
+  function down(e: ThreeEvent<PointerEvent>) {
+    e.stopPropagation()
+    onSelect(item.id)
+    if (item.locked) return
+    const p = e.ray.intersectPlane(plane, new Vector3())
+    if (!p) return
+    offset.current = {
+      x: p.x - (item.x),
+      z: p.z - (item.z),
+    }
+    dragging.current = true
+    onDrag(true)
+    ;(e.target as unknown as Element).setPointerCapture(e.pointerId)
+  }
+  function move(e: ThreeEvent<PointerEvent>) {
+    if (!dragging.current) return
+    e.stopPropagation()
+    const p = e.ray.intersectPlane(plane, new Vector3())
+    if (p) {
+      const next = {
+        ...item,
+        x: Math.round((p.x - offset.current.x) * 20) / 20,
+        z: Math.round((p.z - offset.current.z) * 20) / 20,
+      }
+      current.current = next
+      setPreview(next)
+    }
+  }
+  function up(e: ThreeEvent<PointerEvent>) {
+    if (!dragging.current) return
+    e.stopPropagation()
+    dragging.current = false
+    onDrag(false)
+    ;(e.target as unknown as Element).releasePointerCapture(e.pointerId)
+    if (current.current) onMove(current.current)
+    current.current = null
+    setPreview(null)
+  }
+  return (
+    <group
+      position={[
+        active.x,
+        active.elevation ?? 0,
+        active.z,
+      ]}
+      rotation={[0, (active.rotation * Math.PI) / 180, 0]}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={() => { dragging.current = false; current.current = null; setPreview(null); onDrag(false) }}
+    >
+      <Furniture product={product} />
+      <FixtureLight product={product} settings={item.light} />
+      {selected && (
+        <mesh position={[0, product.dimensions[1] / 2, 0]}>
+          <boxGeometry args={product.dimensions} />
+          <meshBasicMaterial
+            transparent
+            opacity={0.03}
+            color={valid ? '#546b4b' : '#b44e3e'}
+          />
+          <Edges color={valid ? '#546b4b' : '#b44e3e'} />
+        </mesh>
+      )}
+    </group>
+  )
+}
+export default function Room({
+  scene,
+  catalog,
+  selected,
+  onSelect,
+  onMove,
+  top,
+  lightAngle,
+  preview,
+  bounds = false,
+}: {
+  scene: Scene
+  catalog: Product[]
+  selected: string | null
+  onSelect: (id: string | null) => void
+  onMove: (item: Item) => void
+  top: boolean
+  lightAngle: number
+  preview?: Product
+  bounds?: boolean
+}) {
+  const [drag, setDrag] = useState(false)
+  const radians = (lightAngle * Math.PI) / 180
   return (
     <Canvas
       shadows
       frameloop="demand"
       dpr={[1, 1.5]}
-      fallback={<p className="canvas-fallback">This room needs a browser with WebGL enabled.</p>}
+      onPointerMissed={() => onSelect(null)}
+      fallback={<p>Enable WebGL to view your room.</p>}
     >
-      <ambientLight intensity={1.1} />
+      <ambientLight
+        intensity={preview ? 1.2 : 0.07 + (scene.daylight ?? 1) * 0.7}
+      />
       <directionalLight
-        position={[Math.cos(radians) * 5, 6, Math.sin(radians) * 5]}
-        intensity={3}
+        position={[Math.cos(radians) * 6, 8, Math.sin(radians) * 6]}
+        intensity={preview ? 2 : (scene.daylight ?? 1) * 2.5}
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-camera-left={-5}
-        shadow-camera-right={5}
-        shadow-camera-top={5}
-        shadow-camera-bottom={-5}
-        shadow-camera-near={0.1}
-        shadow-camera-far={20}
+        shadow-camera-left={-8}
+        shadow-camera-right={8}
+        shadow-camera-top={8}
+        shadow-camera-bottom={-8}
         shadow-normalBias={0.025}
       />
-      {/* Meters; the top of the floor is y = 0. */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <boxGeometry args={[4.2, 0.2, 3.7]} />
-        <meshStandardMaterial color="#c8b294" roughness={0.9} />
-      </mesh>
-      <mesh position={[0, 1.3, -1.8]} castShadow receiveShadow>
-        <boxGeometry args={[4.2, 2.6, 0.1]} />
-        <meshStandardMaterial color="#f0e8d9" roughness={0.95} />
-      </mesh>
-      <mesh position={[-2.05, 1.3, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.1, 2.6, 3.7]} />
-        <meshStandardMaterial color="#e2dfd0" roughness={0.95} />
-      </mesh>
-      {Object.values(state?.slots ?? {}).map(slot => {
-        const product = catalog.find(p => p.id === slot.catalogId)
-        return product && <Furniture key={slot.id} product={product} slot={slot} selected={selected.includes(slot.id)} onSelect={onSelect} />
-      })}
-      <Camera />
+      {preview ? (
+        <>
+          <mesh position={[0, -0.06, 0]} receiveShadow>
+            <boxGeometry
+              args={[
+                Math.max(...preview.dimensions) * 2.5,
+                0.1,
+                Math.max(...preview.dimensions) * 2.5,
+              ]}
+            />
+            <meshStandardMaterial color="#e6dfd2" />
+          </mesh>
+          <Furniture product={preview} />
+          <FixtureLight product={preview} />
+          {bounds && (
+            <mesh position={[0, preview.dimensions[1] / 2, 0]}>
+              <boxGeometry args={preview.dimensions} />
+              <meshBasicMaterial transparent opacity={0} />
+              <Edges color="#667b5c" />
+            </mesh>
+          )}
+        </>
+      ) : (
+        <>
+          <mesh position={[0, -0.1, 0]} receiveShadow>
+            <boxGeometry args={[scene.width + 0.16, 0.2, scene.depth + 0.16]} />
+            <meshStandardMaterial color="#c7ac88" />
+          </mesh>
+          {Array.from({ length: Math.ceil(scene.width / 0.25) }, (_, i) => (
+            <mesh
+              key={i}
+              rotation={[-Math.PI / 2, 0, 0]}
+              position={[-scene.width / 2 + i * 0.25, 0.001, 0]}
+            >
+              <planeGeometry args={[0.008, scene.depth]} />
+              <meshStandardMaterial color="#b99c78" />
+            </mesh>
+          ))}
+          {!top && (
+            <>
+              <mesh position={[0, (scene.height ?? 2.6) / 2, -scene.depth / 2 - 0.05]} receiveShadow>
+                <boxGeometry args={[scene.width + 0.2, scene.height ?? 2.6, 0.1]} />
+                <meshStandardMaterial color="#eee9df" />
+              </mesh>
+              <mesh position={[-scene.width / 2 - 0.05, (scene.height ?? 2.6) / 2, 0]} receiveShadow>
+                <boxGeometry args={[0.1, scene.height ?? 2.6, scene.depth]} />
+                <meshStandardMaterial color="#dadfd3" />
+              </mesh>
+              <mesh position={[0, 0.08, -scene.depth / 2 + 0.012]}>
+                <boxGeometry args={[scene.width, 0.16, 0.035]} />
+                <meshStandardMaterial color="#faf7ee" />
+              </mesh>
+              <mesh position={[-scene.width / 2 + 0.012, 0.08, 0]}>
+                <boxGeometry args={[0.035, 0.16, scene.depth]} />
+                <meshStandardMaterial color="#faf7ee" />
+              </mesh>
+            </>
+          )}
+          {scene.items.map((item) => {
+            const p = catalog.find((p) => p.id === item.productId)
+            return p ? (
+              <Placed
+                key={item.id}
+                item={item}
+                product={p}
+                scene={scene}
+                catalog={catalog}
+                selected={selected === item.id}
+                onSelect={onSelect}
+                onMove={onMove}
+                onDrag={setDrag}
+              />
+            ) : null
+          })}
+        </>
+      )}
+      <Camera
+        top={top}
+        extent={
+          preview
+            ? Math.max(...preview.dimensions)
+            : Math.max(scene.width, scene.depth)
+        }
+        disabled={drag}
+        focusHeight={preview ? preview.dimensions[1] / 2 : 0.6}
+        productView={!!preview}
+      />
     </Canvas>
   )
 }
-
-export default memo(Room)

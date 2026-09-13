@@ -1,10 +1,10 @@
-import type { Product, Slot } from './types'
+import type { Product } from './types'
 
 function Part({ size, position, color }: { size: [number, number, number]; position: [number, number, number]; color: string }) {
   return <mesh position={position} castShadow receiveShadow><boxGeometry args={size} /><meshStandardMaterial color={color} roughness={0.85} /></mesh>
 }
 
-export default function Furniture({ product: p, slot, selected, onSelect }: { product: Product; slot: Slot; selected: boolean; onSelect: (id: string) => void }) {
+export default function Furniture({ product: p }: { product: Product }) {
   const w = p.width, h = p.height, d = p.depth
   const leg = '#80664e'
   const legs = (top: number) => [-1, 1].flatMap(x => [-1, 1].map(z => <Part key={`${x}-${z}`} size={[.05, top, .05]} position={[x * (w / 2 - .07), top / 2, z * (d / 2 - .07)]} color={leg} />))
@@ -33,8 +33,5 @@ export default function Furniture({ product: p, slot, selected, onSelect }: { pr
       break
     default: model = <Part size={[w, h, d]} position={[0, h / 2 + .004, 0]} color={p.color} />
   }
-  return <group position={[slot.x, 0, slot.z]} rotation={[0, slot.rotation * Math.PI / 180, 0]} onClick={event => { event.stopPropagation(); onSelect(slot.id) }}>
-    {model}
-    {selected && <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, .031, 0]}><planeGeometry args={[w + .13, d + .13]} /><meshBasicMaterial color="#546f3c" transparent opacity={.28} depthWrite={false} /></mesh>}
-  </group>
+  return <group>{model}</group>
 }

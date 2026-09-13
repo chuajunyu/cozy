@@ -181,3 +181,13 @@ def test_lowered_budget_prevents_false_completion():
     result = snapshot(state)
     assert not result["complete"] and result["validationIssues"]
     assert len(state.slots) == 3  # Preserve visible room while a new valid group is prepared.
+
+
+def test_like_is_recorded_for_specific_product_not_its_replacement():
+    async def run():
+        session = Session(state=furnished())
+        await handle_command(session, Command(type="feedback.send", action="like", requestId="like-product", slotIds=["table"]), QuietDesigner)
+        assert session.state.feedback[-1]["products"] == {"table": "table-oak"}
+        updated = apply_patch(session.state, patch(session.state, placement("table", "table-cream", 0, .1)))
+        assert not updated.slots["table"].liked
+    asyncio.run(run())
