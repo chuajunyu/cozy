@@ -1,0 +1,17 @@
+# Frontend + backend share one Free Docker web service and one public origin.
+# Docker builds React and furniture assets; FastAPI serves them alongside
+# /health, /catalog, /ws and /ws/voice. No second service is required.
+# Keep one worker/instance because live sessions are held in process memory.
+services:
+  - type: web
+    name: cozy
+    runtime: docker
+    branch: main
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false

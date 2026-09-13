@@ -17,6 +17,7 @@ from backend.protocol import Command, handle_command
 from backend.sessions import ConversationRecovery, SessionStore
 from backend.studio import StudioCommand, handle_studio
 from backend.voice import voice_endpoint
+from backend.static import mount_frontend
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env.local", override=False)
 
@@ -119,3 +120,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             session.subscribers.discard(queue)
         sender.cancel()
         await asyncio.gather(sender, return_exceptions=True)
+
+
+# Mount after both room and voice WebSockets, so static serving cannot shadow them.
+mount_frontend(app, Path(__file__).resolve().parents[1] / "frontend" / "dist")

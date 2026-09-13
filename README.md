@@ -63,6 +63,16 @@ and `/ws` to port 8000. For a separate worktree instance, set
 Browser WebSocket URLs use the page host, including `wss` on HTTPS.
 Run one FastAPI worker because sessions are in memory.
 
+## Deploy
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for free Render hosting and custom subdomains.
+The Blueprint deploys **main** as one Docker service: it builds the React
+frontend, downloads and validates the recorded furniture models and Draco
+decoders, and runs the FastAPI backend. FastAPI serves the built frontend and
+assets at `/`, with `/health`, `/catalog`, `/ws`, and `/ws/voice` on the same host.
+When a local `frontend/dist/index.html` exists, FastAPI serves that build too;
+restart the backend after creating the first build. Vite development is unchanged.
+
 ## Use the studio
 
 - The room fills the workspace. Add furniture, Ask Astra, Room setup and Lighting
@@ -225,7 +235,7 @@ The optional `python -m backend.tests.live_smoke` uses real API calls and is sep
 from deterministic tests. `npm run preview` serves static production output only;
 use Vite's development server for integrated backend checks.
 
-No database, accounts, deployment, live shopping search or geographic sunlight
+No database, accounts, live shopping search or geographic sunlight
 analysis is included. Footprint checks do not assess building-code compliance,
 accessibility or ergonomics. Fonts fall back to system fonts offline.
 
