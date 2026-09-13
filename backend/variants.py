@@ -124,11 +124,6 @@ def invalidate(session):
     data = session.variants
     if data and not data['outdated'] and session.state.revision != data['sourceRevision']:
         data['outdated'] = True
-        for candidate in data['candidates']:
-            if candidate['status'] in {'queued', 'generating'}:
-                candidate['status'] = 'cancelled'
-        for task in session.variant_tasks.values():
-            task.cancel()
         publish(session)
 
 
@@ -166,7 +161,7 @@ async def run_designer(child, factory, text, request_id):
 async def candidate_run(session, data, candidate, factory):
     try:
         async with session.variant_semaphore:
-            if data is not session.variants or data['outdated']:
+            if data is not session.variants:
                 return
             candidate['status'] = 'generating'
             publish(session)
@@ -191,7 +186,7 @@ async def candidate_run(session, data, candidate, factory):
             validate_layout(child.state, child.products)
             result = child.snapshot()
             require(result['complete'], 'incomplete_variant', 'Astra left planned pieces unfinished. Retry this idea.')
-            if data is session.variants and not data['outdated']:
+            if data is session.variants:
                 candidate.update(status='ready', state=result, products=[p for id, p in child.custom_products.items() if id not in session.custom_products])
     except asyncio.CancelledError:
         if candidate['status'] != 'ready':
@@ -224,7 +219,7 @@ async def generate_set(session, data, factory):
         answer = ''.join(m['text'] for m in planner.messages if m['role'] == 'assistant')
         directions = parse_directions(answer)
         require(len({d.title.casefold() for d in directions.directions}) == 3, 'directions', 'Use three distinct directions.')
-        if data is not session.variants or data['outdated']:
+        if data is not session.variants:
             return
         for candidate, direction in zip(data['candidates'], directions.directions):
             candidate['direction'] = direction.model_dump()

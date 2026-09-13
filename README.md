@@ -379,8 +379,9 @@ not change the active room until Use this design. Adoption revalidates constrain
 and creates one undo step. The three directions use separate catalog search strategies
 and may explore wall and floor finishes; explicit finish requests take precedence and
 the user can ask to preserve existing finishes. Existing locks, lighting fixtures and
-structural architecture remain protected. Editing the active room invalidates the current set. Generate
-a fresh set to adopt an alternative after editing. Failed candidates can be retried;
+structural architecture remain protected. Editing the active room marks the current set outdated but
+does not cancel generation; completed candidates remain previewable. Generate a fresh set to adopt an
+alternative after editing. Failed candidates can be retried;
 cancellation retains completed candidates.
 
 WebSocket commands are `variants.generate` (`text`), `variants.cancel` (`setId`),

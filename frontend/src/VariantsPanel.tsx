@@ -33,7 +33,7 @@ export default function VariantsPanel({ variants, busy, disabled, selected, thum
     <h3>Three room ideas</h3>
     {warning && <p role="status" className="muted">{warning}</p>}
     {variants && <>
-      {variants.outdated && <p role="status" className="muted">The room changed. These ideas are outdated; generate a new set to apply one.</p>}
+      {variants.outdated && <p role="status" className="muted">The room changed. These ideas will finish from the earlier version and remain available to preview. Generate a fresh set to apply one.</p>}
       <div className="detail-actions"><button aria-pressed={!selected} onClick={() => onSelect(null)}>Current room</button>
         {variants.candidates.some(c => ['queued', 'generating'].includes(c.status)) && <button disabled={disabled} onClick={() => send({ type: 'variants.cancel', setId: variants.id })}>Cancel generation</button>}</div>
       <div className="variant-cards">{variants.candidates.map((candidate, index) => {

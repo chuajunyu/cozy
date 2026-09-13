@@ -188,6 +188,21 @@ def test_variants_failure_retry_staleness_and_interrupted_recovery():
     asyncio.run(run())
 
 
+def test_active_room_edits_do_not_cancel_unfinished_candidates():
+    async def run():
+        s = Session()
+        await add(s)
+        await handle_variants(s, VariantCommand(type='variants.generate', requestId='ideas-live', baseRevision=s.state.revision, text='A playful nursery'), VariantDesigner)
+        await s.variant_tasks['planner']
+        data = s.variants
+        await edit(s, 'item.update', slotId='desk', expectedProduct='sample-desk', rotation=90)
+        assert data['outdated']
+        assert not any(candidate['status'] == 'cancelled' for candidate in data['candidates'])
+        await asyncio.gather(*(task for id, task in s.variant_tasks.items() if id != 'planner'), return_exceptions=True)
+        assert all(candidate['status'] == 'ready' for candidate in data['candidates'])
+    asyncio.run(run())
+
+
 def test_variant_protection_and_cancel_fence():
     async def run():
         s = Session()
