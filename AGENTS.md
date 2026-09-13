@@ -98,8 +98,10 @@ For scene, UI, or connection changes, check the affected browser behavior:
 - Manual edits and contextual object references reach the shared room.
 - Restarting the backend reconnects and restores the saved room automatically.
 - Wall and floor colors persist after reload, and panel switches preserve the floor.
-- Wall lamps remain attached to their selected wall and expose placement controls
-  only when selected.
+- Doors, windows and wall lamps support direct wall dragging, one undo per drop,
+  Escape cancellation and locked-piece protection. Keep precise controls collapsed.
+- Windows are room elements with one opening per wall. Preserve the 0.05 m minimum
+  sill and 0.1 m ceiling clearance for full-height styles, including after a drag.
 - The layout remains usable at desktop and mobile widths.
 
 Use the development server for integrated browser checks. `npm run preview`

@@ -79,10 +79,20 @@ Run one FastAPI worker because sessions are in memory.
 - Select a piece for Rotate, Replace and Lock/Unlock. More opens dimensions,
   placement, Like and Delete. Lamp and door selections expose their relevant
   quick actions. Mattress fitting controls appear in the selected piece's details.
-- Drag furniture to move it; drag empty space to orbit, scroll to zoom, or switch
+- Drag furniture, doors, windows and wall lamps directly to move them. Doors stay
+  on the floor; windows and wall lamps can also move vertically. Drag past a corner
+  to change walls, or use Top view to drag toward another wall. Escape cancels a
+  drag; releasing saves one undoable edit. Locked pieces stay fixed.
+  Drag empty space to orbit, scroll to zoom, or switch
   to Top view. Fit room reframes the complete room. Panel resizing preserves the
   chosen orbit and relative zoom; the room canvas stays mounted throughout.
-- Room setup contains dimensions, doors and windows. Lighting contains solar time.
+- Add furniture → Room elements includes doors and four window styles: Classic,
+  Wide, Floor-to-ceiling and Panoramic. Full-height presets leave slim frame
+  clearance at the floor and ceiling. Select a window and open Style & size to
+  change its style, dimensions or remove it. The room supports one window per wall;
+  new windows use a clear wall and do not replace existing ones. Precise placement
+  controls are collapsed by default. Room setup also links to these room elements.
+  Lighting contains solar time.
   Select a surface before adding a table lamp to place it on top. Fixture settings
   live with the selected lamp; illumination is illustrative, not measured photometry.
 - Click the cost summary for budget editing and the room's piece list. The studio
@@ -303,5 +313,6 @@ Presets apply immediately. Custom color and Restore default are inside the
 optional Custom color disclosure and affect only the selected surface.
 Colors affect the rendered material and reflected daylight, survive device
 backup and server restoration, and support Undo. Older saves use natural oak
-for the floor. Wall lamps live in Add furniture; select one and open More for
-wall, position and height controls. Other furniture keeps its normal drag controls.
+for the floor. Wall lamps live in Add furniture and can be dragged along a wall or
+up and down. Select one and open More → Precise placement for numeric controls.
+Invalid overlapping placements are rejected without changing the saved room.

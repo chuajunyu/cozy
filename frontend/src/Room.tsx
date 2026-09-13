@@ -1,14 +1,18 @@
 import { floorColor } from './roomFinishes'
 import { fitZoom } from './cameraFit'
 import { dragState } from './dragState'
-import { isWallFixture } from './wallFixtures'
+import { isWallFixture, normalizeWallFixture } from './wallFixtures'
+import { normalizeDoor } from './doors'
+import WallDrag from './WallDrag'
+import WindowPiece from './WindowPiece'
+import type { WallAnchor } from './wallDragGeometry'
 import { fixtureIntensity } from './lighting'
 import { liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
 import Daylight from './Daylight'
 import RoomShell from './RoomShell'
 import DoorPiece, { DoorVisual } from './DoorPiece'
-import { sunAt } from './sunlight'
+import { sunAt, defaultWindows, validWindows, type RoomWindow, type Wall } from './sunlight'
 import {
   Component,
   Suspense,
@@ -339,6 +343,10 @@ export default function Room({
   fitRequest = 0,
   showCompass = false,
   lightingPreview = false,
+  selectedWindow = null,
+  onSelectWindow,
+  onWindowMove,
+  disabled = false,
 }: {
   scene: Scene
   catalog: Product[]
@@ -349,8 +357,21 @@ export default function Room({
   fitRequest?: number
   showCompass?: boolean
   lightingPreview?: boolean
+  selectedWindow?: Wall | null
+  onSelectWindow: (wall: Wall) => void
+  onWindowMove: (wall: Wall, next: RoomWindow) => void
+  disabled?: boolean
 }) {
   const [drag, setDrag] = useState(false)
+  const [wallDraft, setWallDraft] = useState<{ item?: Item; window?: RoomWindow; source?: Wall } | null>(null)
+  const shown = wallDraft ? { ...scene,
+    items: scene.items.map(item => item.id === wallDraft.item?.id ? wallDraft.item : item),
+    windows: (scene.windows ?? defaultWindows).map(window => window.wall === wallDraft.source ? wallDraft.window! : window),
+  } : scene
+  const invalidWall = !!wallDraft && (!validWindows(shown.windows ?? defaultWindows, shown) || !!settleScene(shown, scene, catalog).error)
+  const withAnchor = (item: Item, product: Product, anchor: WallAnchor) => item.door
+    ? normalizeDoor({ ...item, door: { ...item.door, wall: anchor.wall, offset: anchor.offset } }, product, scene)
+    : normalizeWallFixture({ ...item, wallMount: { wall: anchor.wall, offset: anchor.offset, height: anchor.center } }, product, scene)
   const sun = sunAt(scene.sunHour ?? 9)
   return (
     <Canvas
@@ -392,11 +413,37 @@ export default function Room({
               <meshStandardMaterial color={new Color(floorColor(scene)).multiplyScalar(.8)} />
             </mesh>
           ))}
-          <RoomShell scene={scene} catalog={catalog} top={top} showCompass={showCompass} />
-          <Daylight room={scene} catalog={catalog} paused={drag || lightingPreview} />
+          <RoomShell scene={shown} catalog={catalog} top={top} showCompass={showCompass} />
+          <Daylight room={shown} catalog={catalog} paused={drag || lightingPreview || !!wallDraft} />
+          {(scene.windows ?? defaultWindows).map(window => {
+            const active = wallDraft?.source === window.wall ? wallDraft.window! : window
+            return <WallDrag key={`window-${window.wall}`} scene={scene} top={top} disabled={disabled}
+              version={JSON.stringify([scene.width, scene.depth, scene.height, scene.windows])}
+              anchor={{ ...window, center: window.sill + window.height / 2, gap: .2 }}
+              onSelect={() => onSelectWindow(window.wall)}
+              onPreview={anchor => setWallDraft(anchor ? { source: window.wall, window: { ...window, wall: anchor.wall, offset: anchor.offset, sill: Math.round((anchor.center - window.height / 2) * 100) / 100 } } : null)}
+              onDrop={anchor => onWindowMove(window.wall, { ...window, wall: anchor.wall, offset: anchor.offset, sill: Math.round((anchor.center - window.height / 2) * 100) / 100 })}>
+              <WindowPiece window={active} scene={shown} selected={selectedWindow === window.wall} invalid={invalidWall} />
+            </WallDrag>
+          })}
           {scene.items.map((item) => {
             const p = catalog.find((p) => p.id === item.productId)
-            return p?.door ? <DoorPiece key={item.id} item={item} product={p} scene={scene} selected={selected === item.id} onSelect={onSelect} /> : p ? (
+            if (p && (p.door || isWallFixture(p))) {
+              const active = wallDraft?.item?.id === item.id ? wallDraft.item : item
+              const anchor = item.door ?? item.wallMount!
+              return <WallDrag key={item.id} scene={scene} top={top} disabled={disabled || item.locked}
+                version={JSON.stringify([dragState(scene, item), item.door])}
+                anchor={{ wall: anchor.wall, offset: anchor.offset, width: p.dimensions[0], height: p.dimensions[1], center: item.wallMount?.height ?? p.dimensions[1] / 2, gap: p.door ? .2 : .05, fixedFloor: !!p.door, reverseSouth: !p.door }}
+                onSelect={() => onSelect(item.id)} onPreview={anchor => setWallDraft(anchor ? { item: withAnchor(item, p, anchor) } : null)}
+                onDrop={anchor => onMove(withAnchor(item, p, anchor))}>
+                {p.door ? <DoorPiece item={active} product={p} scene={shown} selected={selected === item.id} invalid={invalidWall} /> :
+                  <group position={[active.x, active.elevation ?? 0, active.z]} rotation={[0, active.rotation * Math.PI / 180, 0]} userData={{ daylightFurniture: true }}>
+                    <Furniture product={p} /><FixtureLight product={p} settings={item.light} />
+                    {selected === item.id && <mesh position={[0, p.dimensions[1] / 2, 0]}><boxGeometry args={p.dimensions} /><meshBasicMaterial transparent opacity={.06} depthWrite={false} /><Edges color={invalidWall ? '#b44e3e' : '#546b4b'} /></mesh>}
+                  </group>}
+              </WallDrag>
+            }
+            return p ? (
               <Placed
                 key={item.id}
                 item={item}
@@ -411,7 +458,7 @@ export default function Room({
             ) : null
           })}
       <Camera top={top} width={scene.width} height={scene.height ?? 2.6}
-        depth={scene.depth} disabled={drag} fitRequest={fitRequest} />
+        depth={scene.depth} disabled={drag || !!wallDraft} fitRequest={fitRequest} />
     </Canvas>
   )
 }

@@ -43,7 +43,7 @@ export default function SunlightControls({ scene, catalog, onChange, onSunPrevie
     <div className="sun-presets">{[[9, 'Morning'], [12, 'Noon'], [16, 'Afternoon'], [20, 'Night']].map(([value, label]) => <button key={value} aria-pressed={hour === value} onClick={() => onChange({ ...scene, sunHour: Number(value) })}>{label}</button>)}</div>
     <p className="sun-status" role="status">{status}{!!doors.length && <span> {openDoors.length} of {doors.length} {doors.length === 1 ? 'door' : 'doors'} open.</span>}</p>
     </>}
-    {mode === 'windows' && <details open><summary>Edit windows <span>{windows.length} installed</span></summary>
+    {mode === 'windows' && <details><summary>Precise window settings <span>{windows.length} installed</span></summary>
       <p>Choose a wall, then adjust its window. Compass labels in the room identify each wall.</p>
       <div className="window-walls">{walls.map(w => <button key={w} aria-pressed={wall === w} onClick={() => setWall(w)}>{w[0].toUpperCase() + w.slice(1)} {windows.some(v => v.wall === w) ? '▣' : '+'}</button>)}</div>
       <label className="window-enabled"><input type="checkbox" checked={!!window} onChange={e => onChange({ ...scene, windows: e.target.checked ? [...windows, { wall, offset: 0.5, width: Math.min(1.8, (wall === 'north' || wall === 'south' ? scene.width : scene.depth) - .4), height: Math.min(1.4, (scene.height ?? 2.6) - 1), sill: 0.9 }] : windows.filter(w => w.wall !== wall) })} /> Window on {wall} wall</label>
@@ -51,7 +51,7 @@ export default function SunlightControls({ scene, catalog, onChange, onSunPrevie
         <label>Position along wall<input aria-label="Window position" type="range" min="0" max="1" step="0.05" value={window.offset} onChange={e => update({ offset: Number(e.target.value) })} /></label>
         <label>Width · {windowGeometry(window, scene).width.toFixed(1)} m<input aria-label="Window width" type="range" min="0.5" max={Math.min(4, windowGeometry(window, scene).length - 0.4)} step="0.1" value={windowGeometry(window, scene).width} onChange={e => update({ width: Number(e.target.value) })} /></label>
         <label>Height · {window.height.toFixed(1)} m<input aria-label="Window height" type="range" min="0.5" max={Number(((scene.height ?? 2.6) - .1 - window.sill).toFixed(1))} step="0.1" value={window.height} onChange={e => update({ height: Number(e.target.value) })} /></label>
-        <label>Sill above floor · {window.sill.toFixed(1)} m<input aria-label="Window sill height" type="range" min="0.2" max={Number(((scene.height ?? 2.6) - .1 - window.height).toFixed(1))} step="0.1" value={window.sill} onChange={e => update({ sill: Number(e.target.value) })} /></label>
+        <label>Sill above floor · {window.sill.toFixed(1)} m<input aria-label="Window sill height" type="range" min="0.05" max={Number(((scene.height ?? 2.6) - .1 - window.height).toFixed(1))} step="0.1" value={window.sill} onChange={e => update({ sill: Number(e.target.value) })} /></label>
       </div>}
     </details>}
     <details><summary>About this preview</summary><small>Illustrative solar time: sunrise 06:00 east, sunset 18:00 west. Clear sky, southern midday arc; location, date and surrounding buildings are not modeled. Windows and open doors admit daylight from outside. Diffuse sky light and surface reflections illuminate the interior. Indoor exposure adapts automatically.</small></details>

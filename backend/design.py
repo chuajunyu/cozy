@@ -23,7 +23,7 @@ class Window(Model):
     offset: float = Field(ge=0, le=1)
     width: float = Field(ge=.5, le=4)
     height: float = Field(ge=.5, le=5)
-    sill: float = Field(ge=.2, le=5)
+    sill: float = Field(ge=.05, le=5)
 
 
 class DoorAnchor(Model):

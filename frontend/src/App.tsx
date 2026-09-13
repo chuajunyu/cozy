@@ -1,4 +1,6 @@
 import BudgetControls from './BudgetControls'
+import WindowControls from './WindowControls'
+import { presetWindow, windowPresets } from './windowPresets'
 import RoomCustomization, { WallLightControls } from './RoomCustomization'
 import { isWallFixture, normalizeWallFixture } from './wallFixtures'
 import { fixtureOutput } from './lighting'
@@ -7,7 +9,7 @@ import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } 
 const mattressSize = (width: number, depth: number) => `${Math.round(width * 100)} × ${Math.round(depth * 100)} cm`
 import SunlightControls from './SunlightControls'
 import { worldBackground } from './worldBackground'
-import { defaultWindows } from './sunlight'
+import { defaultWindows, validWindows, type Wall, type RoomWindow } from './sunlight'
 import { walls } from './sunlight'
 import { normalizeDoor, validDoors } from './doors'
 import DoorControls from './DoorControls'
@@ -101,7 +103,9 @@ function ProductArt({ product }: { product: Product }) {
   )
 }
 export default function App() {
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelectedId] = useState<string | null>(null)
+  const [selectedWindow, setSelectedWindow] = useState<Wall | null>(null)
+  const setSelected = (id: string | null) => { setSelectedId(id); setSelectedWindow(null) }
   const [panel, setPanel] = useState<Panel>(null)
   const [expanded, setExpanded] = useState(false)
   const [started, setStarted] = useState(false)
@@ -158,6 +162,7 @@ export default function App() {
     return send({ ...command, baseRevision: command.baseRevision ?? state?.revision })
   }
   const item = scene.items.find((i) => i.id === selected)
+  const activeWindow = (scene.windows ?? defaultWindows).find(window => window.wall === selectedWindow)
   const product = catalog.find((p) => p.id === item?.productId)
   const mattressSupport = item?.supportId ? catalog.find(p => p.id === scene.items.find(i => i.id === item.supportId)?.productId)?.placement?.support : undefined
   const bedMattresses = product?.placement?.support ? catalog.filter(p => p.placement?.surfaceKind === 'mattress' && acceptsSupport(product, p))
@@ -221,6 +226,29 @@ export default function App() {
       setNotice((next.elevation ?? 0) > (landed.elevation ?? 0) ? 'Settled onto ' + (landed.supportId ? 'the supporting surface.' : 'the floor.') : '')
     }
   }
+  function changeWindow(wall: Wall, next: RoomWindow) {
+    const updated = { ...scene, windows: (scene.windows ?? defaultWindows).map(window => window.wall === wall ? next : window) }
+    if (!validWindows(updated.windows, updated) || settleScene(updated, scene, catalog).error) {
+      setNotice('Keep the window within the wall and clear of doors and wall lights. Choose a wall without another window.')
+      return
+    }
+    if (commit(updated)) setSelectedWindow(next.wall)
+  }
+  function addWindow(id: string) {
+    if (status !== 'connected' || pending || backup) return
+    const windows = scene.windows ?? defaultWindows
+    for (const wall of ['north', 'west', 'east', 'south'] as Wall[]) {
+      if (windows.some(window => window.wall === wall)) continue
+      for (const offset of [.5, .25, .75, 0, 1]) {
+        const window = presetWindow(id, scene, wall, offset)
+        const updated = { ...scene, windows: [...windows, window] }
+        if (validWindows(updated.windows, updated) && !settleScene(updated, scene, catalog).error && commit(updated)) {
+          setSelectedId(null); setSelectedWindow(wall); closePanel(); return
+        }
+      }
+    }
+    setNotice('No clear wall fits this window. Select an existing window to change its style, or make room along another wall.')
+  }
   function add(p: Product) {
     if (status !== 'connected' || pending || backup) return
     if (isWallFixture(p)) {
@@ -243,7 +271,7 @@ export default function App() {
         if (validDoors(next, catalog) && !settleScene(next, scene, catalog).error && commit(next)) {
           setSelected(id)
           closePanel()
-          setNotice('Door added. Choose its wall and position below, then open it to let daylight in.')
+          setNotice('Door added. Drag it along the wall to position it.')
           return
         }
       }
@@ -353,6 +381,7 @@ export default function App() {
     setProductType('All')
     setMaxPrice('')
   }
+  const visibleWindows = source === 'Room elements' && (category === 'All' || category === 'Windows') ? windowPresets.filter(p => `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase())) : []
   const blocked = status !== 'connected' || pending || !!backup
   const atmosphere = worldBackground(sunPreview ?? scene.sunHour ?? 9)
   const expected = item ? { [item.id]: item.productId } : {}
@@ -383,6 +412,7 @@ export default function App() {
         <section className="studio" aria-label="Room canvas" style={{ '--world-glow': atmosphere.glow, '--world-sky': atmosphere.sky, '--world-text': atmosphere.text } as CSSProperties}>
           <div className="viewport">
             <Room scene={sunPreview === null ? scene : { ...scene, sunHour: sunPreview }} lightingPreview={sunPreview !== null} catalog={catalog} selected={selected} onSelect={setSelected}
+              selectedWindow={selectedWindow} onSelectWindow={wall => { setSelectedId(null); setSelectedWindow(wall) }} onWindowMove={changeWindow} disabled={blocked}
               onMove={!blocked ? move : () => setNotice('Reconnect and finish pending changes before editing.')}
               top={top} fitRequest={fitRequest} showCompass={panel === 'setup'} />
           </div>
@@ -413,13 +443,14 @@ export default function App() {
               <button aria-label="Deselect piece" onClick={() => setSelected(null)}>×</button>
             </div>
           </div>}
-          <div className="canvas-bottomline"><span className="canvas-instructions">Drag a piece to move · Drag space to orbit · Scroll to zoom</span><span role="status">{status !== 'connected' ? 'Reconnecting…' : backup && !recoveryError ? 'Opening your room…' : connection.agentStatus === 'working' ? connection.activity : pending ? 'Saving…' : ''}</span></div>
+          {activeWindow && <div className="selection-toolbar" role="group" aria-label="Selected window"><div className="selected-name"><strong>{activeWindow.wall[0].toUpperCase() + activeWindow.wall.slice(1)} window</strong><small>Drag to move</small></div><div className="quick-actions"><button onClick={() => openPanel('window')}>Style & size</button><button aria-label="Deselect window" onClick={() => setSelectedWindow(null)}>×</button></div></div>}
+          <div className="canvas-bottomline"><span className="canvas-instructions">Drag furniture, windows or fittings to move · Drag space to orbit · Scroll to zoom</span><span role="status">{status !== 'connected' ? 'Reconnecting…' : backup && !recoveryError ? 'Opening your room…' : connection.agentStatus === 'working' ? connection.activity : pending ? 'Saving…' : ''}</span></div>
         </section>
         <PanelHost panel={panel} expanded={expanded} onExpand={() => setExpanded(v => !v)} onResizeExpanded={setExpanded} onClose={closePanel}>
           <div hidden={panel !== 'catalog'}>        <div className="catalog">
           <div className="panel-heading">
             <h2>The collection</h2>
-            <span>{visible.length} pieces</span>
+            <span>{visible.length + visibleWindows.length} {visible.length + visibleWindows.length === 1 ? 'piece' : 'pieces'}</span>
           </div>
           <div className="collection-source">
             <button
@@ -457,7 +488,7 @@ export default function App() {
             />
           </div>
           <div className="categories">
-            {['All', ...new Set(sourceProducts.map((p) => p.category))].map(
+            {(source === 'Room elements' ? ['All', 'Windows', 'Doors'] : ['All', ...new Set(sourceProducts.map((p) => p.category))]).map(
               (c) => (
                 <button
                   key={c}
@@ -469,7 +500,7 @@ export default function App() {
               ),
             )}
           </div>
-          <details className="catalog-filters">
+          <details className="catalog-filters" hidden={source === 'Room elements'}>
             <summary>Refine your collection</summary>
             <label>
               Furniture type
@@ -538,6 +569,10 @@ export default function App() {
             <button onClick={clearFilters}>Clear filters</button>
           </details>
           <div className="products">
+            {visibleWindows.map(p => <article className="product-card" key={p.id}>
+              <div className={`window-preset-art window-preset-${p.id}`} aria-hidden="true"><span /></div>
+              <div className="product-info"><h3>{p.name}</h3><p>{p.description}</p><div><small>Room element</small><button disabled={blocked} aria-label={`Add ${p.name}`} onClick={() => addWindow(p.id)}>+</button></div></div>
+            </article>)}
             {visible.map((p) => (
               <article className="product-card" key={p.id}>
                 <div className="product-image">
@@ -564,7 +599,7 @@ export default function App() {
                 </div>
               </article>
             ))}
-            {!visible.length && (
+            {!visible.length && !visibleWindows.length && (
               <p className="muted">No pieces found. Try another search.</p>
             )}
           </div>
@@ -580,6 +615,7 @@ export default function App() {
                 <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
                 <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
               </div>
+<div className="door-entry"><div><strong>Windows</strong><span>Choose a style, then drag it into place.</span></div><button onClick={() => { setSource('Room elements'); clearFilters(); openPanel('catalog') }}>+ Add window</button></div>
 <RoomCustomization scene={scene} onChange={commit} />
 <SunlightControls scene={scene} catalog={catalog} onChange={commit} mode="windows" />
               <div className="room-settings">
@@ -619,6 +655,7 @@ export default function App() {
 
               </div>
 </fieldset></div>
+          <div hidden={panel !== 'window'}>{activeWindow ? <WindowControls window={activeWindow} scene={scene} disabled={blocked} onChange={next => changeWindow(activeWindow.wall, next)} onRemove={() => { if (commit({ ...scene, windows: (scene.windows ?? defaultWindows).filter(w => w.wall !== activeWindow.wall) })) { setSelectedWindow(null); closePanel() } }} /> : <p className="panel-empty">Select a window in the room to change its style and size.</p>}</div>
           <div hidden={panel !== 'lighting'}><fieldset disabled={blocked}><SunlightControls scene={scene} catalog={catalog} onChange={commit} onSunPreview={setSunPreview} mode="lighting" /></fieldset></div>
           <div hidden={panel !== 'budget'}><BudgetControls budget={scene.budget} total={total} disabled={blocked} onSave={budget => edit({ type: 'room.update', budget })} />
           <div className="room-list">

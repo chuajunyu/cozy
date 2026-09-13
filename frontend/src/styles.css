@@ -94,6 +94,14 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
 .product-info > div { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
 .product-info strong { font-size: 11px; }
 .product-info button { width: 32px; height: 32px; padding: 0; font-size: 20px; border-radius: 50%; }
+.window-preset-art { height: 110px; display: grid; place-items: center; background: #eeeae0; padding: 12px; }
+.window-preset-art span { display: block; width: 65%; height: 70%; border: 6px solid #fffdf6; background: linear-gradient(90deg, transparent 47%, #fffdf6 47%, #fffdf6 53%, transparent 53%), linear-gradient(#a4c8d9, #e7edf0); box-shadow: 0 3px 10px #52677933; }
+.window-preset-wide span { width: 95%; height: 55%; }
+.window-preset-full span { width: 55%; height: 100%; }
+.window-preset-panoramic span { width: 95%; height: 100%; }
+.window-details { display: grid; gap: 16px; }
+.window-details label, .window-details form { display: grid; gap: 8px; }
+.window-details form { gap: 14px; }
 .catalog-note { color: #6d7861; font-size: 11px; line-height: 1.7; padding-top: 20px; }
 .detail-summary { padding-bottom: 16px; }
 .detail-summary > img, .detail-summary > svg { width: 100%; height: 140px; object-fit: contain; margin-bottom: 14px; }

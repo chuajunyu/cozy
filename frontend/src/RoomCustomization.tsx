@@ -49,9 +49,12 @@ export function WallLightControls({ item, product, scene, onChange }: {
   const update = (patch: Partial<NonNullable<Item['wallMount']>>) => onChange({ ...item, wallMount: { ...anchor, ...patch } })
   return <section className="wall-light-controls" aria-label="Wall light placement">
     <h3>Wall mounted</h3>
+    <p className="muted">Drag the light to reposition it on the wall. Drag past a corner to switch walls.</p>
+    <details><summary>Precise placement</summary>
     <div className="window-walls" role="group" aria-label="Light wall">{walls.map(wall => <button key={wall} disabled={item.locked} aria-label={`Light on ${wall} wall`} aria-pressed={anchor.wall === wall} onClick={() => update({ wall })}>{wall[0].toUpperCase() + wall.slice(1)}</button>)}</div>
     <label>Position along {anchor.wall} wall · {area.start.toFixed(2)} m from corner<input aria-label="Wall light position" disabled={item.locked} type="range" min="0" max="1" step="0.025" value={anchor.offset} onChange={e => update({ offset: Number(e.target.value) })} /></label>
     <label>Light centre above floor · {anchor.height.toFixed(2)} m<input aria-label="Wall light height" disabled={item.locked} type="range" min={Math.ceil((product.dimensions[1] / 2 + .05) * 100) / 100} max={Math.floor(((scene.height ?? 2.6) - .05 - product.dimensions[1] / 2) * 100) / 100} step="0.01" value={anchor.height} onChange={e => update({ height: Number(e.target.value) })} /></label>
-    <small>{item.locked ? 'Placement locked. You can still switch the light and change its color.' : 'Use these controls to position the light. It stays attached to the wall, clear of windows, doors and furniture.'}</small>
+    </details>
+    <small>{item.locked ? 'Placement locked. You can still switch the light and change its color.' : 'It stays attached to the wall, clear of windows, doors and furniture.'}</small>
   </section>
 }

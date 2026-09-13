@@ -6,10 +6,12 @@ export function DoorVisual({
   product,
   angle = 0,
   selected = false,
+  invalid = false,
 }: {
   product: Product
   angle?: number
   selected?: boolean
+  invalid?: boolean
 }) {
   const [width, height, depth] = product.dimensions
   return <group>
@@ -26,7 +28,7 @@ export function DoorVisual({
       <mesh position={[width / 2, height / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[width, height, depth]} />
         <meshStandardMaterial color="#e8dfcf" roughness={0.8} />
-        {selected && <Edges color="#546b4b" />}
+        {selected && <Edges color={invalid ? '#b44e3e' : '#546b4b'} />}
       </mesh>
       {[-1, 1].map(side => <group key={side}>
         {[0.27, 0.73].map(level => <mesh key={level} position={[width / 2, height * level, side * (depth / 2 + 0.002)]} receiveShadow>
@@ -46,12 +48,12 @@ export function DoorVisual({
   </group>
 }
 
-export default function DoorPiece({ item, product, scene, selected, onSelect }: {
+export default function DoorPiece({ item, product, scene, selected, invalid = false }: {
   item: Item
   product: Product
   scene: Scene
   selected: boolean
-  onSelect: (id: string) => void
+  invalid?: boolean
 }) {
   if (!item.door) return null
   const opening = doorGeometry(item, product, scene)
@@ -63,10 +65,7 @@ export default function DoorPiece({ item, product, scene, selected, onSelect }: 
         : [scene.width / 2 + 0.05, 0, -along]
   const rotation = wall === 'east' || wall === 'west' ? Math.PI / 2 : 0
   const angle = item.door.open ? (wall === 'north' || wall === 'west' ? -1 : 1) * Math.PI / 2 : 0
-  return <group position={position} rotation={[0, rotation, 0]} onPointerDown={event => {
-    event.stopPropagation()
-    onSelect(item.id)
-  }}>
-    <DoorVisual product={product} angle={angle} selected={selected} />
+  return <group position={position} rotation={[0, rotation, 0]}>
+    <DoorVisual product={product} angle={angle} selected={selected} invalid={invalid} />
   </group>
 }

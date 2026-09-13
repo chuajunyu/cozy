@@ -38,17 +38,6 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
           <boxGeometry args={[b-a, d-c, 0.1]} />
           <meshStandardMaterial color={wallColor(scene, wall)} colorWrite={visible} depthWrite={visible} />
         </mesh>)}
-        {wallWindows.map(window => {
-          const opening = windowGeometry(window, scene)
-          return <group key={window.wall} position={[(opening.start+opening.end)/2-length/2, (opening.bottom+opening.top)/2, 0]}>
-          {/* An actual open aperture: the glazing never blocks the shadow map. */}
-          {[-1,1].map(sign => <group key={sign}>
-            <mesh position={[sign*opening.width/2,0,0]} castShadow receiveShadow><boxGeometry args={[0.055, window.height+0.08,0.16]} /><meshStandardMaterial color="#faf7ee" /></mesh>
-            <mesh position={[0,sign*window.height/2,0]} castShadow receiveShadow><boxGeometry args={[opening.width,0.055,0.16]} /><meshStandardMaterial color="#faf7ee" /></mesh>
-          </group>)}
-          <mesh castShadow receiveShadow><boxGeometry args={[0.035,window.height,0.1]} /><meshStandardMaterial color="#faf7ee" /></mesh>
-          <mesh position={[0,0,0.01]}><planeGeometry args={[opening.width,window.height]} /><meshBasicMaterial color="#b8d9de" transparent opacity={0.055} depthWrite={false} side={2} /></mesh>
-        </group>})}
         {showCompass && <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>}
       </group>
     })}
