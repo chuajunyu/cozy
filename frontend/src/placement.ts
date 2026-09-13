@@ -26,6 +26,9 @@ export function canSupportItems(product: Product) {
   if (isRug(product) || isAnchored(product) || product.lighting) return false
   if (product.placement?.canSupport !== undefined)
     return product.placement.canSupport
+  // Wire categories are the server's canonical support classification. Display
+  // names such as "TV bench" or "bookshelf" must not invalidate an adopted room.
+  if (product.wire) return ['desk', 'coffee_table', 'side_table', 'dining_table', 'shelf', 'dresser', 'wardrobe'].includes(product.wire.category)
   if (/\b(chair|bed|sofa)\b/i.test(`${product.productType ?? ''} ${product.name}`)) return false
   return /\b(desk|table|sideboard|cabinet|drawer|drawers|bedside|nightstand|shelf|shelving|bookcase)\b/i.test(
     `${product.productType ?? ''} ${product.name}`,

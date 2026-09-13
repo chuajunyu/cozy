@@ -47,7 +47,7 @@ export default function VariantsPanel({ variants, busy, disabled, selected, thum
         <p className="muted">{candidate.direction?.palette.join(' · ')}</p>
         {candidate.state && <p>{new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD' }).format(candidate.state.total)}</p>}
         {candidate.error && <p role="status">{candidate.error}</p>}
-        {candidate.status === 'ready' && <button disabled={disabled || busy} onClick={() => { if (send({ type: 'variants.adopt', setId: variants.id, candidateId: candidate.id })) onSelect(null) }}>Use this design</button>}
+        {candidate.status === 'ready' && <button disabled={disabled || busy} onClick={() => send({ type: 'variants.adopt', setId: variants.id, candidateId: candidate.id })}>Use this design</button>}
         {['failed', 'cancelled', 'interrupted'].includes(candidate.status) && candidate.direction && <button disabled={disabled || variants.outdated} onClick={() => send({ type: 'variants.retry', setId: variants.id, candidateId: candidate.id })}>Retry this idea</button>}
       </article>})}</div>
       {selected && <p className="muted">Preview only. Use this design before editing it.</p>}

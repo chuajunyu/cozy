@@ -159,10 +159,21 @@ export default function App() {
   const connection = useConnection()
   const { state, catalog: wireCatalog, status, send, reconnect, error, pending, backup, restore, recoveryError, diagnostic, resetRoom } = connection
   const candidates = connection.variants?.candidates ?? []
-  const capturing = !selectedVariant && panel === 'astra' ? candidates.find(c => c.status === 'ready' && c.state && !(c.id in thumbnails)) : undefined
-  const previewCandidate = capturing ?? candidates.find(c => c.id === selectedVariant)
+  const previewCandidate = candidates.find(c => c.id === selectedVariant && c.status === 'ready')
+  const capturing = previewCandidate?.state && !(previewCandidate.id in thumbnails) ? previewCandidate : undefined
   const previewState = previewCandidate?.state
   useEffect(() => { setSelectedVariant(null); setThumbnails({}) }, [connection.variants?.id])
+  useEffect(() => {
+    if (!connection.adoptedIdea) return
+    setSelectedVariant(null)
+    setSelectedId(null)
+    setSelectedWindow(null)
+    setLightingPreview(null)
+    setSunPreview(null)
+  }, [connection.adoptedIdea])
+  function adoptIdea(id: string) {
+    return send({ type: 'variants.adopt', setId: connection.variants?.id, candidateId: id })
+  }
   const catalog = useMemo(() => [...wireCatalog, ...(previewCandidate?.products ?? []).filter(p => !wireCatalog.some(existing => existing.id === p.id))].map(toStudioProduct), [wireCatalog, previewCandidate?.products])
   useEffect(() => { setNotice('') }, [state?.revision])
   const scene: Scene = useMemo(() => ({
@@ -458,9 +469,11 @@ export default function App() {
             </div>
           </div>
           {previewState && <div className="room-preview-badge" role="status">
-            <div className="room-preview-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg><span>{capturing ? 'Preparing preview' : 'Preview'}</span></div>
+            <div className="room-preview-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg><span>Preview · read only</span></div>
             <strong>{previewCandidate?.direction?.title ?? 'Room idea'}</strong>
-            {!capturing && <><small>Your current room is unchanged.</small><button onClick={() => setSelectedVariant(null)}>Back to current room</button></>}
+            <small>Use this design to move pieces and make changes.</small>
+            <button className="primary" disabled={status !== 'connected' || pending || !!backup || connection.agentStatus === 'working'} onClick={() => adoptIdea(previewCandidate!.id)}>{pending ? 'Applying…' : 'Use this design to edit'}</button>
+            <button disabled={pending} onClick={() => setSelectedVariant(null)}>Back to current room</button>
           </div>}
           <nav className="tool-dock" aria-label="Studio tools">
             <button aria-expanded={panel === 'catalog'} onClick={() => panel === 'catalog' ? closePanel() : openPanel('catalog')}><span aria-hidden="true">＋</span>Add furniture</button>

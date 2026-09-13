@@ -375,7 +375,11 @@ the current room brief is reused. The resulting cards appear in the conversation
 Generating three ideas runs one direction-planning response and three
 isolated designer runs concurrently. This incurs additional
 Astra usage. Candidate previews are read-only, share the mounted canvas, and do
-not change the active room until Use this design. Adoption revalidates constraints
+not change the active room until Use this design. The canvas preview includes a
+Use this design to edit button on desktop and mobile. Preview mode ends after the
+server confirms adoption; errors leave the idea visible. Thumbnails are captured
+when an idea is viewed and never switch the active room into a preview automatically.
+Adoption revalidates constraints
 and creates one undo step. The three directions use separate catalog search strategies
 and may explore wall and floor finishes; explicit finish requests take precedence and
 the user can ask to preserve existing finishes. Existing locks, lighting fixtures and

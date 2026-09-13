@@ -37,6 +37,8 @@ export function useConnection() {
   const [recoveryError, setRecoveryError] = useState('')
   const [diagnostic, setDiagnostic] = useState('')
   const [pending, setPending] = useState(false)
+  const [adoptedIdea, setAdoptedIdea] = useState<string | null>(null)
+  const adoptionRequest = useRef<string | null>(null)
   const stateRef = useRef<DesignState | null>(null)
   const catalogRef = useRef<Product[]>([])
   const restoreRequest = useRef<string | null>(null)
@@ -58,6 +60,7 @@ export function useConnection() {
     connection.onclose = () => {
       dispatchDelivery({ type: 'disconnect' })
       setStatus('disconnected'); setPending(false); pendingRequest.current = null
+      adoptionRequest.current = null
       previewRequest.current = null; restoreRequest.current = null; recoveryAttempt.current = null
       retryTimer = setTimeout(() => setAttempt(value => value + 1), Math.min(1000 * 2 ** retryCount.current++, 10000))
     }
@@ -68,6 +71,7 @@ export function useConnection() {
         switch (payload.type) {
           case 'variants.updated': setVariants(payload.variants); break
           case 'session.ready':
+            adoptionRequest.current = null
             setVariants(payload.variants ?? null)
             dispatchDelivery({ type: 'reset' }); chatRequests.current.clear()
             saved.current = { sessionId: payload.sessionId, messages: payload.messages }
@@ -105,6 +109,10 @@ export function useConnection() {
             }
             break
           case 'command.ack':
+            if (payload.requestId === adoptionRequest.current) {
+              setAdoptedIdea(payload.requestId)
+              adoptionRequest.current = null
+            }
             if (payload.requestId === pendingRequest.current) { setPending(false); pendingRequest.current = null }
             if (payload.requestId === restoreRequest.current) { setBackup(null); setRecoveryError(''); restoreRequest.current = null }
             break
@@ -134,6 +142,7 @@ export function useConnection() {
             dispatchDelivery({ type: 'ack', requestId: payload.requestId, stage: payload.stage })
             break
           case 'error':
+            if (!payload.requestId || payload.requestId === adoptionRequest.current) adoptionRequest.current = null
             setDiagnostic(payload.message)
             if (payload.requestId && [previewRequest.current, restoreRequest.current].includes(payload.requestId)) {
               setRecoveryError('Your saved room couldn’t be opened.')
@@ -152,6 +161,7 @@ export function useConnection() {
       connection.close()
       if (socket.current === connection) socket.current = null
       pendingRequest.current = null; previewRequest.current = null; restoreRequest.current = null
+      adoptionRequest.current = null
     }
   }, [attempt])
 
@@ -176,12 +186,13 @@ export function useConnection() {
         dispatchDelivery({ type: 'track', requestId, owner: requestId, kind: 'chat', stage: 'sending' })
       }
       if (manual) { pendingRequest.current = requestId; setPending(true) }
+      if (command.type === 'variants.adopt') adoptionRequest.current = requestId
       if (command.type === 'session.restore') restoreRequest.current = requestId
       if (command.type === 'session.restore.preview') previewRequest.current = requestId
       socket.current.send(JSON.stringify({ ...command, baseRevision: command.baseRevision ?? stateRef.current?.revision, requestId }))
       setError('')
       return true
-    } catch { pendingRequest.current = null; setPending(false); setError('That update could not be sent. Please reconnect.'); return false }
+    } catch { adoptionRequest.current = null; pendingRequest.current = null; setPending(false); setError('That update could not be sent. Please reconnect.'); return false }
   }, [])
   useEffect(() => {
     if (!state || state !== stateRef.current || (state.revision === 0 && !variants) || backup) return
@@ -221,5 +232,5 @@ export function useConnection() {
     setBackup(null); setRecoveryError(''); setError('')
     return true
   }
-  return { variants, variantSaveWarning, sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, deliveries, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
+  return { adoptedIdea, variants, variantSaveWarning, sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, deliveries, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
 }

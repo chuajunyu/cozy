@@ -207,6 +207,25 @@ def test_active_room_edits_do_not_cancel_unfinished_candidates():
     asyncio.run(run())
 
 
+def test_adopted_headphones_remain_supported_during_manual_edits():
+    async def run():
+        s = Session()
+        await add(s, 'shelf', 'shelf-oak')
+        height = s.products['shelf-oak']['height']
+        await add(s, 'headphones', 'sample-headphones', elevation=height, supportId='shelf')
+        await add(s, 'desk', 'sample-desk', z=1.2)
+        await handle_variants(s, VariantCommand(type='variants.generate', requestId='headphone-ideas', baseRevision=s.state.revision, text='Workspace'), VariantDesigner)
+        await finish(s)
+        for candidate in s.variants['candidates']:
+            await handle_variants(s, VariantCommand(type='variants.adopt', requestId=candidate['id'], baseRevision=s.state.revision, setId=s.variants['id'], candidateId=candidate['id']), VariantDesigner)
+            await edit(s, 'item.update', slotId='desk', expectedProduct='sample-desk', x=.3)
+            assert s.state.slots['headphones'].supportId == 'shelf'
+            await edit(s, 'item.update', slotId='shelf', expectedProduct='shelf-oak', x=-.3)
+            assert s.state.slots['headphones'].x == -.3
+            assert s.state.slots['headphones'].elevation == height
+    asyncio.run(run())
+
+
 def test_variant_protection_and_cancel_fence():
     async def run():
         s = Session()

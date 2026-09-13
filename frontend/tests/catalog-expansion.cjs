@@ -3,12 +3,37 @@ const ts = require('typescript')
 require.extensions['.ts'] = (module, filename) => module._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, filename)
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const { parseProduct, filterProducts } = require('../src/catalog.ts')
+const { parseProduct, filterProducts, toStudioProduct } = require('../src/catalog.ts')
 const { normalizeWallFixture } = require('../src/wallFixtures.ts')
-const { settleScene } = require('../src/placement.ts')
+const { settleScene, canSupportItems } = require('../src/placement.ts')
 const data = JSON.parse(fs.readFileSync(require('node:path').join(__dirname, '../../data/unbranded.json'), 'utf8'))
 const products = data.map(p => parseProduct({ ...p, id: `sample-${p.id}` }))
 const scene = { width: 5, depth: 4, height: 2.6, budget: 1000, windows: [], items: [] }
+
+test('adopted headphones on a bookshelf or TV bench do not block unrelated moves', () => {
+  const headphones = products.find(p => p.id === 'sample-headphones')
+  for (const name of ['Low oak bookshelf', 'BYÅS TV bench']) {
+    const support = toStudioProduct({ id: 'shelf', name, category: 'shelf', collection: 'Living', width: 1.6, height: .8, depth: .4, price: 100, floorLayer: false })
+    const chair = toStudioProduct({ id: 'chair', name: 'Chair', category: 'chair', width: .5, height: .8, depth: .5, price: 40, floorLayer: false })
+    const catalog = [support, headphones, chair]
+    const base = { rotation: 0, locked: false, elevation: 0, x: 0, z: 0 }
+    const before = { ...scene, items: [
+      { ...base, id: 'shelf', productId: support.id },
+      { ...base, id: 'headphones', productId: headphones.id, elevation: .8, supportId: 'shelf' },
+      { ...base, id: 'chair', productId: chair.id, x: 1.5, z: 1 },
+    ] }
+    const moved = settleScene({ ...before, items: before.items.map(i => i.id === 'chair' ? { ...i, x: 1 } : i) }, before, catalog)
+    assert.equal(moved.error, undefined, name)
+    assert.equal(moved.scene.items[1].supportId, 'shelf')
+    assert.equal(moved.scene.items[1].elevation, .8)
+    const carried = settleScene({ ...before, items: before.items.map(i => i.id === 'shelf' ? { ...i, x: -.5 } : i) }, before, catalog)
+    assert.equal(carried.error, undefined, name)
+    assert.equal(carried.scene.items[1].x, -.5)
+    assert.equal(canSupportItems({ ...support, placement: { mode: 'floor', canSupport: false } }), false)
+    const overhang = settleScene({ ...before, items: before.items.map(i => i.id === 'headphones' ? { ...i, x: .8 } : i) }, before, catalog)
+    assert.ok(overhang.error, 'Invalid overhang must still reject')
+  }
+})
 
 test('flower stems attach inside a vase and follow it without requiring foliage to fit the rim', () => {
   const vase = { ...products[0], id:'test-vase', dimensions:[.12,.2,.12], lighting:undefined,
