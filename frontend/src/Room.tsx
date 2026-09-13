@@ -420,8 +420,8 @@ export default function Room({
               rotation={[-Math.PI / 2, 0, 0]}
               position={[-scene.width / 2 + (i + 1) * 0.25, 0.001, 0]}
             >
-              <planeGeometry args={[0.002, scene.depth]} />
-              <meshStandardMaterial color={new Color(floorColor(scene)).multiplyScalar(.94)} />
+              <planeGeometry args={[0.008, scene.depth]} />
+              <meshStandardMaterial color={new Color(floorColor(scene)).multiplyScalar(.8)} />
             </mesh>
           ))}
           <RoomShell scene={shown} catalog={catalog} top={top} showCompass={showCompass} />

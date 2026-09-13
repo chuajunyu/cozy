@@ -31,6 +31,7 @@ import {
   type Scene,
 } from './catalog'
 import { useConnection } from './useConnection'
+import { usePendingMove } from './usePendingMove'
 import AgentPanel from './AgentPanel'
 import type { Command } from './types'
 
@@ -184,12 +185,13 @@ export default function App() {
       wallMount: s.wallMount ?? undefined, supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
     })),
   }), [state])
+  const pendingMove = usePendingMove(scene, pending, status === 'connected')
   useEffect(() => {
     if (lightingPreview && lightingPreview.revision !== state?.revision) { setLightingPreview(null); setNotice('Room changed; preview the preset again.') }
   }, [state?.revision, lightingPreview])
   const variantScene: Scene | null = previewState ? { ...previewState.room, revision: previewState.revision, budget: previewState.budget ?? 0,
     items: Object.values(previewState.slots).filter(s => s.catalogId).map(s => ({ id: s.id, productId: s.catalogId!, x: s.x, z: s.z, rotation: s.rotation, locked: true, elevation: s.elevation, light: s.light ?? undefined, supportId: s.supportId ?? undefined, wallMount: s.wallMount ?? undefined, door: s.door ?? undefined })) } : null
-  const litScene = lightingPreview ? { ...scene, sunHour: lightingPreview.sunHour, items: scene.items.map(i => ({ ...i, light: lightingPreview.fixtures[i.id] ?? i.light })) } : scene
+  const litScene = lightingPreview ? { ...scene, sunHour: lightingPreview.sunHour, items: scene.items.map(i => ({ ...i, light: lightingPreview.fixtures[i.id] ?? i.light })) } : pendingMove.scene
   const reviewCount = connection.reviewCount + wireCatalog.filter(p => !p.readyForPreview).length
   function edit(command: Command) {
     if (previewState) { setNotice('Use this design before editing it.'); return false }
@@ -263,6 +265,7 @@ export default function App() {
     }
     const landed = preview.scene.items.find(i => i.id === next.id)!
     if (commit({ ...scene, items: scene.items.map(i => i.id === next.id ? landed : i) })) {
+      pendingMove.show(preview.scene)
       setNotice((next.elevation ?? 0) > (landed.elevation ?? 0) ? 'Settled onto ' + (landed.supportId ? 'the supporting surface.' : 'the floor.') : '')
     }
   }

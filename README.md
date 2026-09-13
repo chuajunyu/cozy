@@ -405,6 +405,10 @@ Astra does not hold a room lock while generating. Short transactions serialize
 accepted changes. Dragging continues across unrelated scene revisions; a change
 to the dragged piece's pose, product, lock, support or room dimensions cancels
 that gesture. New collisions are checked against the latest room at drop time.
+Accepted furniture drops remain visible immediately while the server confirms the
+save, including objects carried by a support. Failed saves or disconnections restore
+the last confirmed arrangement. The floor uses visible plank lines over a continuous
+slab, with the wall junctions sealed.
 Chat remains available while a manual command awaits acknowledgment. Manual
 commands still use one in-flight write at a time. Same-object conflicts require
 retrying against the current object; Lock remains the explicit way to preserve
