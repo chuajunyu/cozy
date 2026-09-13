@@ -2,14 +2,14 @@ import { Plane, Ray, Vector3 } from 'three'
 import type { Scene } from './catalog'
 import { walls, type Wall } from './sunlight'
 
-export type WallAnchor = { wall: Wall; offset: number; width: number; height: number; center: number; gap: number; fixedFloor?: boolean; reverseSouth?: boolean }
+export type WallAnchor = { wall: Wall; offset: number; width: number; height: number; center: number; gap: number; fixedFloor?: boolean }
 export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 export function wallLength(scene: Pick<Scene, 'width' | 'depth'>, wall: Wall) {
   return wall === 'north' || wall === 'south' ? scene.width : scene.depth
 }
-export function alongWall(point: Vector3, wall: Wall, scene: Pick<Scene, 'width' | 'depth'>, reverseSouth = false) {
+export function alongWall(point: Vector3, wall: Wall, scene: Pick<Scene, 'width' | 'depth'>) {
   return wall === 'west' || wall === 'east' ? scene.depth / 2 - point.z
-    : wall === 'south' && reverseSouth ? scene.width / 2 - point.x : point.x + scene.width / 2
+    : point.x + scene.width / 2
 }
 export function wallPoint(ray: Ray, wall: Wall, scene: Scene, previous: Vector3, top: boolean): { wall: Wall; point: Vector3 } | null {
   if (top) {
@@ -40,7 +40,7 @@ export function wallPoint(ray: Ray, wall: Wall, scene: Scene, previous: Vector3,
 export function anchorAtPoint(anchor: WallAnchor, point: Vector3, wall: Wall, scene: Scene, grab: { along: number; up: number }): WallAnchor {
   const length = wallLength(scene, wall)
   const span = length - anchor.width - anchor.gap * 2
-  const offset = span <= 0 ? .5 : clamp((alongWall(point, wall, scene, anchor.reverseSouth) - grab.along - anchor.width / 2 - anchor.gap) / span, 0, 1)
+  const offset = span <= 0 ? .5 : clamp((alongWall(point, wall, scene) - grab.along - anchor.width / 2 - anchor.gap) / span, 0, 1)
   return { ...anchor, wall, offset: Math.round(offset * 1000) / 1000,
     center: anchor.fixedFloor ? anchor.height / 2 : Math.round(clamp(point.y - grab.up, anchor.height / 2 + .05, (scene.height ?? 2.6) - anchor.height / 2 - .1) * 1000) / 1000 }
 }

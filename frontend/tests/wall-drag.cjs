@@ -21,11 +21,13 @@ test('wall dragging preserves the grab offset and clamps horizontal and vertical
   assert.equal(low.offset, 0)
   assert.equal(low.center, .55)
 })
-test('doors remain on the floor and wall-light south offsets use their own orientation', () => {
+test('doors remain on the floor and every wall uses one consistent offset orientation', () => {
   assert.equal(anchorAtPoint({ ...anchor, fixedFloor: true, height: 2.1 }, new Vector3(0, 9, 0), 'west', scene, { along: 0, up: 0 }).center, 1.05)
   assert.equal(alongWall(new Vector3(1, 0, 0), 'south', scene), 3)
-  assert.equal(alongWall(new Vector3(1, 0, 0), 'south', scene, true), 1)
   assert.equal(alongWall(new Vector3(0, 0, 1), 'west', scene), .75)
+  const left = anchorAtPoint({ ...anchor, wall: 'south' }, new Vector3(-1, 1.5, scene.depth / 2), 'south', scene, { along: 0, up: 0 })
+  const right = anchorAtPoint({ ...anchor, wall: 'south' }, new Vector3(1, 1.5, scene.depth / 2), 'south', scene, { along: 0, up: 0 })
+  assert.ok(left.offset < right.offset)
 })
 test('drag projections stay on the wall and can cross corners or move walls in top view', () => {
   const previous = new Vector3(0, 1.5, -1.75)

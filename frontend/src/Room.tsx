@@ -443,7 +443,7 @@ export default function Room({
               const anchor = item.door ?? item.wallMount!
               return <WallDrag key={item.id} scene={scene} top={top} disabled={disabled || item.locked}
                 version={JSON.stringify([dragState(scene, item), item.door])}
-                anchor={{ wall: anchor.wall, offset: anchor.offset, width: p.dimensions[0], height: p.dimensions[1], center: item.wallMount?.height ?? p.dimensions[1] / 2, gap: p.door ? .2 : .05, fixedFloor: !!p.door, reverseSouth: !p.door }}
+                anchor={{ wall: anchor.wall, offset: anchor.offset, width: p.dimensions[0], height: p.dimensions[1], center: item.wallMount?.height ?? p.dimensions[1] / 2, gap: p.door ? .2 : .05, fixedFloor: !!p.door }}
                 onSelect={() => onSelect(item.id)} onPreview={anchor => setWallDraft(anchor ? { item: withAnchor(item, p, anchor) } : null)}
                 onDrop={anchor => onMove(withAnchor(item, p, anchor))}>
                 {p.door ? <DoorPiece item={active} product={p} scene={shown} selected={selected === item.id} invalid={invalidWall} /> :

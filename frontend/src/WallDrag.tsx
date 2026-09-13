@@ -33,7 +33,7 @@ export default function WallDrag({ anchor, scene, version, top, disabled, onSele
     const target = e.target as unknown as Element
     target.setPointerCapture(e.pointerId)
     active.current = { anchor, point: e.point.clone(), target, pointerId: e.pointerId, changed: false,
-      grab: { along: alongWall(e.point, anchor.wall, scene, anchor.reverseSouth) - center, up: e.point.y - anchor.center } }
+      grab: { along: alongWall(e.point, anchor.wall, scene) - center, up: e.point.y - anchor.center } }
     onPreview(anchor)
   }
   return <group onPointerDown={down} onPointerMove={e => {
