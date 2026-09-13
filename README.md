@@ -195,19 +195,30 @@ automatically uses `wss` on both the Render URL and a custom domain.
    ```
 
 2. In the [Render dashboard](https://dashboard.render.com/), choose **New >
-   Blueprint**, connect the repository, and select `codex/render-deploy` as the
-   Blueprint branch. Render reads the root `render.yaml`.
-3. Review the service settings: Docker runtime, Singapore region, one instance,
-   `/health` health check, and the paid `0.5c-512mb` compute plan. Review Render's
-   displayed price before creating the service. The paid plan avoids free-tier
-   idle spin-down; change the region in the YAML before initial deployment if
-   needed. The service branch is explicitly set to `codex/render-deploy`.
-4. Enter `OPENAI_API_KEY` when prompted. Use a key with Astra access; keep it in
+   Web Service**, connect the repository, and select `codex/render-deploy`.
+   A Blueprint is optional; this manual flow deploys the same Docker image.
+3. Choose **Docker** as the language/runtime, **Singapore** as the region, and
+   **Free** as the instance type. Leave Root Directory empty, use `./Dockerfile`
+   as the Dockerfile path, and leave Docker Command empty to use the image's
+   startup command. Under Advanced, set Health Check Path to `/health`.
+4. Add the environment variable `OPENAI_API_KEY`. Use a key with Astra access; keep it in
    Render's environment settings, never Git or frontend variables. `.dockerignore`
    excludes local environment files from the Docker build context.
-5. Apply the Blueprint and wait for the service to become healthy. Open the
+5. Choose **Deploy Web Service** and wait for the service to become healthy. Open the
    assigned `https://<service>.onrender.com` URL. Check `/health`, generate a room,
    send feedback during generation, lock a piece, and refresh to check recovery.
+
+Alternatively, choose **New > Blueprint** and select this repository and branch.
+The root `render.yaml` explicitly sets `plan: free` and prompts for the API key.
+Review the creation screen to confirm the Free instance is selected. No database
+or Key Value service is required for the current app.
+
+Free web services sleep after 15 minutes without incoming HTTP requests or
+WebSocket messages, and waking takes about a minute. Sleeping clears Cozy's
+in-memory sessions. Open the site before your demonstration and start a fresh
+room if it has slept. Free hosting still has monthly usage limits; Astra API
+usage is billed separately. Custom domains and managed TLS are supported on Free.
+See Render's [free-tier limits](https://render.com/docs/free).
 
 The Docker command respects Render's `PORT` and binds to `0.0.0.0`. Keep **one
 Uvicorn worker and one service instance**: room state and active Astra work live
@@ -215,7 +226,8 @@ in that process. Deploys, restarts, and instance replacements clear sessions;
 the browser displays a reset notice. Adding a persistent disk alone does not
 persist these Python objects. Pushes to the configured branch trigger deployment,
 so avoid deploying during a live demonstration. If you later merge to another
-branch, update both the Blueprint source branch and `services[0].branch`.
+branch, update the service's branch setting. If using a Blueprint, also update
+its source branch and `services[0].branch`.
 
 This deployment retains the prototype's access model: anyone with the public URL
 can start a design using your backend API key. It does not add accounts or access

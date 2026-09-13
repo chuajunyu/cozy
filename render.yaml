@@ -4,9 +4,8 @@ services:
     name: cozy
     runtime: docker
     branch: codex/render-deploy
-    plan: 0.5c-512mb
+    plan: free
     region: singapore
-    numInstances: 1
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health
