@@ -1,5 +1,8 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, OrthographicCamera } from '@react-three/drei'
+import { memo } from 'react'
+import Furniture from './Furniture'
+import type { DesignState, Product } from './types'
 
 function Camera() {
   const size = useThree(state => state.size)
@@ -18,7 +21,7 @@ function Camera() {
   </>
 }
 
-export default function Room({ lightAngle }: { lightAngle: number }) {
+function Room({ lightAngle, state, catalog, selected, onSelect }: { lightAngle: number; state: DesignState | null; catalog: Product[]; selected: string[]; onSelect: (id: string) => void }) {
   const radians = lightAngle * Math.PI / 180
 
   return (
@@ -55,11 +58,13 @@ export default function Room({ lightAngle }: { lightAngle: number }) {
         <boxGeometry args={[0.1, 2.6, 3.7]} />
         <meshStandardMaterial color="#e2dfd0" roughness={0.95} />
       </mesh>
-      <mesh position={[0.25, 0.4, 0.2]} castShadow receiveShadow>
-        <boxGeometry args={[1.4, 0.8, 0.8]} />
-        <meshStandardMaterial color="#879881" roughness={0.85} />
-      </mesh>
+      {Object.values(state?.slots ?? {}).map(slot => {
+        const product = catalog.find(p => p.id === slot.catalogId)
+        return product && <Furniture key={slot.id} product={product} slot={slot} selected={selected.includes(slot.id)} onSelect={onSelect} />
+      })}
       <Camera />
     </Canvas>
   )
 }
+
+export default memo(Room)

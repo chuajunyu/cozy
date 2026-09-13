@@ -1,0 +1,15 @@
+# One instance: Cozy's session state currently lives in process memory.
+services:
+  - type: web
+    name: cozy
+    runtime: docker
+    branch: codex/render-deploy
+    plan: 0.5c-512mb
+    region: singapore
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false

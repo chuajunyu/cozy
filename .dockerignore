@@ -1,0 +1,17 @@
+.git
+.github
+.agents
+.codex
+.venv
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/*.py[cod]
+**/*.tsbuildinfo
+**/*.log
+.env
+.env.*
+**/.env
+**/.env.*
+backend/tests
