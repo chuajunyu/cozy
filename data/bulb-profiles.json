@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "warm": { "label": "Warm white", "kelvin": 2700, "color": "#ffd3a0" },
+    "soft": { "label": "Soft white", "kelvin": 3000, "color": "#fff4dd" },
+    "neutral": { "label": "Neutral white", "kelvin": 4000, "color": "#dceaff" }
+  },
+  "lumens": { "floor": 470, "surface": 470, "ceiling": 1055, "wall": 1055 },
+  "presets": {
+    "daytime": { "label": "Daytime", "sunHour": 12, "on": false, "profile": null },
+    "cozy": { "label": "Cozy evening", "sunHour": 19, "on": true, "profile": "warm" },
+    "focus": { "label": "Focused work", "sunHour": 10, "on": true, "profile": "neutral" }
+  }
+}

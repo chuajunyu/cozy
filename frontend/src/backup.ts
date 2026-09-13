@@ -20,7 +20,7 @@ export function generatedProduct(p: StudioProduct): GeneratedProduct {
 
 export function makeBackup(state: DesignState, products: Product[]): Backup {
   const { total: _total, complete: _complete, validationIssues: _issues, undoCount: _undo, ...saved } = state
-  return { version: 3, state: saved, products: products.filter(p => p.id.startsWith('custom-')).map(p => ({
+  return { version: 4, state: saved, products: products.filter(p => p.id.startsWith('custom-')).map(p => ({
     id: p.id, name: p.name, category: p.category, price: p.price, dimensions: [p.width, p.height, p.depth],
     parts: p.parts ?? [], productType: p.productType, priceNote: p.priceNote, placement: p.placement, door: p.door, ...(p.lighting ? { lighting: p.lighting } : {}),
   })) }

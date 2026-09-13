@@ -3,7 +3,7 @@ import type { Backup, Product, RestorePreview } from './types'
 
 export function readSavedRoom(raw: string, catalog: Product[]): Backup {
   const saved = JSON.parse(raw)
-  return saved.version === 2 || saved.version === 3 ? saved : migrateLegacy(raw, catalog)
+  return saved.version === 2 || saved.version === 3 || saved.version === 4 ? saved : migrateLegacy(raw, catalog)
 }
 
 export function automaticRestore(preview: RestorePreview) {

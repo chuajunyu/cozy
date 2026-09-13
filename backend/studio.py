@@ -1,7 +1,7 @@
 """Manual studio transactions share the agent's authoritative state."""
 
 import asyncio
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -14,13 +14,14 @@ from backend.studio_activity import activity_change, describe_activity
 
 
 class Backup(Model):
-    version: Literal[2, 3]
+    version: Literal[2, 3, 4]
+    variants: Any = None
     state: DesignState
     products: list[GeneratedProduct] = Field(default_factory=list, max_length=100)
 
 
 class StudioCommand(Model):
-    type: Literal["item.add", "item.update", "item.delete", "item.replace", "room.update", "fixture.update",
+    type: Literal["lighting.apply", "item.add", "item.update", "item.delete", "item.replace", "room.update", "fixture.update",
                   "room.clear", "room.undo", "catalog.import", "session.restore", "session.restore.preview"]
     requestId: str = Field(min_length=1, max_length=100)
     baseRevision: int = Field(ge=0)
@@ -32,6 +33,8 @@ class StudioCommand(Model):
     rotation: Literal[0, 90, 180, 270] | None = None
     elevation: float | None = Field(default=None, ge=0, le=5)
     light: LightSettings | None = None
+    sunHour: float | None = Field(default=None, ge=6, le=20)
+    fixtures: dict[str, LightSettings] = Field(default_factory=dict, max_length=8)
     supportId: str | None = Field(default=None, max_length=60)
     door: DoorAnchor | None = None
     wallMount: WallMount | None = None
@@ -104,7 +107,10 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 door_switch = kind == 'item.update' and slot.door and command.door and slot.door.wall == command.door.wall and slot.door.offset == command.door.offset and not any(f in command.model_fields_set for f in ('x','z','rotation','elevation','supportId'))
                 if kind != "fixture.update" and not door_switch:
                     require(not slot.locked, "locked", "Unlock the piece before changing its placement.")
-            if kind == "item.add":
+            if kind == 'lighting.apply':
+                from backend.lighting import apply_lighting
+                state = apply_lighting(state, products, command.sunHour, command.fixtures)
+            elif kind == "item.add":
                 require(command.slotId is not None and command.slotId not in state.slots, "duplicate_slot", "Use a new item ID.")
                 p = products.get(command.catalogId)
                 require(p is not None, "unknown_product", "Choose a catalog product.")
@@ -136,6 +142,8 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 state.rejected.pop(slot.id, None)
                 if state.rerollTargets:
                     state.rerollTargets = [id for id in state.rerollTargets if id != slot.id] or None
+                if slot.light and p.get('lighting', {}).get('colorMode') != 'bulb-dependent':
+                    slot.light.bulbProfile = None
                 if not p.get('lighting'):
                     slot.light = None
                 elif slot.light and (p['lighting']['colorMode'] == 'fixed' or p['lighting']['colorMode'] == 'white-spectrum' and slot.light.color.lower() not in {'#ffd3a0','#fff4dd','#dceaff'}):
@@ -196,6 +204,11 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                             require(state.slots[old.id].supportId == parent.id, 'support_fit', 'The replacement must preserve supporting surfaces.')
                     require(bool(slot.wallMount) or abs(state.slots[slot.id].elevation-slot.elevation) <= .005, 'support_fit', 'The replacement must retain its mounting height.')
             validate_layout(state, products, check_budget=False)
+            if kind == 'lighting.apply' and state == session.state:
+                ack = {'type': 'command.ack', 'requestId': command.requestId, 'revision': state.revision}
+                session.requests[command.requestId] = ack
+                session.publish(ack)
+                return
             if kind == "room.undo":
                 session.history.pop()
             elif kind == "session.restore":
@@ -209,6 +222,8 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 state.feedback.append({"text": text, "slotIds": [command.slotId] if command.slotId else []})
                 state.feedback = state.feedback[-100:]
             change = activity_change(kind, command.slotId, session.state, state, products)
+            if kind == 'lighting.apply':
+                change = {'key': 'lighting', 'actions': ['lighting'], 'label': 'Updated lighting.', 'reference': None, 'detail': None}
             activity = describe_activity(kind, command.slotId, session.state, state, products) if kind in {'room.undo', 'room.clear'} else None
             if kind in {'room.undo', 'room.clear', 'session.restore'}:
                 session.close_activity()
@@ -216,6 +231,10 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             session.custom_products = custom
             if kind in {"catalog.import", "session.restore"}:
                 session.publish({"type": "catalog.updated", "catalog": list(session.products.values())})
+            if kind == 'session.restore':
+                from backend.variants import recover_variants
+                session.variants = recover_variants(command.backup.variants, state, session.products)
+                session.publish({'type': 'variants.updated', 'variants': session.variants})
             session.broadcast_state()
             ack = {"type": "command.ack", "requestId": command.requestId, "revision": state.revision}
             session.requests[command.requestId] = ack

@@ -44,6 +44,13 @@ class Session:
     revisions: dict[int, DesignState] = field(default_factory=dict)
     generation: int = 0
     room_permissions: dict = field(default_factory=dict)
+    variants: dict | None = None
+    variant_tasks: dict = field(default_factory=dict)
+    variant_semaphore: asyncio.Semaphore = field(default_factory=lambda: asyncio.Semaphore(2))
+    variant_source: Any = None
+    variant_grants: list = field(default_factory=list)
+    design_instructions: str = ''
+    planning: bool = False
     restore_previews: dict = field(default_factory=dict)
     command_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
@@ -75,6 +82,9 @@ class Session:
         self.history = [*self.history[-29:], self.state.model_copy(deep=True)]
 
     def accept(self, state: DesignState) -> None:
+        if self.variant_source is not None:
+            from backend.variants import protected
+            protected(self.variant_source, state, self.variant_grants, self.products)
         self.remember()
         self.state = state
 
@@ -91,6 +101,8 @@ class Session:
                 queue.put_nowait(event)
 
     def broadcast_state(self) -> None:
+        from backend.variants import invalidate
+        invalidate(self)
         self.publish({"type": "design.updated", "state": self.snapshot()})
 
     def set_status(self, status: str, activity: str) -> None:
@@ -144,7 +156,7 @@ class Session:
 
     def envelope(self, reset: bool = False) -> dict:
         return {"type": "session.ready", "sessionId": self.id, "reset": reset,
-                "state": self.snapshot(), "messages": [m for m in self.messages if not m.get("internal")],
+                "variants": self.variants, "state": self.snapshot(), "messages": [m for m in self.messages if not m.get("internal")],
                 "status": self.status, "activity": self.activity, "catalog": list(self.products.values()), "catalogSummary": CATALOG_SUMMARY}
 
 
@@ -156,6 +168,8 @@ class SessionStore:
         now = time.monotonic()
         for key, session in list(self.sessions.items()):
             if not session.subscribers and now - session.touched > 3600:
+                for task in session.variant_tasks.values():
+                    task.cancel()
                 if session.task:
                     session.task.cancel()
                 del self.sessions[key]
@@ -168,6 +182,10 @@ class SessionStore:
         return session, bool(token)
 
     async def close(self) -> None:
+        variants = [task for s in self.sessions.values() for task in s.variant_tasks.values()]
+        for task in variants:
+            task.cancel()
+        await asyncio.gather(*variants, return_exceptions=True)
         tasks = [s.task for s in self.sessions.values() if s.task and not s.task.done()]
         for task in tasks:
             task.cancel()

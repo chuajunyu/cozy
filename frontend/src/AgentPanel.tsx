@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import type { useConnection } from './useConnection'
 import ObjectPill from './ObjectPill'
@@ -6,8 +6,8 @@ import VoiceControls from './VoiceControls'
 import ChatActivity from './ChatActivity'
 import { deliveryLabel } from './delivery'
 import { displayMessage, objectReference } from './chatReferences'
-
-export default function AgentPanel({ connection, selected, onSelect, disabled, active, replacementTarget, onReplacementOpened }: {
+export default function AgentPanel({ connection, selected, onSelect, disabled, active, replacementTarget, onReplacementOpened, ideas }: {
+  ideas?: ReactNode
   connection: ReturnType<typeof useConnection>; selected: string | null
   onSelect: (id: string | null) => void; disabled: boolean; active: boolean
   replacementTarget: string | null; onReplacementOpened: () => void
@@ -17,10 +17,12 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
     try { return localStorage.getItem('cozy.voice.enabled') === 'true' } catch { return false }
   })
   const [text, setText] = useState('')
+  const ideasMode = /^\/ideas(?:\s|$)/i.test(text.trimStart())
+  const ideasPrompt = ideasMode ? text.trimStart().replace(/^\/ideas\s*/i, '').trim() || state?.brief || connection.variants?.request || '' : ''
   const [scope, setScope] = useState<string[]>([])
   const [replacement, setReplacement] = useState<string[] | null>(null)
   const [reason, setReason] = useState('')
-  const composer = useRef<HTMLFormElement>(null)
+  const composer = useRef<HTMLDivElement>(null)
   const following = useRef(true)
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
     const onScroll = () => { following.current = Math.abs(form.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom) < 80 }
     body.addEventListener('scroll', onScroll, { passive: true })
     return () => { cancelAnimationFrame(frame); body.removeEventListener('scroll', onScroll) }
-  }, [active])
+  }, [active, voiceEnabled])
   useEffect(() => {
     if (!active || !following.current) return
     const frame = requestAnimationFrame(scrollToComposer)
@@ -65,23 +67,32 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
           {!!m.references?.length && <div className="object-references">{m.references.map(reference => <ObjectPill key={reference.slotId} reference={reference} available={!!state?.slots[reference.slotId]} onSelect={() => onSelect(reference.slotId)} />)}</div>}
           <ReactMarkdown>{m.text}</ReactMarkdown>{m.role === 'user' && deliveries[m.id] && <span className="delivery-status">{deliveryLabel(deliveries[m.id])}</span>}</article>
       })}
+      {ideas}
     </div>
-    <label className="voice-toggle"><input type="checkbox" checked={voiceEnabled} onChange={event => {
-      const enabled = event.target.checked
-      setVoiceEnabled(enabled)
-      try { localStorage.setItem('cozy.voice.enabled', String(enabled)) } catch { /* Keep this choice for the current page. */ }
-    }} /> Voice chat</label>
-    {voiceEnabled && <VoiceControls sessionId={connection.sessionId} connected={status === 'connected'} />}
-    <form ref={composer} onSubmit={e => { e.preventDefault(); if (!text.trim()) return
+    <div ref={composer} className="chat-input-area">
+      <div className="chat-input-mode">
+        <button type="button" role="switch" aria-checked={voiceEnabled} className="voice-mode-switch" onClick={() => {
+            const enabled = !voiceEnabled
+            setVoiceEnabled(enabled)
+            try { localStorage.setItem('cozy.voice.enabled', String(enabled)) } catch { /* Keep the choice for this page. */ }
+          }}><span className="voice-switch-track" aria-hidden="true"><span /></span>Voice chat</button>
+      </div>
+      {voiceEnabled ? <VoiceControls sessionId={connection.sessionId} connected={!blocked} /> :
+    <form onSubmit={e => { e.preventDefault(); if (blocked || !text.trim()) return
+      if (ideasMode) {
+        if (agentStatus !== 'working' && ideasPrompt && send({ type: 'variants.generate', text: ideasPrompt })) setText('')
+        return
+      }
       if (send(scope.length ? { type: 'feedback.send', action: 'comment', text, slotIds: scope, expectedProducts: expected(scope) } : { type: 'chat.send', text })) setText('')
     }}>
-      <label htmlFor="design-message">{scope.length ? `Comment on ${scope.length} selected ${scope.length === 1 ? 'piece' : 'pieces'}` : 'Your brief or feedback'}</label>
-      <div className="feedback-scope"><button type="button" aria-pressed={!scope.length} onClick={() => setScope([])}>Whole room</button>{selected && <button type="button" aria-pressed={scope.includes(selected)} onClick={() => setScope([selected])}>Selected piece</button>}</div>
-      {!!scope.length && <div className="object-references">{scope.map(id => <ObjectPill key={id} reference={objectReference(id, state, catalog)} available={!!state?.slots[id]} onSelect={() => onSelect(id)} onRemove={() => setScope(ids => ids.filter(value => value !== id))} />)}</div>}
+      <label htmlFor="design-message">{ideasMode ? 'Brief for three ideas' : scope.length ? `Comment on ${scope.length} selected ${scope.length === 1 ? 'piece' : 'pieces'}` : 'Your brief or feedback'}</label>
+      <div className="feedback-scope"><button type="button" aria-pressed={ideasMode} disabled={blocked} onClick={() => { setText(ideasMode ? text.trimStart().replace(/^\/ideas\s*/i, '') : '/ideas ' + text); setScope([]); document.getElementById('design-message')?.focus() }}>Three ideas</button><button type="button" aria-pressed={!scope.length} onClick={() => { setScope([]); if (ideasMode) setText(text.trimStart().replace(/^\/ideas\s*/i, '')) }}>Whole room</button>{selected && !ideasMode && <button type="button" aria-pressed={scope.includes(selected)} onClick={() => setScope([selected])}>Selected piece</button>}</div>
+      {!ideasMode && !!scope.length && <div className="object-references">{scope.map(id => <ObjectPill key={id} reference={objectReference(id, state, catalog)} available={!!state?.slots[id]} onSelect={() => onSelect(id)} onRemove={() => setScope(ids => ids.filter(value => value !== id))} />)}</div>}
       <textarea id="design-message" value={text} onChange={e => setText(e.target.value)} maxLength={6000} rows={3} placeholder="A calm bedroom with a workspace…" />
-      <button className="primary" disabled={blocked || !text.trim() || scope.some(id => !state?.slots[id])}>{agentStatus === 'working' ? 'Send feedback' : 'Send to Astra'}</button>
-    </form>
-
+      {ideasMode && <p className="muted">Three whole-room alternatives · additional Astra usage.{connection.variants ? ' Replaces the current idea set.' : ''}{agentStatus === 'working' ? ' Finish the current response first.' : ''}</p>}
+      <button className="primary" disabled={blocked || !text.trim() || (ideasMode ? !ideasPrompt || agentStatus === 'working' : scope.some(id => !state?.slots[id]))}>{ideasMode ? 'Generate three ideas' : agentStatus === 'working' ? 'Send feedback' : 'Send to Astra'}</button>
+    </form>}
+    </div>
     <details className="design-concept"><summary>Design concept & pieces</summary>
     {state?.concept.summary && <div className="concept-summary"><h3>{state.concept.title}</h3><p>{state.concept.summary}</p><small>{[...state.concept.palette, ...state.concept.materials].join(' · ')}</small></div>}
     {slots.length > 0 && <button disabled={blocked || !slots.some(s => s.catalogId && !s.locked && !s.door)} onClick={() => { setReplacement([]); setReason('') }}>Find alternatives for unlocked pieces</button>}
@@ -91,7 +102,6 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
         return <article key={slot.id} className={`concept-item ${selected === slot.id ? 'selected' : ''}`}>
           <button className="concept-select" onClick={() => onSelect(slot.id)}>{p?.thumbnailUrl && <img src={p.thumbnailUrl} alt="" loading="lazy" />}<span><small>{slot.label}{slot.anchor ? ' · ANCHOR' : ''}</small><strong>{p?.name ?? 'Finding a piece…'}</strong></span></button>
           <p>{slot.explanation}</p>{slot.replacing && <small>Finding an alternative; current piece stays visible.</small>}
-
         </article>
       })}
     </section>)}

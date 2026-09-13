@@ -58,7 +58,7 @@ export type Item = {
   locked: boolean
   supportId?: string
   elevation?: number
-  light?: { on: boolean; brightness: number; color: string }
+  light?: { on: boolean; brightness: number; color: string; bulbProfile?: 'warm' | 'soft' | 'neutral' | null }
   door?: { wall: Wall; offset: number; open: boolean }
   wallMount?: { wall: Wall; offset: number; height: number }
 }

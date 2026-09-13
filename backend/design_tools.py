@@ -11,7 +11,10 @@ from backend.architecture import RoomEdit, edit_room
 from backend.capabilities import CAPABILITY_GUIDANCE
 
 
+from backend.lighting import LightingEdit, edit_lighting
+
 TOOLS = [
+    {'type': 'function', 'name': 'apply_lighting_preset', 'description': 'Apply daytime, cozy, or focus lighting ONLY when roomEditPermissions grants that exact named preset. Uses existing fixtures and illustrative bulbs; no furniture additions.', 'parameters': LightingEdit.model_json_schema(), 'strict': False},
     {'type': 'function', 'name': 'edit_room', 'description': 'Edit windows, doors, wall/floor colors, room size or solar time ONLY for an explicit current user request. Read get_design_state roomEditPermissions and use its requestId and operation. room.finish patches only requested wallColors/floorColor. For window.update, wall is the CURRENT wall and window contains the desired destination/size; preserve other properties. Grants are single-use; broad design requests never permit these edits.', 'parameters': RoomEdit.model_json_schema(), 'strict': False},
     {"type": "function", "name": "get_design_state", "description": "Read authoritative room, concept, feedback, rejected candidates, locks and current revision. Always read after feedback or a rejected patch.",
      "parameters": {"type": "object", "properties": {}, "additionalProperties": False}, "strict": True},
@@ -94,6 +97,8 @@ async def execute_tool(session: Session, call_id: str, name: str, arguments: str
                 raise ValueError("Tool arguments must be an object.")
             if name == "get_design_state":
                 result = {"ok": True, "state": session.snapshot(), 'roomEditPermissions': session.room_permissions}
+            elif name == 'apply_lighting_preset':
+                result = edit_lighting(session, args)
             elif name == 'edit_room':
                 result = edit_room(session, args)
             elif name == "search_catalog":

@@ -15,7 +15,7 @@ export type Slot = {
   id: string; label: string; category: string; zone: string; group: string; anchor: boolean
   catalogId: string | null; x: number; z: number; rotation: number
   locked: boolean; liked: boolean; replacing: boolean; explanation: string
-  elevation: number; light: { on: boolean; brightness: number; color: string } | null
+  elevation: number; light: { on: boolean; brightness: number; color: string; bulbProfile?: 'warm' | 'soft' | 'neutral' | null } | null
   wallMount?: import('./catalog').Item['wallMount']; supportId: string | null; door: { wall: 'north' | 'east' | 'south' | 'west'; offset: number; open: boolean } | null
 }
 export type DesignState = {
@@ -35,17 +35,22 @@ export type ChatMessage = { id: string; role: 'user' | 'assistant' | 'system'; t
 } }
 export type Command = {
   type: 'chat.send' | 'feedback.send' | 'item.lock' | 'item.add' | 'item.update' | 'item.delete'
-    | 'room.update' | 'fixture.update' | 'room.clear' | 'room.undo' | 'catalog.import' | 'session.restore' | 'session.restore.preview' | 'item.replace'
+    | 'variants.generate' | 'variants.cancel' | 'variants.retry' | 'variants.adopt' | 'lighting.apply' | 'room.update' | 'fixture.update' | 'room.clear' | 'room.undo' | 'catalog.import' | 'session.restore' | 'session.restore.preview' | 'item.replace'
+  setId?: string; candidateId?: string
+  sunHour?: number; fixtures?: Record<string, NonNullable<Slot['light']>>
   text?: string; action?: 'comment' | 'like' | 'reroll' | 'reroll_unlocked'
   slotIds?: string[]; expectedProducts?: Record<string, string>; locked?: boolean; budget?: number | null
   baseRevision?: number; slotId?: string; catalogId?: string; expectedProduct?: string
   x?: number; z?: number; rotation?: number; elevation?: number
-  light?: { on: boolean; brightness: number; color: string }
+  light?: { on: boolean; brightness: number; color: string; bulbProfile?: 'warm' | 'soft' | 'neutral' | null }
   wallMount?: import('./catalog').Item['wallMount']
   supportId?: string | null; door?: NonNullable<Slot['door']>
   previewId?: string; allowLocked?: string[]
   room?: DesignState['room']; product?: GeneratedProduct; backup?: Backup
 }
 export type GeneratedProduct = Pick<StudioProduct, 'id' | 'name' | 'category' | 'price' | 'dimensions' | 'parts' | 'lighting' | 'placement' | 'door' | 'productType' | 'priceNote'>
-export type Backup = { version: 2 | 3; state: Omit<DesignState, 'total' | 'complete' | 'validationIssues' | 'undoCount'>; products: GeneratedProduct[] }
+export type Backup = { version: 2 | 3 | 4; variants?: VariantSet | null; state: Omit<DesignState, 'total' | 'complete' | 'validationIssues' | 'undoCount'>; products: GeneratedProduct[] }
 export type RestorePreview = { previewId: string; state: Backup['state'] | null; adjustments: { text: string; slotId?: string; locked?: boolean }[]; blockers: string[] }
+
+export type VariantCandidate = { id: string; status: 'queued' | 'generating' | 'ready' | 'failed' | 'cancelled' | 'interrupted'; direction: { title: string; rationale: string; palette: string[] } | null; state?: DesignState; products?: Product[]; error?: string }
+export type VariantSet = { id: string; sourceRevision: number; source: Backup['state']; request: string; outdated: boolean; candidates: VariantCandidate[] }

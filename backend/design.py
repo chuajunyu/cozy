@@ -13,6 +13,7 @@ class Model(BaseModel):
 
 
 class LightSettings(Model):
+    bulbProfile: Literal['warm', 'soft', 'neutral'] | None = None
     on: bool = True
     brightness: float = Field(default=.7, ge=0, le=1)
     color: str = Field(default="#ffd3a0", pattern=r"^#[0-9a-fA-F]{6}$")
@@ -158,6 +159,10 @@ def validate_layout(state: DesignState, products: dict | None = None, *, check_b
         if slot.light:
             require(bool(p.get("lighting")), "not_fixture", "Only fixtures have light settings.")
             mode = p["lighting"]["colorMode"]
+            if slot.light.bulbProfile:
+                from backend.lighting import PROFILES
+                require(mode == 'bulb-dependent', 'bulb_profile', 'Only replaceable-bulb fixtures accept bulb profiles.')
+                require(slot.light.color.lower() == PROFILES[slot.light.bulbProfile]['color'], 'bulb_color', 'Use the selected bulb profile color.')
             if mode == "fixed":
                 require(slot.light.color.lower() == "#ffd3a0", "fixed_light", "This fixture has fixed light color.")
             elif mode == "white-spectrum":

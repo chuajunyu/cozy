@@ -70,7 +70,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             if raw is None:
                 queue.put_nowait(error_event("unsupported_frame", "Send JSON in a text frame."))
                 continue
-            if len(raw.encode("utf-8")) > 2_000_000:
+            if len(raw.encode("utf-8")) > 4_100_000:
                 queue.put_nowait(error_event("message_too_large", "Keep restore messages under 2 MB."))
                 continue
             try:
@@ -78,7 +78,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                 if not isinstance(payload, dict):
                     raise ValueError()
                 kind = payload.get("type")
-                limit = 2_000_000 if kind in {"session.init", "session.restore", "session.restore.preview"} else 510_000 if kind == "catalog.import" else 32_000
+                limit = 4_100_000 if kind in {"session.init", "session.restore", "session.restore.preview"} else 510_000 if kind == "catalog.import" else 32_000
                 if len(raw.encode("utf-8")) > limit:
                     queue.put_nowait(error_event("message_too_large", "This command exceeds its message size limit."))
                     continue
@@ -95,7 +95,13 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                         session.messages = recovery.history()
                     queue.put_nowait(session.envelope(reset))
                     session.subscribers.add(queue)
-                elif kind in {"session.restore.preview", "item.replace", "item.add", "item.update", "item.delete", "room.update", "fixture.update", "room.clear", "room.undo", "catalog.import", "session.restore"}:
+                elif kind in {'variants.generate', 'variants.cancel', 'variants.retry', 'variants.adopt'}:
+                    from backend.variants import VariantCommand, handle_variants
+                    if session is None:
+                        queue.put_nowait(error_event('session_required', 'Initialize a session first.'))
+                        continue
+                    await handle_variants(session, VariantCommand.model_validate(payload), app.state.designer_factory)
+                elif kind in {"lighting.apply", "session.restore.preview", "item.replace", "item.add", "item.update", "item.delete", "room.update", "fixture.update", "room.clear", "room.undo", "catalog.import", "session.restore"}:
                     if session is None:
                         queue.put_nowait(error_event("session_required", "Initialize a session first."))
                         continue

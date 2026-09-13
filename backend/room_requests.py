@@ -4,7 +4,7 @@ import re
 
 WALLS = ['north', 'east', 'south', 'west']
 DIRECTION = r'(?:north|east|south|west)'
-VERBS = r'add|create|install|place|put|move|relocate|reposition|resize|widen|narrow|remove|delete|open|close|set|change|paint|repaint|recolor|recolour|color|colour|make|give|design|build|decorate|furnish|want'
+VERBS = r'apply|use|switch|add|create|install|place|put|move|relocate|reposition|resize|widen|narrow|remove|delete|open|close|set|change|paint|repaint|recolor|recolour|color|colour|make|give|design|build|decorate|furnish|want'
 PREFIX = r'(?:(?:please|can you|could you|would you|will you|i want you to)\s+)*'
 NEGATIVE = r"\b(?:not|never|without|avoid|don't|dont|do not|shouldn't|cannot|can't|keep|preserve|leave)\b"
 COLOR = r'(?:#[0-9a-f]{6}|blue|white|black|red|green|yellow|pink|purple|orange|brown|gray|grey|beige|cream|sage|sand|terracotta|charcoal|navy|teal|oak|walnut|slate|stone)'
@@ -26,6 +26,10 @@ def explicit_permissions(text: str, slot_ids: list[str] | None = None) -> list[d
         if not match:
             continue
         verb, rest = match.groups()
+        preset = next((key for key, pattern in [('daytime', r'\bdaytime\b'), ('cozy', r'\bcozy evening\b'), ('focus', r'\bfocused work\b')] if re.search(pattern, rest)), None)
+        if preset and verb in {'apply', 'use', 'switch', 'set', 'change', 'make', 'give', 'want'} and re.search(r'\blighting\b|\bpreset\b|\bmood\b', rest):
+            permissions.append({'operation': 'lighting.apply', 'preset': preset, 'walls': [], 'dimensions': []})
+            continue
         surfaces = list(re.finditer(SURFACE, rest))
         paint_verb = verb in {'paint', 'repaint', 'recolor', 'recolour', 'color', 'colour'}
         desired = verb in {'give', 'design', 'build', 'create', 'decorate', 'furnish', 'want', 'make'}

@@ -117,8 +117,8 @@ class AstraDesigner:
             raise RuntimeError("Session work limit reached")
         self.active = True
         self.active_id = None
-        params: dict = {"model": "gpt-6-astra", "instructions": INSTRUCTIONS + ("\nYou are the task backend for a voice conversation. Return a concise factual result in at most 60 words. Do not narrate progress or greet the user; the voice assistant handles conversation." if self.voice_turn else ""),
-                        "tools": TOOLS, "input": input, "parallel_tool_calls": False,
+        params: dict = {"model": "gpt-6-astra", "instructions": (self.session.design_instructions if self.session.planning else INSTRUCTIONS + self.session.design_instructions) + ("\nYou are the task backend for a voice conversation. Return a concise factual result in at most 60 words. Do not narrate progress or greet the user; the voice assistant handles conversation." if self.voice_turn else ""),
+                        "tools": [] if self.session.planning else TOOLS, "input": input, "parallel_tool_calls": False,
                         "reasoning": {"effort": "medium"}, "max_output_tokens": 7000}
         if parent:
             params["previous_response_id"] = parent

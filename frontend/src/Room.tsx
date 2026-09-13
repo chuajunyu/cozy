@@ -1,3 +1,4 @@
+import RoomThumbnail from './RoomThumbnail'
 import { floorColor } from './roomFinishes'
 import { fitZoom } from './cameraFit'
 import { dragState } from './dragState'
@@ -6,7 +7,7 @@ import { normalizeDoor } from './doors'
 import WallDrag from './WallDrag'
 import WindowPiece from './WindowPiece'
 import type { WallAnchor } from './wallDragGeometry'
-import { fixtureIntensity } from './lighting'
+import { fixtureIntensity, fixtureColor } from './lighting'
 import { liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
 import Daylight from './Daylight'
@@ -112,7 +113,7 @@ function FixtureLight({
   settings?: Item['light']
 }) {
   if (!product.lighting || settings?.on === false) return null
-  const color = product.lighting.colorMode === 'fixed' ? '#ffd3a0' : settings?.color ?? '#ffd3a0'
+  const color = fixtureColor(product, settings)
   const emitter = product.lighting.emitter ?? [
     0,
     product.dimensions[1] *
@@ -123,7 +124,7 @@ function FixtureLight({
     <group position={emitter}>
       <pointLight
         color={color}
-        intensity={fixtureIntensity(product)}
+        intensity={fixtureIntensity(product, settings)}
         distance={7}
         decay={2}
       />
@@ -186,6 +187,8 @@ function Placed({
 }: {
   item: Item
   product: Product
+  thumbnailId?: string
+  onThumbnail?: (id: string, image: string) => void
   scene: Scene
   catalog: Product[]
   selected: boolean
@@ -348,7 +351,11 @@ export default function Room({
   onSelectWindow,
   onWindowMove,
   disabled = false,
+  thumbnailId,
+  onThumbnail,
 }: {
+  thumbnailId?: string
+  onThumbnail?: (id: string, image: string) => void
   scene: Scene
   catalog: Product[]
   selected: string | null
@@ -448,7 +455,7 @@ export default function Room({
             return p ? (
               <Placed
                 key={item.id}
-                item={item}
+                item={disabled ? { ...item, locked: true } : item}
                 product={p}
                 scene={scene}
                 catalog={catalog}
@@ -461,7 +468,7 @@ export default function Room({
           })}
       <Camera top={top} width={scene.width} height={scene.height ?? 2.6}
         depth={scene.depth} disabled={drag || !!wallDraft} fitRequest={fitRequest} />
-      <CompassBearing dial={compass} />
+      <CompassBearing dial={compass} /><RoomThumbnail id={thumbnailId} onCapture={onThumbnail} />
     </Canvas><RoomCompass dial={compass} /></>
   )
 }

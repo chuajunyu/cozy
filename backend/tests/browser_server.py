@@ -28,7 +28,22 @@ class SimulatedDesigner:
     async def run(self):
         s = self.session
         try:
-            request, _, _ = await self.inputs.get()
+            request, prompt, _ = await self.inputs.get()
+            if s.planning:
+                s.message('assistant', json.dumps({'directions': [{'title': title, 'rationale': 'Browser simulation: compare composition.', 'palette': ['sand', 'oat']} for title in ['Calm', 'Contrast', 'Playful']]}))
+                self.active = False
+                s.publish({'type': 'design.completed', 'complete': True})
+                await asyncio.Future()
+            if s.variant_source is not None:
+                direction = json.loads(prompt.split('Design direction:\n')[1])
+                await asyncio.sleep(2)
+                await self.tool('update_concept', {'baseRevision': s.state.revision, 'concept': {'title': direction['title'], 'summary': 'Browser simulation candidate.'}, 'slots': [{k: getattr(slot, k) for k in ['id', 'label', 'category', 'zone', 'group', 'anchor']} for slot in s.state.slots.values()] or [{'id': 'sofa', 'label': 'Sofa', 'category': 'sofa', 'zone': 'Living', 'group': 'Relax'}]})
+                if not any(slot.catalogId for slot in s.state.slots.values()):
+                    await self.tool('update_concept', {'baseRevision': s.state.revision, 'concept': {'title': direction['title']}, 'slots': [{'id': 'sofa', 'label': 'Sofa', 'category': 'sofa', 'zone': 'Living', 'group': 'Relax'}]})
+                    await self.tool('apply_design_patch', {'baseRevision': s.state.revision, 'placements': [{'slotId': 'sofa', 'catalogId': 'sofa-sand', 'x': 0, 'z': 0, 'rotation': 0, 'explanation': 'Simulation sofa.'}], 'explanation': 'Simulation sofa.'})
+                self.active = False
+                s.publish({'type': 'design.completed', 'complete': True})
+                await asyncio.Future()
             s.set_status('working', 'Simulated designer - no API calls')
             s.publish({'type': 'feedback.ack', 'requestId': request, 'stage': 'applied'})
             message = secrets.token_hex(8)

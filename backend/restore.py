@@ -58,5 +58,5 @@ def apply_preview(session, command):
     require(saved['required'] <= set(command.allowLocked), 'locked', 'Explicitly select each locked adjustment before restoring.')
     backup = saved['backup'].model_copy(deep=True)
     backup.state = saved['state'].model_copy(deep=True)
-    backup.version = 3
+    backup.version = 4
     return backup

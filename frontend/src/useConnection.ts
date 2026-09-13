@@ -31,6 +31,8 @@ export function useConnection() {
   const [error, setError] = useState('')
   const [deliveries, dispatchDelivery] = useReducer(deliveryReducer, {})
   const [reviewCount, setReviewCount] = useState(0)
+  const [variants, setVariants] = useState<import('./types').VariantSet | null>(null)
+  const [variantSaveWarning, setVariantSaveWarning] = useState('')
   const [backup, setBackup] = useState<string | null>(null)
   const [recoveryError, setRecoveryError] = useState('')
   const [diagnostic, setDiagnostic] = useState('')
@@ -64,7 +66,9 @@ export function useConnection() {
       try {
         const payload = JSON.parse(event.data)
         switch (payload.type) {
+          case 'variants.updated': setVariants(payload.variants); break
           case 'session.ready':
+            setVariants(payload.variants ?? null)
             dispatchDelivery({ type: 'reset' }); chatRequests.current.clear()
             saved.current = { sessionId: payload.sessionId, messages: payload.messages }
             setSessionId(payload.sessionId)
@@ -180,10 +184,15 @@ export function useConnection() {
     } catch { pendingRequest.current = null; setPending(false); setError('That update could not be sent. Please reconnect.'); return false }
   }, [])
   useEffect(() => {
-    if (!state || state !== stateRef.current || state.revision === 0 || backup) return
-    try { localStorage.setItem(backupKey, JSON.stringify(makeBackup(state, catalog))) }
+    if (!state || state !== stateRef.current || (state.revision === 0 && !variants) || backup) return
+    try {
+      const savedRoom = makeBackup(state, catalog)
+      const fits = !variants || new TextEncoder().encode(JSON.stringify(variants)).length <= 2_000_000
+      setVariantSaveWarning(fits ? '' : 'Alternatives are available only in this live session; they exceed the device save limit.')
+      localStorage.setItem(backupKey, JSON.stringify({ ...savedRoom, ...(fits ? { variants } : {}) }))
+    }
     catch { setError('Changes couldn’t be saved on this device.'); setDiagnostic('Device storage is unavailable or full; the backend still holds the room.') }
-  }, [state, catalog, backup])
+  }, [state, catalog, backup, variants])
 
   function restore() {
     if (!backup) return
@@ -212,5 +221,5 @@ export function useConnection() {
     setBackup(null); setRecoveryError(''); setError('')
     return true
   }
-  return { sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, deliveries, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
+  return { variants, variantSaveWarning, sessionId, recoveryError, diagnostic, resetRoom, reviewCount, backup, restore, pending, status, state, catalog, messages, agentStatus, activity, error, deliveries, send, dismissError: () => setError(''), reconnect: () => setAttempt(value => value + 1) }
 }

@@ -347,6 +347,47 @@ that restriction.
 
 ## Editing alongside Astra
 
+### Lighting moods and room alternatives
+
+The Lighting panel offers Daytime (noon, lights off), Cozy evening (7 pm, warm
+lights) and Focused work (10 am, neutral lights). Selecting a card previews locally;
+Apply lighting submits one atomic `lighting.apply` transaction and one undo step.
+Cancel, Escape and closing the panel discard the preview. An intervening room
+revision invalidates the preview. The command carries `sunHour`, a map of changed
+`fixtures`, `baseRevision` and `requestId`; it never adds or moves furniture.
+
+Replaceable-bulb lights accept optional `light.bulbProfile`: `warm`, `soft` or
+`neutral` (2700K, 3000K, 4000K). These illustrative profiles share definitions in
+`data/bulb-profiles.json`, using 470 lm for floor/surface lamps and 1055 lm for
+ceiling/wall fixtures. Fixed-color fixtures retain their output and color;
+adjustable integrated lights use supported whites and retain output. This adds
+no dimming, purchasable bulbs or verified bulb-compatibility claims. Text and voice
+can explicitly request a named lighting preset through the permission-gated tool.
+
+In Ask Astra, type `/ideas <brief>` or select **Three ideas** in the existing chat
+composer and send your prompt. There is no separate prompt box. With `/ideas` alone,
+the current room brief is reused. The resulting cards appear in the conversation.
+Generating three ideas runs one direction-planning response and three
+isolated designer runs, at most two candidates concurrently. This incurs additional
+Astra usage. Candidate previews are read-only, share the mounted canvas, and do
+not change the active room until Use this design. Adoption revalidates constraints
+and creates one undo step. Existing locks, lighting and unrequested architecture
+remain protected. Editing the active room invalidates the current set. Generate
+a fresh set to adopt an alternative after editing. Failed candidates can be retried;
+cancellation retains completed candidates.
+
+WebSocket commands are `variants.generate` (`text`), `variants.cancel` (`setId`),
+`variants.retry` and `variants.adopt` (`setId`, `candidateId`), each with a request
+ID and base revision. `variants.updated` and `session.ready.variants` return the
+current bounded set and per-candidate status. New sets replace the previous set.
+
+Version 4 backups retain bulb profiles and an optional set of three alternatives;
+older backups remain readable. Alternatives exceeding 2 MB remain live-session-only,
+with a visible notice; the active room still saves. Thumbnails are regenerated,
+not persisted. Recovery validates alternatives independently of the active room
+and marks unfinished work interrupted, without restarting billable calls. Restore
+frames allow up to 4.1 MB to accommodate the room and bounded alternatives.
+
 Astra does not hold a room lock while generating. Short transactions serialize
 accepted changes. Dragging continues across unrelated scene revisions; a change
 to the dragged piece's pose, product, lock, support or room dimensions cancels
@@ -443,3 +484,8 @@ Both text Astra and a new voice call receive recent restored conversation contex
 restoring history does not replay requests or override the saved room. Existing
 live sessions remain authoritative. Closing the tab or clearing its storage removes
 this browser fallback; it is not account-level or cross-device chat storage.
+
+The chat composer has a Voice chat toggle. Turning it on replaces
+text entry with Start/End voice, mute and playback controls; enabling it does not
+start a call automatically. Turning it off ends any active voice call and
+restores the unsent text draft. The selected mode is remembered on this device.

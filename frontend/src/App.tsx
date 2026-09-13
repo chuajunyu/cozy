@@ -1,9 +1,11 @@
+import VariantsPanel from './VariantsPanel'
+import LightingPresets, { type LightingDraft } from './LightingPresets'
 import BudgetControls from './BudgetControls'
 import WindowControls from './WindowControls'
 import { presetWindow, windowPresets } from './windowPresets'
 import RoomCustomization, { WallLightControls } from './RoomCustomization'
 import { isWallFixture, normalizeWallFixture } from './wallFixtures'
-import { fixtureOutput } from './lighting'
+import { fixtureOutput, validBulbSettings } from './lighting'
 import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } from './placement'
 
 const mattressSize = (width: number, depth: number) => `${Math.round(width * 100)} × ${Math.round(depth * 100)} cm`
@@ -112,12 +114,18 @@ export default function App() {
   const [fitRequest, setFitRequest] = useState(0)
   const returnFocus = useRef<HTMLElement | null>(null)
   function openPanel(next: Panel) {
+    if (next !== 'astra') setSelectedVariant(null)
     if (!panel) returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setLightingPreview(null)
+    setSunPreview(null)
     setPanel(next)
     setExpanded(false)
     setStarted(true)
   }
   function closePanel() {
+    setSelectedVariant(null)
+    setLightingPreview(null)
+    setSunPreview(null)
     setPanel(null)
     setExpanded(false)
     returnFocus.current?.focus()
@@ -142,11 +150,19 @@ export default function App() {
 
 
   const [top, setTop] = useState(false)
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({})
+  const [lightingPreview, setLightingPreview] = useState<LightingDraft | null>(null)
   const [sunPreview, setSunPreview] = useState<number | null>(null)
   const [notice, setNotice] = useState('')
   const connection = useConnection()
   const { state, catalog: wireCatalog, status, send, reconnect, error, pending, backup, restore, recoveryError, diagnostic, resetRoom } = connection
-  const catalog = useMemo(() => wireCatalog.map(toStudioProduct), [wireCatalog])
+  const candidates = connection.variants?.candidates ?? []
+  const capturing = !selectedVariant && panel === 'astra' ? candidates.find(c => c.status === 'ready' && c.state && !(c.id in thumbnails)) : undefined
+  const previewCandidate = capturing ?? candidates.find(c => c.id === selectedVariant)
+  const previewState = previewCandidate?.state
+  useEffect(() => { setSelectedVariant(null); setThumbnails({}) }, [connection.variants?.id])
+  const catalog = useMemo(() => [...wireCatalog, ...(previewCandidate?.products ?? []).filter(p => !wireCatalog.some(existing => existing.id === p.id))].map(toStudioProduct), [wireCatalog, previewCandidate?.products])
   useEffect(() => { setNotice('') }, [state?.revision])
   const scene: Scene = useMemo(() => ({
     width: state?.room.width ?? 4, depth: state?.room.depth ?? 3.5, height: state?.room.height ?? 2.6,
@@ -156,8 +172,15 @@ export default function App() {
       wallMount: s.wallMount ?? undefined, supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
     })),
   }), [state])
+  useEffect(() => {
+    if (lightingPreview && lightingPreview.revision !== state?.revision) { setLightingPreview(null); setNotice('Room changed; preview the preset again.') }
+  }, [state?.revision, lightingPreview])
+  const variantScene: Scene | null = previewState ? { ...previewState.room, revision: previewState.revision, budget: previewState.budget ?? 0,
+    items: Object.values(previewState.slots).filter(s => s.catalogId).map(s => ({ id: s.id, productId: s.catalogId!, x: s.x, z: s.z, rotation: s.rotation, locked: true, elevation: s.elevation, light: s.light ?? undefined, supportId: s.supportId ?? undefined, wallMount: s.wallMount ?? undefined, door: s.door ?? undefined })) } : null
+  const litScene = lightingPreview ? { ...scene, sunHour: lightingPreview.sunHour, items: scene.items.map(i => ({ ...i, light: lightingPreview.fixtures[i.id] ?? i.light })) } : scene
   const reviewCount = connection.reviewCount + wireCatalog.filter(p => !p.readyForPreview).length
   function edit(command: Command) {
+    if (previewState) { setNotice('Use this design before editing it.'); return false }
     if (backup) return false
     return send({ ...command, baseRevision: command.baseRevision ?? state?.revision })
   }
@@ -382,8 +405,8 @@ export default function App() {
     setMaxPrice('')
   }
   const visibleWindows = source === 'Room elements' && (category === 'All' || category === 'Windows') ? windowPresets.filter(p => `${p.name} ${p.description}`.toLowerCase().includes(search.toLowerCase())) : []
-  const blocked = status !== 'connected' || pending || !!backup
-  const atmosphere = worldBackground(sunPreview ?? scene.sunHour ?? 9)
+  const blocked = !!previewState || status !== 'connected' || pending || !!backup
+  const atmosphere = worldBackground(variantScene?.sunHour ?? sunPreview ?? litScene.sunHour ?? 9)
   const expected = item ? { [item.id]: item.productId } : {}
   function askReplacement() {
     if (!item || item.locked) return
@@ -411,7 +434,7 @@ export default function App() {
       <main className="workspace">
         <section className="studio" aria-label="Room canvas" style={{ '--world-glow': atmosphere.glow, '--world-sky': atmosphere.sky, '--world-text': atmosphere.text } as CSSProperties}>
           <div className="viewport">
-            <Room scene={sunPreview === null ? scene : { ...scene, sunHour: sunPreview }} lightingPreview={sunPreview !== null} catalog={catalog} selected={selected} onSelect={setSelected}
+            <Room thumbnailId={capturing?.id} onThumbnail={(id, image) => setThumbnails(old => ({ ...old, [id]: image }))} scene={variantScene ?? (sunPreview === null ? litScene : { ...litScene, sunHour: sunPreview })} lightingPreview={sunPreview !== null || !!lightingPreview} catalog={catalog} selected={previewState ? null : selected} onSelect={previewState ? () => {} : setSelected}
               selectedWindow={selectedWindow} onSelectWindow={wall => { setSelectedId(null); setSelectedWindow(wall) }} onWindowMove={changeWindow} disabled={blocked}
               onMove={!blocked ? move : () => setNotice('Reconnect and finish pending changes before editing.')}
               top={top} fitRequest={fitRequest} showCompass={panel === 'setup'} />
@@ -424,6 +447,11 @@ export default function App() {
               <button onClick={() => setFitRequest(n => n + 1)}>Fit room</button>
             </div>
           </div>
+          {previewState && <div className="room-preview-badge" role="status">
+            <div className="room-preview-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg><span>{capturing ? 'Preparing preview' : 'Preview'}</span></div>
+            <strong>{previewCandidate?.direction?.title ?? 'Room idea'}</strong>
+            {!capturing && <><small>Your current room is unchanged.</small><button onClick={() => setSelectedVariant(null)}>Back to current room</button></>}
+          </div>}
           <nav className="tool-dock" aria-label="Studio tools">
             <button aria-expanded={panel === 'catalog'} onClick={() => panel === 'catalog' ? closePanel() : openPanel('catalog')}><span aria-hidden="true">＋</span>Add furniture</button>
             <button aria-expanded={panel === 'astra'} onClick={() => panel === 'astra' ? closePanel() : openPanel('astra')}><span aria-hidden="true">✳</span>Ask Astra</button>
@@ -437,7 +465,7 @@ export default function App() {
               {!product.door && !isWallFixture(product) && <button disabled={blocked || item.locked} onClick={() => move({ ...item, rotation: (item.rotation + 90) % 360 })}>Rotate</button>}
               {!product.door && !isWallFixture(product) && <button disabled={blocked || item.locked} onClick={() => openPanel('replace')}>Replace</button>}
               {item.door && <button disabled={blocked || item.locked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, door: { ...item.door!, open: !item.door!.open } } : i) })}>{item.door.open ? 'Close door' : 'Open door'}</button>}
-              {product.lighting && <button disabled={blocked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, light: { on: i.light?.on === false, brightness: i.light?.brightness ?? .7, color: i.light?.color ?? '#ffd3a0' } } : i) })}>{item.light?.on === false ? 'Light on' : 'Light off'}</button>}
+              {product.lighting && <button disabled={blocked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, light: { ...i.light, on: i.light?.on === false, brightness: i.light?.brightness ?? .7, color: i.light?.color ?? '#ffd3a0' } } : i) })}>{item.light?.on === false ? 'Light on' : 'Light off'}</button>}
               <button disabled={blocked} onClick={() => edit({ type: 'item.lock', slotIds: [item.id], expectedProducts: expected, locked: !item.locked })}>{item.locked ? 'Unlock' : 'Lock'}</button>
               <button onClick={() => openPanel('details')}>More</button>
               <button aria-label="Deselect piece" onClick={() => setSelected(null)}>×</button>
@@ -610,7 +638,8 @@ export default function App() {
           </div>
         </div>
 </div>
-          <div hidden={panel !== 'astra'}><AgentPanel active={panel === 'astra'} connection={connection} selected={selected} onSelect={setSelected} disabled={!!backup} replacementTarget={replacementTarget} onReplacementOpened={() => setReplacementTarget(null)} /></div>
+          <div hidden={panel !== 'astra'}><AgentPanel active={panel === 'astra' && !previewState} connection={connection} selected={selected} onSelect={setSelected} disabled={!!backup || !!previewState} replacementTarget={replacementTarget} onReplacementOpened={() => setReplacementTarget(null)}
+            ideas={<VariantsPanel variants={connection.variants} busy={connection.agentStatus === 'working'} disabled={status !== 'connected' || pending || !!backup} selected={selectedVariant} thumbnails={thumbnails} warning={connection.variantSaveWarning} send={send} onSelect={id => { setLightingPreview(null); setSunPreview(null); setSelectedVariant(id); if (id) setExpanded(false) }} />} /></div>
           <div hidden={panel !== 'setup'}><fieldset disabled={blocked}>              <div className="door-entry">
                 <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
                 <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
@@ -656,7 +685,10 @@ export default function App() {
               </div>
 </fieldset></div>
           <div hidden={panel !== 'window'}>{activeWindow ? <WindowControls window={activeWindow} scene={scene} disabled={blocked} onChange={next => changeWindow(activeWindow.wall, next)} onRemove={() => { if (commit({ ...scene, windows: (scene.windows ?? defaultWindows).filter(w => w.wall !== activeWindow.wall) })) { setSelectedWindow(null); closePanel() } }} /> : <p className="panel-empty">Select a window in the room to change its style and size.</p>}</div>
-          <div hidden={panel !== 'lighting'}><fieldset disabled={blocked}><SunlightControls scene={scene} catalog={catalog} onChange={commit} onSunPreview={setSunPreview} mode="lighting" /></fieldset></div>
+          <div hidden={panel !== 'lighting'}><fieldset disabled={blocked}><LightingPresets scene={scene} catalog={catalog} draft={lightingPreview} onPreview={draft => { setSunPreview(null); setLightingPreview(draft) }} onApply={() => {
+              if (lightingPreview && Object.entries(lightingPreview.fixtures).some(([id, settings]) => { const item = scene.items.find(i => i.id === id); const product = catalog.find(p => p.id === item?.productId); return !product || !validBulbSettings(product, settings) })) { setNotice('Check the selected bulb settings.'); return }
+              if (lightingPreview && edit({ type: 'lighting.apply', baseRevision: lightingPreview.revision, sunHour: lightingPreview.sunHour, fixtures: lightingPreview.fixtures })) setLightingPreview(null)
+            }} />{!lightingPreview && <SunlightControls scene={scene} catalog={catalog} onChange={commit} onSunPreview={setSunPreview} mode="lighting" />}</fieldset></div>
           <div hidden={panel !== 'budget'}><BudgetControls budget={scene.budget} total={total} disabled={blocked} onSave={budget => edit({ type: 'room.update', budget })} />
           <div className="room-list">
             <p className="eyebrow">
@@ -749,6 +781,7 @@ export default function App() {
                               ? {
                                   ...i,
                                   light: {
+                                    ...i.light,
                                     on: !(i.light?.on ?? true),
                                     brightness: i.light?.brightness ?? 0.7,
                                     color: i.light?.color ?? '#ffd3a0',
@@ -762,7 +795,7 @@ export default function App() {
                       {item.light?.on === false ? 'Turn on' : 'Turn off'}
                     </button>
                   </div>
-                  <p className="muted">Fixed output · {fixtureOutput(product).lumens} lm<br />{fixtureOutput(product).evidence}</p>
+                  <p className="muted">Fixed output · {fixtureOutput(product, item.light).lumens} lm<br />{fixtureOutput(product, item.light).evidence}</p>
                   {product.lighting.colorMode !== 'fixed' && (
                     <label>
                       {product.lighting.colorMode === 'bulb-dependent'
