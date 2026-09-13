@@ -409,8 +409,14 @@ export default function Room({
         shadow-bias={-0.0001}
         shadow-camera-far={50}
       />
-          <mesh position={[0, -0.1, 0]} receiveShadow>
+          {/* The slab under the walls is a cut surface, outside the simulated
+              interior. Do not sample room irradiance or sunlight on this rim. */}
+          <mesh position={[0, -0.101, 0]}>
             <boxGeometry args={[scene.width + 0.2, 0.2, scene.depth + 0.2]} />
+            <meshBasicMaterial color="#9b9484" toneMapped={false} />
+          </mesh>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[scene.width, scene.depth]} />
             <meshStandardMaterial color={floorColor(scene)} />
           </mesh>
           {Array.from({ length: Math.max(0, Math.ceil(scene.width / 0.25) - 1) }, (_, i) => (

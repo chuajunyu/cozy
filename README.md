@@ -136,7 +136,10 @@ restart the backend after creating the first build. Vite development is unchange
   Reset room explicitly removes all pieces, including locked pieces, and is undoable.
   It preserves room dimensions and budget.
 
-The floor is at y=0 and x/z coordinates are centered on the room. Product dimensions
+The floor is at y=0 and x/z coordinates are centered on the room. Only the interior
+floor receives simulated lighting; the slab exposed beneath hidden walls is shown
+as a muted structural cut surface, so room light cannot brighten the wall footprint.
+Product dimensions
 are named width/height/depth in backend meters; generated JSON uses [width, height,
 depth]. The renderer centers GLBs and normalizes their bounds without changing the
 cached source scene. Rendering remains on demand with DPR capped at 1.5 and one
