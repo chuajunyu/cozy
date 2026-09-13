@@ -100,3 +100,26 @@ test('generated geometry rejects executable model URLs and out-of-bounds parts',
   assert.throws(() => parseProduct({ ...product, modelUrl: 'https://other.invalid/model.glb' }))
   assert.throws(() => parseProduct({ ...product, dimensions: [.1, .1, .1] }))
 })
+
+test('reviewed model rotation precedes fitting and preserves cached transforms', () => {
+  const source = new Group()
+  source.add(new Mesh(new BoxGeometry(.2, .1, .3), new MeshBasicMaterial()))
+  const normalized = normalizeModel(source, [.2, .3, .1], [90, 0, 0])
+  close(normalized.scale.x, 1); close(normalized.scale.y, 1); close(normalized.scale.z, 1)
+  const box = new Box3().setFromObject(normalized)
+  close(box.min.y, 0)
+  close(box.getSize(new Vector3()).y, .3)
+  close(source.rotation.x, 0)
+})
+
+test('legacy wall mounts and paint migrate into shared backups without losing anchors', () => {
+  const product = {...desk, id:'ikea-20595132', name:'Wall lamp', category:'lamp', width:.18, height:.3, depth:.12, lighting:{mount:'wall'}}
+  const anchor = {wall:'north', offset:.25, height:1.7}
+  const legacy = {scene:{width:4,depth:3.5,budget:0,wallColors:{north:'#be7967'},items:[{id:'lamp',productId:product.id,x:1,z:.06,rotation:0,locked:true,elevation:1.55,wallMount:anchor}]},catalog:[]}
+  const backup = migrateLegacy(JSON.stringify(legacy), [product])
+  assert.deepEqual(backup.state.room.wallColors, legacy.scene.wallColors)
+  assert.deepEqual(backup.state.slots.lamp.wallMount, anchor)
+  close(backup.state.slots.lamp.x, -1)
+  close(backup.state.slots.lamp.z, -1.69)
+  assert.equal(backup.state.slots.lamp.locked, true)
+})

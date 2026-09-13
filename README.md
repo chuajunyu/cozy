@@ -23,7 +23,7 @@ decoders locally. It reuses valid cached files and reports failed downloads.
 Run it before starting FastAPI, or restart FastAPI after preparing assets.
 No metadata refresh or OpenAI API call happens during asset preparation.
 
-The checked-in catalog has 98 preview-ready source records and 95 records awaiting
+The checked-in catalog has 203 preview-ready source records and 245 records awaiting
 review. The backend only marks a product preview-ready when its local GLB passes
 validation. Unavailable assets are excluded from placement and recommendations;
 out-of-stock products may be added manually but are excluded from agent search.
@@ -229,7 +229,6 @@ permissions or undo history. Legacy brightness is accepted but ignored by render
 Daylight is computed in a browser worker from authoritative room dimensions and
 openings. Worker errors leave editing available and expose a Retry daylight button.
 
-<<<<<<< HEAD
 ## Demo notices
 
 Normal recovery is automatic. The canvas can briefly show Opening your room,
@@ -259,10 +258,28 @@ commands still use one in-flight write at a time. Same-object conflicts require
 retrying against the current object; Lock remains the explicit way to preserve
 an exact product and pose across future design iterations. Undo and Reset pause
 Astra as before.
-=======
 ## Wall colors
 
 **Make it yours** paints each compass wall or all walls using presets or a custom
 hex color. Paint affects reflected daylight. `room.wallColors` is validated by the
 shared backend, saved in backups and included in undo; older rooms use defaults.
->>>>>>> 075d139 (Add user-customizable wall colors with shared persistence)
+
+## Expanded IKEA Singapore collection
+
+448 product records cover study, living, dining, kitchen trolleys/islands, storage
+and wall décor; 203 have usable local models and 245 remain in review. Three URLs
+failed to load. Prices and availability retain their retrieval timestamps.
+
+Run `python3 scripts/ingest_ikea.py data/ikea-urls.json` to regenerate from cached
+records (or add `--refresh` to fetch again). Curated batches are limited to 500
+entries with an explicit error, rather than silent truncation. Run
+`python -m scripts.prepare_assets` and restart the backend to load the new models.
+Models and decoder files remain Git-ignored.
+
+Four real wall lamps are included: VARPTROSS, SOLKLINT, VARMBLIXT (white circle)
+and HAVSDUN. Their dimensions, orientation and emitter evidence are recorded in
+`data/ikea-wall-mounts.json`. The catalog changes include the wall-placement support
+these products require: `slot.wallMount = {wall, offset, height}` uses centre
+height in meters, with server-derived placement, locking, undo and saved anchors.
+Catalog `modelRotation` applies quarter turns before model fitting. Fixture output
+remains illustrative; wall décor lacking reviewed mounting stays out of placement.

@@ -85,6 +85,8 @@ def normalize_door(s, p, room):
 
 
 def validate_architecture(state, products):
+    from backend.wall_fixtures import validate
+    validate(state, products)
     room = state.room
     require(len({w.wall for w in room.windows}) == len(room.windows), 'windows', 'Use at most one window per wall.')
     for w in room.windows:
@@ -166,7 +168,11 @@ def settle_state(candidate, previous, products, *, migration=False, allow_locked
         require(p is not None, 'unknown_product', f'Unknown product {s.catalogId}.')
         processing.add(id)
         old = previous.slots.get(id)
-        if p.get('door'):
+        from backend.wall_fixtures import is_wall_fixture, normalize
+        if is_wall_fixture(p):
+            require(not s.supportId and not s.door, 'wall_mount', 'Wall lights cannot attach to furniture or doors.')
+            normalize(s, p, state.room)
+        elif p.get('door'):
             normalize_door(s, p, state.room)
         else:
             parent = inferred_support(old, previous, products) if old and old.catalogId in products else None
@@ -207,7 +213,7 @@ def settle_state(candidate, previous, products, *, migration=False, allow_locked
                 if other.elevation < start+p['height']-EPS and other.elevation+q['height'] > landing+EPS:
                     require(not overlap(bounds(s,p),bounds(other,q)), 'overlap', f'{id} overlaps {other.id} or its fall path.')
             s.elevation, s.supportId = landing, support_id
-        if old and old.locked and pose(old) != pose(s):
+        if old and old.locked and (pose(old) != pose(s) or old.wallMount != s.wallMount):
             require(migration and id in allow_locked, 'locked', f'{id} is locked; explicitly allow its migration adjustment.')
         resolved[id] = s
         processing.remove(id)

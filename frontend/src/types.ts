@@ -8,7 +8,7 @@ export type Product = {
   productUrl?: string; brand?: string; fetchedAt?: string; productType?: string
   features?: string[]; colorFamilies?: string[]; priceBand?: string; priceNote?: string
   dimensionsMeasuredFromModel?: boolean; lighting?: StudioProduct['lighting']
-  placement?: StudioProduct['placement']; door?: StudioProduct['door']
+  modelRotation?: StudioProduct['modelRotation']; placement?: StudioProduct['placement']; door?: StudioProduct['door']
   readyForPreview: boolean; canRecommend: boolean; assetIssue?: string
 }
 export type Slot = {
@@ -16,7 +16,7 @@ export type Slot = {
   catalogId: string | null; x: number; z: number; rotation: number
   locked: boolean; liked: boolean; replacing: boolean; explanation: string
   elevation: number; light: { on: boolean; brightness: number; color: string } | null
-  supportId: string | null; door: { wall: 'north' | 'east' | 'south' | 'west'; offset: number; open: boolean } | null
+  wallMount?: import('./catalog').Item['wallMount']; supportId: string | null; door: { wall: 'north' | 'east' | 'south' | 'west'; offset: number; open: boolean } | null
 }
 export type DesignState = {
   revision: number; room: { width: number; depth: number; height: number; daylight: number; wallColors?: import('./catalog').Scene['wallColors']; windows: import('./sunlight').RoomWindow[]; sunHour: number }
@@ -38,6 +38,7 @@ export type Command = {
   baseRevision?: number; slotId?: string; catalogId?: string; expectedProduct?: string
   x?: number; z?: number; rotation?: number; elevation?: number
   light?: { on: boolean; brightness: number; color: string }
+  wallMount?: import('./catalog').Item['wallMount']
   supportId?: string | null; door?: NonNullable<Slot['door']>
   previewId?: string; allowLocked?: string[]
   room?: DesignState['room']; product?: GeneratedProduct; backup?: Backup

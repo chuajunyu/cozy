@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import Field
 
-from backend.design import DesignState, DoorAnchor, LightSettings, Model, Room, Slot, require, validate_layout
+from backend.design import DesignState, DoorAnchor, WallMount, LightSettings, Model, Room, Slot, require, validate_layout
 from backend.placement import alternative_kind, inferred_support, settle_state
 from backend.products import GeneratedProduct, generated
 from backend.sessions import Session
@@ -33,6 +33,7 @@ class StudioCommand(Model):
     light: LightSettings | None = None
     supportId: str | None = Field(default=None, max_length=60)
     door: DoorAnchor | None = None
+    wallMount: WallMount | None = None
     room: Room | None = None
     budget: float | None = Field(default=None, gt=0, le=1_000_000)
     product: GeneratedProduct | None = None
@@ -110,7 +111,7 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 state.slots[command.slotId] = Slot(id=command.slotId, label=p["name"][:80], category=p["category"],
                     zone="Room", group="Your additions", catalogId=p["id"], x=command.x, z=command.z,
                     rotation=command.rotation or 0, elevation=command.elevation or 0, light=command.light,
-                    supportId=command.supportId, door=command.door,
+                    supportId=command.supportId, door=command.door, wallMount=command.wallMount,
                     explanation="Added by you.")
             elif kind == "item.update":
                 for field in ("x", "z", "rotation", "elevation"):
@@ -119,6 +120,8 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                         setattr(slot, field, value)
                 if 'supportId' in command.model_fields_set:
                     slot.supportId = command.supportId
+                if command.wallMount is not None:
+                    slot.wallMount = command.wallMount
                 if command.door is not None:
                     slot.door = command.door
             elif kind == 'item.replace':
@@ -190,7 +193,7 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                         parent = inferred_support(old, session.state, products)
                         if parent:
                             require(state.slots[old.id].supportId == parent.id, 'support_fit', 'The replacement must preserve supporting surfaces.')
-                    require(abs(state.slots[slot.id].elevation-slot.elevation) <= .005, 'support_fit', 'The replacement must retain its mounting height.')
+                    require(bool(slot.wallMount) or abs(state.slots[slot.id].elevation-slot.elevation) <= .005, 'support_fit', 'The replacement must retain its mounting height.')
             validate_layout(state, products)
             if kind == "room.undo":
                 session.history.pop()

@@ -243,32 +243,14 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
 @media (prefers-reduced-motion: no-preference) {
   button { transition: background .12s ease, border-color .12s ease; }
 }
-<<<<<<< HEAD
 .object-references { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
 .object-pill { display: inline-flex; align-items: center; max-width: 100%; border: 1px solid #c9d4be; border-radius: 20px; background: #edf2e7; overflow: hidden; }
 .object-pill button { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 0; background: transparent; color: #4c633e; padding: 5px 9px; font-size: 11px; min-height: 30px; min-width: 0; }
 .object-pill button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .object-pill svg { flex-shrink: 0; }
 .object-pill .remove-reference { padding: 5px 8px; border-left: 1px solid #d3deca; }
-=======
 
-.door-entry { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; border-top: 1px solid #dedfd4; background: #f5f5ec; }
-.door-entry > div { display: grid; gap: 5px; }
-.door-entry strong { font-size: 13px; }
-.door-entry span { font-size: 11px; color: #7a806c; }
-.door-entry button { white-space: nowrap; font-size: 12px; }
-.door-controls { padding: 20px 24px; background: #f0f3e6; border-top: 1px solid #dedfd4; }
-.door-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.door-heading h3 { font-size: 16px; margin: 0; }
-.door-heading p { font-size: 11px; color: #7a806c; margin-top: 6px; }
-.door-heading button { background: #687c57; color: white; font-size: 12px; }
-.door-controls .window-walls button[aria-pressed='true'] { background: #687c57; color: white; }
-.door-controls label { display: grid; gap: 10px; font-size: 12px; }
-.door-controls input { width: 100%; accent-color: #687c57; }
-.door-status { margin: 14px 0 10px; color: #5d744a; font-size: 12px; }
-.door-controls small { display: block; color: #7a806c; font-size: 10px; line-height: 1.6; }
-@media (max-width: 600px) { .door-entry, .door-controls { padding: 16px; } }
-.room-customization {
+.room-customization, .wall-light-controls {
   margin: 12px 0;
   padding: 18px;
   border: 1px solid #deded3;
@@ -277,21 +259,30 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
   display: grid;
   gap: 14px;
 }
-.room-customization h3 { margin: 0; font-size: 16px; }
+.room-customization h3, .wall-light-controls h3 { margin: 0; font-size: 16px; }
 .room-customization p { margin: 5px 0 0; font-size: 12px; color: #65705f; }
-.room-customization label { display: grid; gap: 7px; font-size: 12px; }
+.room-customization label, .wall-light-controls label { display: grid; gap: 7px; font-size: 12px; }
 .room-customization select { padding: 9px; border: 1px solid #deded3; border-radius: 8px; background: white; color: #394535; }
-.room-customization > small { font-size: 11px; color: #65705f; line-height: 1.6; }
+.room-customization > small, .wall-light-controls > small { font-size: 11px; color: #65705f; line-height: 1.6; }
 .paint-swatches { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; }
 .paint-swatches button { border: 1px solid transparent; background: transparent; padding: 5px; border-radius: 9px; display: grid; gap: 5px; justify-items: center; }
 .paint-swatches button[aria-pressed="true"] { border-color: #566c47; background: #edf1e5; }
 .paint-swatches span { width: 28px; height: 28px; border: 1px solid #0002; border-radius: 50%; }
 .paint-swatches small { font-size: 10px; }
-.custom-paint { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.custom-paint, .wall-light-entry { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
 .custom-paint input[type="color"] { width: 64px; height: 34px; border: 1px solid #deded3; padding: 2px; background: white; border-radius: 6px; }
-.custom-paint button { padding: 9px 12px; border-radius: 8px; border: 1px solid #cbd1c1; background: white; color: #394535; font-size: 12px; }
+.custom-paint button, .wall-light-entry button { padding: 9px 12px; border-radius: 8px; border: 1px solid #cbd1c1; background: white; color: #394535; font-size: 12px; }
+.wall-light-entry { padding-top: 14px; border-top: 1px solid #deded3; }
+.wall-light-entry button { background: #e5ebda; }
+.wall-light-entry strong { font-size: 13px; }
+.wall-light-entry label { flex: 1 1 100%; min-width: 0; }
+.wall-light-entry select { width: 100%; }
+.wall-light-product { display: flex; gap: 12px; align-items: center; flex: 1 1 100%; min-width: 0; }
+.wall-light-product img { width: 70px; height: 70px; object-fit: contain; border-radius: 8px; background: white; }
+.wall-light-product a { display: inline-block; margin-top: 5px; font-size: 11px; color: #526b3e; }
+.wall-light-controls .window-walls button[aria-pressed='true'] { background: #687c57; color: white; }
 .wall-color-summary { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: #65705f; }
 .wall-color-summary span { display: flex; align-items: center; gap: 5px; }
 .wall-color-summary i { width: 12px; height: 12px; border: 1px solid #0002; border-radius: 50%; }
+.wall-light-controls input[type="range"] { width: 100%; accent-color: #62764e; }
 @media (max-width: 480px) { .paint-swatches { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
->>>>>>> 075d139 (Add user-customizable wall colors with shared persistence)

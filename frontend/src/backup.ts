@@ -41,7 +41,7 @@ export function migrateLegacy(raw: string, catalog: Product[]): Backup {
     return [i.id, { id: i.id, label: (p?.name ?? generated!.name).slice(0, 80), catalogId: id,
       category: p?.category ?? customCategory(generated!), zone: 'Room', group: 'Your additions', anchor: false,
       x: i.x - scene.width / 2, z: i.z - scene.depth / 2, rotation: i.rotation, elevation: i.elevation ?? 0,
-      supportId: i.supportId ?? null, door: i.door ?? null, light: i.light ?? null, locked: i.locked, liked: false, replacing: false, explanation: 'Restored from this device.' }]
+      wallMount: i.wallMount, supportId: i.supportId ?? null, door: i.door ?? null, light: i.light ?? null, locked: i.locked, liked: false, replacing: false, explanation: 'Restored from this device.' }]
   }))
   return { version: 2, products: custom, state: { revision: 0,
     room: { width: scene.width, depth: scene.depth, height: scene.height ?? 2.7, wallColors: scene.wallColors, windows: scene.windows ?? [{ wall: 'east', offset: .5, width: Math.min(1.8, scene.depth - .4), height: 1.4, sill: .9 }], sunHour: scene.sunHour ?? ((scene.daylight ?? 1) === 0 ? 20 : 9), daylight: scene.daylight ?? 1 },

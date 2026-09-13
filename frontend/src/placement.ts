@@ -1,6 +1,7 @@
-import { validWallColors } from './roomFinishes.ts'
 import type { Item, Product, Scene } from './catalog.ts'
 import { normalizeDoor, validDoorAnchor, validDoors } from './doors.ts'
+import { isWallFixture, normalizeWallFixture, validWallFixture } from './wallFixtures.ts'
+import { validWallColors } from './roomFinishes.ts'
 
 const EPSILON = 0.005
 const DEFAULT_HEIGHT = 2.6
@@ -143,7 +144,8 @@ function contains(support: Rectangle, item: Rectangle) {
   )
 }
 
-export function validItemGeometry(item: Item, product: Product, scene: Scene) {
+export function validItemGeometry(item: Item, product: Product, scene: Scene, catalog: Product[] = []) {
+  if (isWallFixture(product) ? !validWallFixture(item, product, scene, catalog) : item.wallMount !== undefined) return false
   if (product.door) return validDoorAnchor(item, product, scene)
   if (item.door !== undefined) return false
   const y = item.elevation ?? 0
@@ -170,11 +172,15 @@ export function validItemGeometry(item: Item, product: Product, scene: Scene) {
 /** Settle vertically; reject unsafe landings instead of tipping or teleporting. */
 export function settleItem(item: Item, scene: Scene, catalog: Product[]): Item | null {
   const product = catalog.find((value) => value.id === item.productId)
+  if (product && isWallFixture(product)) {
+    if (item.supportId || item.door) return null
+    item = normalizeWallFixture(item, product, scene)
+  }
   if (product?.door) {
     const anchored = normalizeDoor(item, product, scene)
     return validDoors({ ...scene, items: [...scene.items.filter(other => other.id !== item.id), anchored] }, catalog) ? anchored : null
   }
-  if (!product || !validItemGeometry(item, product, scene)) return null
+  if (!product || !validItemGeometry(item, product, scene, catalog)) return null
   const shape = rectangle(item, product)
   const start = item.elevation ?? 0
   let landing = isAnchored(product) ? start : 0
@@ -215,7 +221,7 @@ export function settleItem(item: Item, scene: Scene, catalog: Product[]): Item |
     }
   }
   const settled = { ...item, elevation: landing, supportId }
-  return validItemGeometry(settled, product, scene) && validDoors({ ...scene, items: [...scene.items.filter(other => other.id !== item.id), settled] }, catalog) ? settled : null
+  return validItemGeometry(settled, product, scene, catalog) && validDoors({ ...scene, items: [...scene.items.filter(other => other.id !== item.id), settled] }, catalog) ? settled : null
 }
 
 function transformChanged(a: Item, b: Item) {
@@ -224,7 +230,10 @@ function transformChanged(a: Item, b: Item) {
     Math.abs(a.z - b.z) > 1e-8 ||
     Math.abs(a.rotation - b.rotation) > 1e-8 ||
     Math.abs((a.elevation ?? 0) - (b.elevation ?? 0)) > 1e-8 ||
-    a.productId !== b.productId
+    a.productId !== b.productId ||
+    a.wallMount?.wall !== b.wallMount?.wall ||
+    a.wallMount?.offset !== b.wallMount?.offset ||
+    a.wallMount?.height !== b.wallMount?.height
   )
 }
 
@@ -261,8 +270,8 @@ export function settleScene(
   if (nextItems.size !== next.items.length)
     return { scene: previous, error: 'Every room item needs a unique ID.' }
   for (const item of previous.items) {
-    if (item.locked && products.get(item.productId)?.door && !nextItems.has(item.id))
-      return { scene: previous, error: 'This door is locked. Unlock it before removing it.' }
+    if (item.locked && (products.get(item.productId)?.door || item.wallMount) && !nextItems.has(item.id))
+      return { scene: previous, error: 'This fitting is locked. Unlock it before removing it.' }
   }
 
   function resolve(id: string): Item | undefined {
@@ -280,7 +289,7 @@ export function settleScene(
       return undefined
     }
     processing.add(id)
-    let candidate = product.door ? normalizeDoor(original, product, next) : { ...original }
+    let candidate = product.door ? normalizeDoor(original, product, next) : isWallFixture(product) ? normalizeWallFixture(original, product, next) : { ...original }
     const old = oldItems.get(id)
     const oldSupport = old && previousSupport(old, previous, catalog)
 
@@ -321,7 +330,7 @@ export function settleScene(
       catalog,
     )
     if (!settled) {
-      error = product.door ? 'Place the door clear of windows, other doors, and furniture, with room to swing inward.' : `Place ${product.name} fully on a clear floor or supporting surface, clear of door swings.`
+      error = product.door ? 'Place the door clear of windows, other doors, and furniture, with room to swing inward.' : isWallFixture(product) ? 'Place the wall light on a clear section of wall, away from windows, doors, other fixtures and furniture.' : `Place ${product.name} fully on a clear floor or supporting surface, clear of door swings.`
       return undefined
     }
     const normalizingUnsupportedLegacyItem =

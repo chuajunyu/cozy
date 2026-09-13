@@ -1,5 +1,6 @@
 import { fitZoom } from './cameraFit'
 import { dragState } from './dragState'
+import { isWallFixture } from './wallFixtures'
 import { fixtureIntensity } from './lighting'
 import { liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
@@ -51,7 +52,7 @@ class ModelBoundary extends Component<
 function GlbFurniture({ product }: { product: Product }) {
   const gltf = useGLTF(product.modelUrl!, '/draco/')
   const model = useMemo(() => {
-    const instance = normalizeModel(gltf.scene, product.dimensions)
+    const instance = normalizeModel(gltf.scene, product.dimensions, product.modelRotation)
     instance.traverse(o => { if (o instanceof Mesh) o.material = Array.isArray(o.material) ? o.material.map(m => m.clone()) : o.material.clone() })
     return instance
   }, [gltf, product])
@@ -235,7 +236,7 @@ function Placed({
   function down(e: ThreeEvent<PointerEvent>) {
     e.stopPropagation()
     onSelect(item.id)
-    if (item.locked) return
+    if (item.locked || isWallFixture(product)) return
     const p = e.ray.intersectPlane(plane, new Vector3())
     if (!p) return
     offset.current = {

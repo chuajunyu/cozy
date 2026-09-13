@@ -1,6 +1,7 @@
 import type { Product as WireProduct } from './types'
 import type { RoomWindow, Wall } from './sunlight'
 import { validDoors } from './doors.ts'
+import { isWallFixture, validWallFixture } from './wallFixtures.ts'
 export type Vec3 = [number, number, number]
 export type Part = {
   shape: 'box' | 'cylinder'
@@ -18,6 +19,7 @@ export type Product = {
   wire?: WireProduct
   floorLayer?: boolean
   modelUrl?: string
+  modelRotation?: Vec3
   thumbnailUrl?: string
   productUrl?: string
   brand?: string
@@ -32,7 +34,7 @@ export type Product = {
   readyForPreview?: boolean
   door?: { kind: 'solid' }
   lighting?: {
-    mount: 'floor' | 'surface' | 'ceiling'
+    mount: 'floor' | 'surface' | 'ceiling' | 'wall'
     colorMode: 'fixed' | 'white-spectrum' | 'rgb' | 'bulb-dependent'
     dimmable: boolean
     evidence: string
@@ -58,6 +60,7 @@ export type Item = {
   elevation?: number
   light?: { on: boolean; brightness: number; color: string }
   door?: { wall: Wall; offset: number; open: boolean }
+  wallMount?: { wall: Wall; offset: number; height: number }
 }
 export type Scene = {
   revision?: number
@@ -320,8 +323,7 @@ export function footprint(item: Item, product: Product) {
 export function validPlacement(item: Item, scene: Scene, catalog: Product[]) {
   const p = catalog.find((p) => p.id === item.productId)
   if (!p) return false
-  if (!validDoors({ ...scene, items: [...scene.items.filter(i => i.id !== item.id), item] }, catalog)) return false
-  if (p.door) return true
+  if (isWallFixture(p) ? !validWallFixture(item, p, scene, catalog) : item.wallMount !== undefined) return false
   const candidate = { ...scene, items: [...scene.items.filter(other => other.id !== item.id), item] }
   if (!validDoors(candidate, catalog)) return false
   if (p.door) return true
@@ -383,6 +385,8 @@ export function parseProduct(raw: unknown): Product {
     )
   if (p.modelUrl && !/^\/models\/ikea\/[0-9]{8}\.glb$/.test(p.modelUrl))
     throw new Error('Use a local IKEA model path.')
+  if (p.modelRotation !== undefined && (!p.modelUrl || !vector(p.modelRotation) || !p.modelRotation.every(n => [0, 90, 180, 270].includes(n))))
+    throw new Error('Model orientation must use reviewed quarter turns in degrees.')
   for (const key of ['thumbnailUrl', 'productUrl'] as const) {
     if (p[key]) {
       const url = new URL(p[key]!)
@@ -422,8 +426,10 @@ export function parseProduct(raw: unknown): Product {
   if (p.placement && (!['floor', 'surface', 'ceiling', 'wall'].includes(p.placement.mode) || (p.placement.canSupport !== undefined && typeof p.placement.canSupport !== 'boolean'))) throw new Error('Invalid placement capabilities.')
   if (p.door !== undefined && (!p.door || p.door.kind !== 'solid' || p.placement?.mode !== 'wall' || p.dimensions[0] < .5 || p.dimensions[0] > 2 || p.dimensions[1] < 1.8 || p.dimensions[1] > 2.5 || p.dimensions[2] > .2 || p.lighting || p.modelUrl || p.placement.canSupport || p.placement.support || p.placement.surfaceKind))
     throw new Error('Doors need a solid leaf and wall placement with valid doorway dimensions.')
-  if (p.placement?.mode === 'wall' && !p.door)
-    throw new Error('Wall placement requires door capabilities.')
+  if (p.placement?.mode === 'wall' && !p.door && !isWallFixture(p))
+    throw new Error('Wall placement requires a door or wall light.')
+  if (p.lighting?.mount === 'wall' && (!isWallFixture(p) || p.door || p.placement?.canSupport || p.placement?.support || p.placement?.surfaceKind))
+    throw new Error('Wall lights require wall placement without supporting surfaces.')
   if (p.placement?.surfaceKind !== undefined && p.placement.surfaceKind !== 'mattress')
     throw new Error('Invalid supported item kind.')
   const support = p.placement?.support
@@ -431,7 +437,7 @@ export function parseProduct(raw: unknown): Product {
     throw new Error('Invalid mattress deck dimensions or provenance.')
   if (p.lighting) {
     if (
-      !['floor', 'surface', 'ceiling'].includes(p.lighting.mount) ||
+      !['floor', 'surface', 'ceiling', 'wall'].includes(p.lighting.mount) ||
       !['fixed', 'white-spectrum', 'rgb', 'bulb-dependent'].includes(
         p.lighting.colorMode,
       ) ||

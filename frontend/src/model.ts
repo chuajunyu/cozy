@@ -1,8 +1,10 @@
 import { Box3, Group, Object3D, Vector3 } from 'three'
 
 /** Clone without altering cached geometry/materials; normalize in a parent group. */
-export function normalizeModel(scene: Object3D, dimensions: [number, number, number]) {
-  const object = scene.clone(true)
+export function normalizeModel(scene: Object3D, dimensions: [number, number, number], rotation?: [number, number, number]) {
+  const object = new Group()
+  if (rotation) object.rotation.set(...rotation.map(n => n * Math.PI / 180) as [number, number, number])
+  object.add(scene.clone(true))
   object.updateMatrixWorld(true)
   const box = new Box3().setFromObject(object)
   const size = box.getSize(new Vector3())

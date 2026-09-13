@@ -117,6 +117,6 @@ export function replaceItem(
     if (support && current.supportId !== support) return reject('This option cannot keep every item on its current supporting surface.')
   }
   const settled = result.scene.items.find(current => current.id === itemId)!
-  if (Math.abs((settled.elevation ?? 0) - (item.elevation ?? 0)) > .005) return reject('This option cannot stay at the current height.')
+  if (!item.wallMount && Math.abs((settled.elevation ?? 0) - (item.elevation ?? 0)) > .005) return reject('This option cannot stay at the current height.')
   return result
 }

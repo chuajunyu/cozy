@@ -130,12 +130,14 @@ def enrich(product):
         if matched:
             features.append(label);evidence[label]=matched[:220]
     name=product['name'].lower()
-    if re.search(r'\blamp\b|\buplighter\b',name) and not re.search(r'lampshade|lamp shade|lamp base|cord set',name):
-        mount='ceiling' if re.search(r'ceiling|pendant',name) else 'floor' if re.search(r'floor|uplighter',name) else 'surface'
-        mode='rgb' if re.search(r'colou?r and white spectrum|change.*colou?r',source,re.I) else 'white-spectrum' if re.search(r'white spectrum|warm to cold|warm to cool',source,re.I) else 'bulb-dependent' if not re.search(r'\bLED\b',product['name']) else 'fixed'
+    if re.search(r'\blamp\b|\buplighter\b|\bup/downlighter\b|\bspotlight\b',name) and not re.search(r'lampshade|lamp shade|lamp base|cord set',name):
+        mount='wall' if re.search(r'wall',name) and not re.search(r'table/wall|ceiling/wall',name) else 'ceiling' if re.search(r'ceiling|pendant',name) else 'floor' if re.search(r'floor|uplighter',name) else 'surface'
+        mode='rgb' if re.search(r'colou?r and white spectrum|change[^.!?]{0,60}colou?r',source,re.I) else 'white-spectrum' if re.search(r'white spectrum|warm to cold|warm to cool',source,re.I) else 'bulb-dependent' if not re.search(r'\bLED\b',product['name']) else 'fixed'
         product['lighting']={'mount':mount,'colorMode':mode,'dimmable':bool(re.search(r'dimmable|dim the light',source,re.I)),'evidence':'Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.'}
         features.append('Lighting')
         if mode in ['rgb','white-spectrum']:features.append('Adjustable light color')
+        if mount == 'wall':
+            product['placement'] = {'mode': 'wall', 'canSupport': False}
     if product.get('lighting'):
         flux = re.fullmatch(r'([0-9.]+)\s*lm', product.get('measurements', {}).get('Luminous flux', ''))
         lumens = float(flux[1]) if flux else (1055 if product['lighting']['mount'] == 'ceiling' else 470)
@@ -150,6 +152,18 @@ def enrich(product):
             if thickness:
                 product['dimensionsMeters']['height'] = thickness
                 product.setdefault('dimensionSources', {})['height'] = 'Visible measurements: Thickness'
+    # Manual model/axis review is separate from automatic name classification.
+    mounting_path = ROOT / 'data/ikea-wall-mounts.json'
+    mounting = json.loads(mounting_path.read_text()).get(product['id']) if mounting_path.exists() else None
+    if mounting and product.get('lighting', {}).get('mount') == 'wall':
+        product['wallMountReview'] = mounting['evidence']
+        product['modelRotation'] = mounting['modelRotation']
+        product['dimensionsMeters'] = dict(mounting['dimensionsMeters'])
+        product['dimensionSources'] = dict(mounting['dimensionSources'])
+        product['dimensionsMeasuredFromModel'] = mounting.get('dimensionsMeasuredFromModel', False)
+        product['lighting']['emitter'] = mounting['emitter']
+    elif product.get('lighting', {}).get('mount') == 'wall':
+        product.pop('wallMountReview', None)
     product['features']=features
     product['featureEvidence']=evidence
     color=((product.get('color') or '')+' '+product.get('variantLabel','')).lower()
@@ -159,6 +173,14 @@ def enrich(product):
     product['materialsMentioned']=[m for m in ['solid wood','bamboo','pine','oak','birch','walnut','steel','aluminium','glass','rattan','leather','cotton','polyester'] if re.search(r'\b'+m+r'\b',source,re.I)]
     product['materialEvidenceSource']='Product name/description; mentions are not a full material composition.'
     gaps=[]
+    if product.get('productType') in {'Wall shelf', 'Mirror', 'Kitchen wall storage', 'Decoration'}:
+        product['mountingNeedsReview'] = True
+    if product.get('mountingNeedsReview'):
+        gaps.append('Decoration geometry and mounting need review')
+    if re.search(r'\bclamp\b', name):
+        gaps.append('Clamp mounting needs review')
+    if product.get('lighting', {}).get('mount') == 'wall' and not product.get('wallMountReview'):
+        gaps.append('Wall mounting geometry needs review')
     if product.get('modelStatus')!='downloaded':gaps.append('3D model unavailable')
     for key in ['width','height','depth']:
         n=product.get('dimensionsMeters',{}).get(key)
@@ -198,7 +220,9 @@ def save_catalogs(products, errors):
     write(ROOT/'frontend/public/ikea-catalog.json',{'products':ready,'reviewCount':len(review),'totalCount':len(products)})
 
 if __name__=='__main__':
-    entries=list({e['url']:e for e in json.loads(Path(sys.argv[1]).read_text())}.values())[:200]
+    entries=list({e['url']:e for e in json.loads(Path(sys.argv[1]).read_text())}.values())
+    if len(entries) > 500:
+        raise SystemExit('Curated ingestion is limited to 500 products; split the work explicitly rather than silently truncating the catalog.')
     previous=ROOT/'data/ikea-catalog.json'
     cached=json.loads(previous.read_text()).get('products',[]) if previous.exists() and '--refresh' not in sys.argv else []
     allowed={e['url'] for e in entries}

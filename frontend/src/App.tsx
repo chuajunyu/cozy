@@ -1,4 +1,5 @@
-import RoomCustomization from './RoomCustomization'
+import RoomCustomization, { WallLightControls } from './RoomCustomization'
+import { isWallFixture, normalizeWallFixture } from './wallFixtures'
 import { fixtureOutput } from './lighting'
 import { acceptsSupport, supportPosition, isAnchored, settleItem, settleScene } from './placement'
 
@@ -145,7 +146,7 @@ export default function App() {
     wallColors: state?.room.wallColors, windows: state?.room.windows, sunHour: state?.room.sunHour, revision: state?.revision, daylight: state?.room.daylight ?? 1, budget: state?.budget ?? 0,
     items: Object.values(state?.slots ?? {}).filter(s => s.catalogId).map(s => ({
       id: s.id, productId: s.catalogId!, x: s.x, z: s.z, rotation: s.rotation, locked: s.locked,
-      supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
+      wallMount: s.wallMount, supportId: s.supportId ?? undefined, door: s.door ?? undefined, elevation: s.elevation, light: s.light ?? undefined,
     })),
   }), [state])
   const reviewCount = connection.reviewCount + wireCatalog.filter(p => !p.readyForPreview).length
@@ -188,14 +189,15 @@ export default function App() {
     if (added.length + removed.length + changed.length > 1) { setNotice('Choose one direct edit; attached objects move together automatically.'); return false }
     if (added.length) {
       const i = added[0]
-      return edit({ type: 'item.add', slotId: i.id, catalogId: i.productId, x: i.x, z: i.z, rotation: i.rotation, elevation: i.elevation, light: i.light, supportId: i.supportId ?? null, door: i.door })
+      return edit({ type: 'item.add', slotId: i.id, catalogId: i.productId, x: i.x, z: i.z, rotation: i.rotation, elevation: i.elevation, light: i.light, supportId: i.supportId ?? null, door: i.door, wallMount: i.wallMount })
     }
     if (removed.length) return edit({ type: 'item.delete', slotId: removed[0].id, expectedProduct: removed[0].productId })
     if (changed.length) {
       const i = changed[0], old = scene.items.find(o => o.id === i.id)!
       if (old.locked !== i.locked) return edit({ type: 'item.lock', slotIds: [i.id], expectedProducts: { [i.id]: old.productId }, locked: i.locked })
       if (JSON.stringify(old.light) !== JSON.stringify(i.light)) return edit({ type: 'fixture.update', slotId: i.id, expectedProduct: old.productId, light: i.light })
-      if (i.door) return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, door: i.door })
+      if (i.wallMount) return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, wallMount: i.wallMount })
+      if (i.door) return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, door: i.door, wallMount: i.wallMount })
       return edit({ type: 'item.update', slotId: i.id, expectedProduct: old.productId, x: i.x, z: i.z, rotation: i.rotation, elevation: i.elevation, supportId: i.supportId ?? null })
     }
     return !!state && edit({ type: 'room.update', room: { ...state.room, wallColors: next.wallColors, width: next.width, depth: next.depth, height: next.height ?? state.room.height, windows: next.windows ?? defaultWindows, sunHour: next.sunHour ?? 9 }, budget: next.budget || null })
@@ -204,7 +206,9 @@ export default function App() {
     const preview = settleScene({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) }, scene, catalog)
     if (preview.error) {
       const moving = catalog.find(p => p.id === next.productId)
-      setNotice(moving?.placement?.surfaceKind === 'mattress'
+      setNotice(moving && isWallFixture(moving)
+        ? 'Keep the wall light inside the wall, clear of windows, doors and other furniture.'
+        : moving?.placement?.surfaceKind === 'mattress'
         ? `This mattress is ${mattressSize(moving.dimensions[0], moving.dimensions[2])}. Drop it over an empty bed with a deck at least this size, or choose a bed under Mattress placement. It keeps its actual size and cannot overhang the frame.`
         : 'No stable landing here. Keep the whole base on a surface, clear of other furniture and room edges.')
       return
@@ -216,6 +220,17 @@ export default function App() {
   }
   function add(p: Product) {
     if (status !== 'connected' || pending || backup) return
+    if (isWallFixture(p)) {
+      if (scene.items.filter(i => catalog.find(q => q.id === i.productId)?.lighting).length >= 8) { setNotice('A room supports eight light fixtures.'); return }
+      const id = crypto.randomUUID()
+      for (const wall of walls) for (const height of [1.7, 2.35, 1.2]) for (const offset of [.5, .25, .75, .1, .9, 0, 1]) {
+        const lamp = normalizeWallFixture({ id, productId: p.id, x: 0, z: 0, rotation: 0, locked: false, wallMount: { wall, offset, height }, light: { on: true, brightness: 1, color: '#ffd3a0' } }, p, scene)
+        const next = { ...scene, items: [...scene.items, lamp] }
+        if (!settleScene(next, scene, catalog).error && commit(next)) { setSelected(id); openPanel('details'); return }
+      }
+      setNotice('No clear wall position fits this light. Move furniture or adjust the openings first.')
+      return
+    }
     if (p.door) {
       const id = crypto.randomUUID()
       const offsets = [.5, .25, .75, 0, 1, ...Array.from({ length: 19 }, (_, i) => (i + 1) / 20)]
@@ -385,8 +400,8 @@ export default function App() {
           {item && product && <div className="selection-toolbar" aria-label="Selected piece">
             <div className="selected-name"><strong>{product.name}</strong><small>{item.locked ? 'Locked' : product.door ? 'Door' : money(product.price)}</small></div>
             <div className="quick-actions">
-              {!product.door && <button disabled={blocked || item.locked} onClick={() => move({ ...item, rotation: (item.rotation + 90) % 360 })}>Rotate</button>}
-              {!product.door && <button disabled={blocked || item.locked} onClick={() => openPanel('replace')}>Replace</button>}
+              {!product.door && !isWallFixture(product) && <button disabled={blocked || item.locked} onClick={() => move({ ...item, rotation: (item.rotation + 90) % 360 })}>Rotate</button>}
+              {!product.door && !isWallFixture(product) && <button disabled={blocked || item.locked} onClick={() => openPanel('replace')}>Replace</button>}
               {item.door && <button disabled={blocked || item.locked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, door: { ...item.door!, open: !item.door!.open } } : i) })}>{item.door.open ? 'Close door' : 'Open door'}</button>}
               {product.lighting && <button disabled={blocked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, light: { on: i.light?.on === false, brightness: i.light?.brightness ?? .7, color: i.light?.color ?? '#ffd3a0' } } : i) })}>{item.light?.on === false ? 'Light on' : 'Light off'}</button>}
               <button disabled={blocked} onClick={() => edit({ type: 'item.lock', slotIds: [item.id], expectedProducts: expected, locked: !item.locked })}>{item.locked ? 'Unlock' : 'Lock'}</button>
@@ -561,6 +576,7 @@ export default function App() {
                 <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
                 <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
               </div>
+<RoomCustomization scene={scene} onChange={commit} />
 <SunlightControls scene={scene} catalog={catalog} onChange={commit} mode="windows" />
               <div className="room-settings">
                 <div><label htmlFor="height">Room height</label><select id="height" value={scene.height} onChange={e => resize('height', Number(e.target.value))}>{Array.from({length:31},(_,i) => Number((2+i*.1).toFixed(1))).map(n => <option key={n} value={n}>{n.toFixed(1)} m</option>)}</select></div>
@@ -660,7 +676,8 @@ export default function App() {
 </div>
           <div hidden={panel !== 'details'}>
             {item && product ? <><div className="detail-summary"><ProductArt product={product} /><h3>{product.name}</h3><p>{product.dimensions.map(n => `${Math.round(n * 100)} cm`).join(' × ')}</p><p>{item.x.toFixed(2)}, {item.z.toFixed(2)} m · {item.rotation}°</p><div className="detail-actions"><button disabled={blocked || !!state?.slots[item.id]?.liked} onClick={() => edit({ type: 'feedback.send', action: 'like', slotIds: [item.id], expectedProducts: expected })}>{state?.slots[item.id]?.liked ? 'Liked' : 'Like'}</button><button className="danger" disabled={blocked || item.locked} onClick={() => { if (edit({ type: 'item.delete', slotId: item.id, expectedProduct: item.productId })) { setSelected(null); closePanel() } }}>Delete piece</button></div></div><fieldset disabled={blocked}>              {item && product?.door && <DoorControls item={item} product={product} scene={scene} onChange={next => commit({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) })} />}
-              {item && product && !product.door && <div className="placement-controls">
+              {item && product && isWallFixture(product) && <WallLightControls item={item} product={product} scene={scene} onChange={move} />}
+{item && product && !product.door && !isWallFixture(product) && <div className="placement-controls">
                 <strong>{product.placement?.surfaceKind === 'mattress' ? 'Mattress placement' : isAnchored(product) ? 'Ceiling mounted' : item.supportId ? 'Resting on a surface' : 'On the floor'}</strong>
                 {(product.placement?.mode === 'surface' || product.lighting?.mount === 'surface') && <label>{product.placement?.surfaceKind === 'mattress' ? 'Place on bed' : 'Resting on'}
                   <select aria-label="Supporting surface" disabled={item.locked} value={item.supportId ?? 'floor'} onChange={e => {
@@ -776,7 +793,7 @@ export default function App() {
                       </select>
                     </label>
                   )}
-                  {isAnchored(product) && <label>
+                  {isAnchored(product) && !isWallFixture(product) && <label>
                     Mounted base height · {(item.elevation ?? 0).toFixed(2)} m
                     <input
                       aria-label="Fixture mounting height"
@@ -801,7 +818,6 @@ export default function App() {
                   </small>
                 </div>
               )}
-<<<<<<< HEAD
 </fieldset></> : <p className="panel-empty">Select a piece in the room to see its details.</p>}
           </div>
           <div hidden={panel !== 'replace'}><fieldset disabled={blocked}>{alternativesPanel || <p className="panel-empty">Select a piece to find alternatives.</p>}{item && !product?.door && <button className="primary wide" disabled={blocked || item.locked} onClick={askReplacement}>Ask Astra for another option</button>}</fieldset></div>
@@ -809,49 +825,6 @@ export default function App() {
             <button className="danger" disabled={status !== 'connected' || pending || (!scene.items.length && !backup)} onClick={() => { if (resetRoom()) { setSelected(null); closePanel(); setNotice('Room reset. Undo brings your pieces back.') } }}>Reset room</button>
             <p className="muted">Remove all pieces, including locked ones. Room dimensions and budget stay the same. Undo restores the previous arrangement.</p>
             {recoveryError && backup && <section className="recovery-options"><h3>Saved room</h3><p className="muted">Your original save is still on this device.</p><button disabled={pending || status !== 'connected'} onClick={restore}>Try opening again</button><button onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([backup], { type: 'application/json' })); a.download = 'cozy-room-backup.json'; a.click(); URL.revokeObjectURL(a.href) }}>Download saved room</button></section>}
-=======
-              {compact && alternativesPanel}
-              <div className="door-entry">
-                <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
-                <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
-              </div>
-              <RoomCustomization scene={scene} onChange={commit} />
-              <SunlightControls scene={scene} catalog={catalog} onChange={commit} />
-              <div className="room-settings">
-                <div><label htmlFor="height">Room height</label><select id="height" value={scene.height} onChange={e => resize('height', Number(e.target.value))}>{Array.from({length:31},(_,i) => Number((2+i*.1).toFixed(1))).map(n => <option key={n} value={n}>{n.toFixed(1)} m</option>)}</select></div>
-                <div>
-                  <label htmlFor="width">Room width</label>
-                  <select
-                    id="width"
-                    value={scene.width}
-                    onChange={(e) => resize('width', Number(e.target.value))}
-                  >
-                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
-                      (n) => (
-                        <option key={n} value={n}>
-                          {n.toFixed(1)} m
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="depth">Room depth</label>
-                  <select
-                    id="depth"
-                    value={scene.depth}
-                    onChange={(e) => resize('depth', Number(e.target.value))}
-                  >
-                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
-                      (n) => (
-                        <option key={n} value={n}>
-                          {n.toFixed(1)} m
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </div>
->>>>>>> 075d139 (Add user-customizable wall colors with shared persistence)
 
             <details><summary>Connection & collection</summary>{diagnostic && <p>{diagnostic}</p>}<p>{status} · {completeIkea.length} IKEA pieces ready · {reviewCount} awaiting review</p><button onClick={reconnect}>Refresh connection and collection</button></details>
             <p className="muted">Accepted changes are backed up on this device. Undo pauses the designer.</p>

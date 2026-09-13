@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { Object3D, Box3, Vector3, Matrix4 } from '../frontend/node_modules/three/build/three.module.js'
 const path='data/ikea-catalog.json'
 const data=JSON.parse(fs.readFileSync(path))
-for(const p of data.products.filter(p=>p.modelUrl && p.lighting)){
+for(const p of data.products.filter(p=>p.modelUrl && p.lighting && p.lighting.mount !== 'wall' && !p.modelRotation)){
  if(p.dimensionSources?.width==='Visible measurements: Length'){p.dimensionsMeters.width=null;delete p.dimensionSources.width}
  if(Object.values(p.dimensionsMeters).every(Boolean))continue
  const b=fs.readFileSync('frontend/public'+p.modelUrl)

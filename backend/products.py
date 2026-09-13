@@ -14,8 +14,9 @@ CATEGORIES = {
     "Dining chair": "chair", "Bed": "bed", "Sofa": "sofa", "Bookcase": "shelf",
     "Bedside table": "side_table", "Dining table": "dining_table",
     "Wardrobe": "wardrobe", "Chest of drawers": "dresser", "Lighting": "lamp",
-    "Floor lamp": "lamp",
-    "Mattress": "mattress",
+    "Floor lamp": "lamp", "Coffee / side table": "coffee_table", "Shoe cabinet": "shelf",
+    "Mattress": "mattress", "Kitchen trolley": "custom", "TV bench": "shelf",
+    "Cabinet": "shelf", "Shelving unit": "shelf", "Footstool": "chair", "Rug": "rug",
 }
 
 
@@ -56,7 +57,7 @@ class DoorProduct(DataModel):
 
 
 class Lighting(DataModel):
-    mount: Literal["floor", "surface", "ceiling"]
+    mount: Literal["floor", "surface", "ceiling", "wall"]
     colorMode: Literal["fixed", "white-spectrum", "rgb", "bulb-dependent"]
     dimmable: bool
     evidence: str = Field(max_length=1000)
@@ -85,7 +86,7 @@ class GeneratedProduct(DataModel):
             w, h, d = self.dimensions
             if not .5 <= w <= 2 or not 1.8 <= h <= 2.5 or not 0 < d <= .2 or self.placement.canSupport or self.placement.support:
                 raise ValueError('Invalid door dimensions or support capabilities.')
-        elif self.placement and self.placement.mode == 'wall':
+        elif self.placement and self.placement.mode == 'wall' and not (self.lighting and self.lighting.mount == 'wall' and not self.placement.canSupport and not self.placement.support):
             raise ValueError('Wall placement requires door capabilities.')
         if self.placement and self.placement.support:
             deck = self.placement.support
@@ -103,6 +104,9 @@ class GeneratedProduct(DataModel):
                 high = self.dimensions[axis] if axis == 1 else self.dimensions[axis] / 2
                 if part.position[axis] - part.size[axis] / 2 < low - .03 or part.position[axis] + part.size[axis] / 2 > high + .03:
                     raise ValueError("Parts must fit declared bounds, with their base on the floor.")
+        if self.lighting and self.lighting.mount == 'wall':
+            if not self.placement or self.placement.mode != 'wall' or self.placement.canSupport or self.placement.support:
+                raise ValueError('Wall lights require wall placement without supporting surfaces.')
         if self.lighting and self.lighting.emitter:
             x, y, z = self.lighting.emitter
             if abs(x) > self.dimensions[0] / 2 or not 0 <= y <= self.dimensions[1] or abs(z) > self.dimensions[2] / 2:
@@ -166,7 +170,7 @@ def load_ikea(root: Path = ROOT) -> list[dict]:
         products.append({**p, "collection": p["category"], "category": category,
                          "width": dims["width"], "height": dims["height"], "depth": dims["depth"],
                          "modelId": "glb", "parts": [], "material": ", ".join(p.get("materialsMentioned", [])),
-                         "style": "", "illustrative": False, "floorLayer": False,
+                         "style": "", "illustrative": False, "floorLayer": category == "rug",
                          "readyForPreview": available, "canRecommend": available and p.get("canRecommend", False),
                          "assetIssue": "" if available else "Run the asset preparation command, then restart the backend."})
     return products

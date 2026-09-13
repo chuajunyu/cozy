@@ -32,6 +32,12 @@ class DoorAnchor(Model):
     open: bool = False
 
 
+class WallMount(Model):
+    wall: Literal['north', 'east', 'south', 'west']
+    offset: float = Field(ge=0, le=1)
+    height: float = Field(gt=0, le=5)
+
+
 class Room(Model):
     wallColors: dict[Literal['north', 'east', 'south', 'west'], Annotated[str, Field(pattern=r'^#[0-9a-fA-F]{6}$')]] = Field(default_factory=dict)
     width: float = Field(default=4, ge=2, le=12)
@@ -60,6 +66,7 @@ class Slot(SlotPlan):
     light: LightSettings | None = None
     supportId: str | None = Field(default=None, max_length=60)
     door: DoorAnchor | None = None
+    wallMount: WallMount | None = None
     locked: bool = False
     liked: bool = False
     replacing: bool = False
@@ -93,6 +100,7 @@ class ConceptUpdate(Model):
 
 
 class Placement(Model):
+    wallMount: WallMount | None = None
     slotId: str
     catalogId: str
     x: float
@@ -235,6 +243,10 @@ def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = 
             old.liked = False
         for key in ("catalogId", "x", "z", "rotation", "elevation", "supportId", "explanation"):
             setattr(old, key, getattr(placement, key))
+        if p.get('lighting', {}).get('mount') == 'wall':
+            old.wallMount = placement.wallMount or old.wallMount
+        else:
+            old.wallMount = None
         if placement.light is not None:
             old.light = placement.light
         elif not p.get("lighting"):

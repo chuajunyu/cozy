@@ -6,4 +6,4 @@ require.extensions['.ts'] = (module, filename) => {
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } })
   module._compile(compiled.outputText, filename)
 }
-for (const file of ['placement', 'doors', 'alternatives', 'lighting', 'daylightTransport']) require(`../src/${file}.test.ts`)
+for (const file of ['placement', 'doors', 'alternatives', 'lighting', 'daylightTransport', 'wallFixtures']) require(`../src/${file}.test.ts`)

@@ -48,3 +48,36 @@ def test_reviewed_bed_deck_survives_metadata_refresh() -> None:
     deck = enrich(product)['placement']['support']
     assert (deck['width'], deck['depth'], deck['height']) == (1.5, 2, .265)
     assert deck['evidence'].startswith('Assumed')
+
+
+def test_wall_lamps_need_review_and_fixed_white_is_not_rgb():
+    p = record('LED wall lamp')
+    p['description'] = 'You never have to change a light bulb. Light colour: warm white (2700 Kelvin).'
+    result = enrich(p)
+    assert result['lighting']['colorMode'] == 'fixed'
+    assert result['placement'] == {'mode': 'wall', 'canSupport': False}
+    assert 'Wall mounting geometry needs review' in result['missingFields']
+    assert enrich(record('LED wall up/downlighter'))['lighting']['mount'] == 'wall'
+    assert enrich(record('LED table/wall lamp'))['lighting']['mount'] == 'surface'
+
+
+def test_decoration_review_survives_repeated_enrichment():
+    p = record('Wall shelving unit')
+    p['productType'] = 'Wall shelf'
+    p['dimensionsMeters']['height'] = .5
+    for _ in range(2):
+        p = enrich(p)
+        assert not p['readyForPreview']
+        assert 'Decoration geometry and mounting need review' in p['missingFields']
+
+
+def test_reviewed_wall_mount_restores_orientation_and_published_output():
+    p = record('VARMBLIXT LED wall lamp - white metal/circle')
+    p['id'] = 'ikea-10531485'
+    p['measurements'] = {'Luminous flux': '330 lm'}
+    p = enrich(p)
+    assert p['readyForPreview']
+    assert p['wallMountReview']
+    assert p['modelRotation'] == [0, 0, 0]
+    assert p['lighting']['output']['lumens'] == 330
+    assert p['dimensionsMeters']['width'] == .5
