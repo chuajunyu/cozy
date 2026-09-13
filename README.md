@@ -23,7 +23,7 @@ decoders locally. It reuses valid cached files and reports failed downloads.
 Run it before starting FastAPI, or restart FastAPI after preparing assets.
 No metadata refresh or OpenAI API call happens during asset preparation.
 
-The checked-in catalog has 94 preview-ready source records and 82 records awaiting
+The checked-in catalog has 98 preview-ready source records and 95 records awaiting
 review. The backend only marks a product preview-ready when its local GLB passes
 validation. Unavailable assets are excluded from placement and recommendations;
 out-of-stock products may be previewed manually but are excluded from agent search.
@@ -70,8 +70,8 @@ Run one FastAPI worker because sessions are in memory.
   transforms. Draco, WebP textures and texture transforms are supported locally.
 - Drag furniture to move it; use rotate, lock and delete on a selected piece.
   Drag empty space to orbit, scroll to zoom, or switch to top view.
-- Adjust room width/depth, budget, daylight and sun direction. Up to eight
-  fixtures support on/off, brightness, mounting height and colors allowed by their
+- Adjust room width/depth/height, budget, windows and solar time. Up to eight
+  fixtures use fixed lumen output with on/off, mounting height and colors allowed by their
   metadata. Select a surface before adding a table lamp to place it on top.
   Lighting is an illustrative preview, not measured photometry.
 - Import a data-only JSON product in the furniture lab. Inspect geometry and scale,
@@ -94,7 +94,7 @@ The floor is at y=0 and x/z coordinates are centered on the room. Product dimens
 are named width/height/depth in backend meters; generated JSON uses [width, height,
 depth]. The renderer centers GLBs and normalizes their bounds without changing the
 cached source scene. Rendering remains on demand with DPR capped at 1.5 and one
-1024 x 1024 directional shadow map. A model load error shows a selectable fallback
+2048 x 2048 directional shadow map. A model load error shows a selectable fallback
 without taking down other room items.
 
 ## Sessions and device backups
@@ -106,7 +106,7 @@ after an hour; a backend restart resets all sessions. This is a local prototype,
 not an authenticated multi-user persistence service.
 
 Accepted snapshots and approved custom geometry are backed up to this browser's
-`localStorage` under `cozy.studio.v2`. After a reset, the UI offers Restore saved
+`localStorage` under `cozy.studio.v3`. After a reset, the UI offers Restore saved
 room, Download backup, or Archive and start fresh. Restore validates the entire
 backup on the server and only applies to an empty new session. Missing products,
 assets or invalid layouts reject the whole restore; the original backup remains.
@@ -127,8 +127,8 @@ storage is optional; the UI reports write failures while preserving backend stat
 - Chat commands: `chat.send`, `feedback.send`, `item.lock`. Feedback actions are
   `comment`, `like`, `reroll`, `reroll_unlocked`; up to 100 `slotIds` can be targeted.
   `expectedProducts` guards against a changed recommendation.
-- Studio commands: `item.add`, `item.update`, `item.delete`, `fixture.update`,
-  `room.update`, `room.clear`, `room.undo`, `catalog.import`, `session.restore`.
+- Studio commands: `item.add`, `item.update`, `item.delete`, `item.replace`, `fixture.update`,
+  `room.update`, `room.clear`, `room.undo`, `catalog.import`, `session.restore.preview`, `session.restore`.
   They require unique `requestId` and current `baseRevision`; targeted item edits
   also require `slotId` and `expectedProduct`. See `backend/studio.py` schemas.
 - `design.updated` carries a full accepted snapshot, revision and undo count.
@@ -185,3 +185,26 @@ use Vite's development server for integrated backend checks.
 No database, accounts, deployment, live shopping search or geographic sunlight
 analysis is included. Footprint checks do not assess building-code compliance,
 accessibility or ergonomics. Fonts fall back to system fonts offline.
+
+### Frontend v3 integration
+
+Doors are anchored room elements with reserved inward swing clearance and no
+purchase cost. Surface objects carry with their supports; deletion settles them.
+Mattresses attach only to verified, fitting decks. Dependent changes are atomic
+and share one undo step. A locked dependent blocks a move that would affect it.
+Similar pieces uses a manual replacement command without starting a model call.
+
+Astra's separate `edit_room` tool requires permission from the current explicit
+chat request. For example, “Add a north-facing window” permits that operation;
+“make it brighter” does not. Ordinary design requests keep architecture fixed.
+Permissions expire on completion, cancellation, undo, or a later request.
+
+Restore first produces a server-owned preview of adjustments and blockers.
+Applying requires its `previewId`, the current revision, and an empty session.
+Required changes to locked objects must be explicitly selected in the preview;
+locks survive restoration. Version 2 and legacy saves remain untouched. Version 3
+backups include windows, solar time and supports, but never workers, textures,
+permissions or undo history. Legacy brightness is accepted but ignored by rendering.
+
+Daylight is computed in a browser worker from authoritative room dimensions and
+openings. Worker errors leave editing available and expose a Retry daylight button.

@@ -18,11 +18,27 @@ class LightSettings(Model):
     color: str = Field(default="#ffd3a0", pattern=r"^#[0-9a-fA-F]{6}$")
 
 
+class Window(Model):
+    wall: Literal['north', 'east', 'south', 'west']
+    offset: float = Field(ge=0, le=1)
+    width: float = Field(ge=.5, le=4)
+    height: float = Field(ge=.5, le=5)
+    sill: float = Field(ge=.2, le=5)
+
+
+class DoorAnchor(Model):
+    wall: Literal['north', 'east', 'south', 'west']
+    offset: float = Field(ge=0, le=1)
+    open: bool = False
+
+
 class Room(Model):
     width: float = Field(default=4, ge=2, le=12)
     depth: float = Field(default=3.5, ge=2, le=12)
     height: float = Field(default=2.6, ge=2, le=5)
     daylight: float = Field(default=1, ge=0, le=1)
+    windows: list[Window] = Field(default_factory=lambda: [Window(wall='east', offset=.5, width=1.8, height=1.4, sill=.9)], max_length=4)
+    sunHour: float = Field(default=9, ge=6, le=20)
 
 
 class SlotPlan(Model):
@@ -41,6 +57,8 @@ class Slot(SlotPlan):
     rotation: Literal[0, 90, 180, 270] = 0
     elevation: float = Field(default=0, ge=0, le=5)
     light: LightSettings | None = None
+    supportId: str | None = Field(default=None, max_length=60)
+    door: DoorAnchor | None = None
     locked: bool = False
     liked: bool = False
     replacing: bool = False
@@ -81,6 +99,7 @@ class Placement(Model):
     rotation: Literal[0, 90, 180, 270]
     elevation: float = Field(default=0, ge=0, le=5)
     light: LightSettings | None = None
+    supportId: str | None = Field(default=None, max_length=60)
     explanation: str = Field(min_length=1, max_length=1500)
 
 
@@ -104,11 +123,14 @@ def require(condition: bool, code: str, message: str) -> None:
 
 def total(state: DesignState, products: dict | None = None) -> float:
     products = BY_ID if products is None else products
-    return sum(products[s.catalogId]["price"] for s in state.slots.values() if s.catalogId)
+    return sum(products[s.catalogId]["price"] for s in state.slots.values() if s.catalogId and not products[s.catalogId].get('door'))
 
 
 def validate_layout(state: DesignState, products: dict | None = None) -> None:
     products = BY_ID if products is None else products
+    from backend.placement import validate_architecture, validate_supports, valid_support
+    validate_architecture(state, products)
+    validate_supports(state, products)
     require(len(state.slots) <= 100, "item_limit", "A room supports at most 100 items.")
     footprints = []
     fixtures = 0
@@ -119,6 +141,8 @@ def validate_layout(state: DesignState, products: dict | None = None) -> None:
         require(p is not None, "unknown_product", f"Unknown product {slot.catalogId}.")
         require(p.get("readyForPreview", True), "missing_asset", f"{p['name']}: local model is unavailable.")
         require(p['category'] == slot.category, "category_mismatch", "Product and slot categories must agree.")
+        if p.get('door'):
+            continue
         fixtures += bool(p.get("lighting"))
         require(fixtures <= 8, "fixture_limit", "A room supports eight light fixtures.")
         if slot.light:
@@ -134,6 +158,8 @@ def validate_layout(state: DesignState, products: dict | None = None) -> None:
                 "out_of_bounds", f"{slot.id} extends outside the room. Coordinates use the room center.")
         require(slot.elevation + p["height"] <= state.room.height + 1e-6, "too_tall", f"{slot.id} exceeds room height.")
         for other, ow, od, layer, oh in footprints:
+            if valid_support(slot, other, products) or valid_support(other, slot, products):
+                continue
             # Rugs may sit under furniture; two rugs cannot occupy the same floor area.
             if p["floorLayer"] != layer:
                 continue
@@ -155,6 +181,7 @@ def update_concept(state: DesignState, update: ConceptUpdate, products: dict | N
     next_state = state.model_copy(deep=True)
     next_state.concept = update.concept
     for plan in update.slots:
+        require(plan.category != 'door', 'architecture_permission', 'Doors require an explicit room-edit request.')
         require(plan.category in categories, "unknown_category", f"No catalog products for {plan.category}.")
         old = next_state.slots.get(plan.id)
         if old:
@@ -182,6 +209,7 @@ def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = 
     for slot_id in patch.removeSlotIds:
         old = candidate.slots.get(slot_id)
         require(old is not None, "unknown_slot", f"Unknown slot {slot_id}.")
+        require(not old.door, 'architecture_permission', 'Use the room-edit tool for doors.')
         require(not old.locked, "locked", f"{slot_id} is locked.")
         require(state.rerollTargets is None, "reroll_scope", "Reroll replaces slots; it cannot remove them.")
         del candidate.slots[slot_id]
@@ -190,6 +218,7 @@ def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = 
         require(old is not None, "unknown_slot", "Define the slot using update_concept first.")
         p = products.get(placement.catalogId)
         require(p is not None, "unknown_product", f"Unknown catalog ID {placement.catalogId}.")
+        require(not old.door and not p.get('door'), 'architecture_permission', 'Use the room-edit tool for doors.')
         require(old.category == p["category"], "category_mismatch", "The product must match the slot category.")
         require(p.get("canRecommend", True) or old.catalogId == placement.catalogId, "not_recommendable", "Choose an available catalog product.")
         same = (old.catalogId, old.x, old.z, old.rotation, old.elevation) == (placement.catalogId, placement.x, placement.z, placement.rotation, placement.elevation)
@@ -203,13 +232,15 @@ def apply_patch(state: DesignState, patch: DesignPatch, products: dict | None = 
                 "rejected_product", f"Choose a different product for {old.id}; this candidate was rejected.")
         if old.catalogId != placement.catalogId:
             old.liked = False
-        for key in ("catalogId", "x", "z", "rotation", "elevation", "explanation"):
+        for key in ("catalogId", "x", "z", "rotation", "elevation", "supportId", "explanation"):
             setattr(old, key, getattr(placement, key))
         if placement.light is not None:
             old.light = placement.light
         elif not p.get("lighting"):
             old.light = None
         old.replacing = False
+    from backend.placement import settle_state
+    candidate = settle_state(candidate, state, products)
     validate_layout(candidate, products)
     candidate.revision += 1
     return candidate

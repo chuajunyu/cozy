@@ -60,3 +60,22 @@ edits, then merge this branch and resolve any overlapping baseline commits by
 content. Fetch main again immediately before doing so if work continues elsewhere.
 Use the README setup and verification commands after merging; cached models and
 secrets are intentionally absent from Git.
+
+## Frontend v3 snapshot — September 13, 2026
+
+Merged Shelia `b74363b` into the existing integration snapshot `c702305`.
+Catalog: 98 prepared IKEA models, 95 review records. Added windows, solar time,
+doors, fixed-lumen fixtures, mattress decks, support transactions, manual
+replacement, request-scoped architecture tools and version 3 restore previews.
+The original main checkout and previous snapshot tag remain untouched.
+
+Verification: 68 Python checks (including ingestion) and 105 frontend checks
+passed, including ten shared placement scenarios. Production build passed.
+Browser smoke checks covered the existing four-piece backup restore, new GLBs,
+matching mattress attachment, bed replacement retaining its mattress, rejected
+unsafe rotation, door opening, added windows, night rendering, and room editing
+during a forced worker failure. The temporary fault injection was removed.
+Per hackathon scope, the remaining exhaustive browser matrix was deferred.
+No live generation was requested or tested. Normal startup uses Astra; the
+simulation server is only for deterministic checks.
+Final normal-backend check: authenticated Responses WebSocket handshake succeeded without a generation request. Production build passed after removal of all fault injection.

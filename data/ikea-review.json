@@ -1,6 +1,154 @@
 {
   "products": [
     {
+      "description": "VALEV\u00c5G Pocket sprung mattress - extra firm/light blue 120x200 cm. A dreamy combination of comfort and support with comfort zones and pocket springs that help you sleep soundly. 5 comfort zones right where you need them support hips and shoulders, creating a natural spine alignment.",
+      "productType": "Mattress",
+      "id": "ikea-00469907",
+      "articleNumber": "004.699.07",
+      "name": "VALEV\u00c5G Pocket sprung mattress - extra firm/light blue 120x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "extra firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "120 cm",
+        "Thickness": "24 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 299.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-extra-firm-light-blue-00469907/",
+      "dimensionsMeters": {
+        "width": 1.2,
+        "height": 0.24,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1150856_pe884904_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1044460_pe842180_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1155997_pe886835_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1073367_pe855694_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1071102_pe854864_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1370955_pe958921_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1044469_pe842186_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__0905227_pe783082_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__0928313_pe789779_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1044425_pe842155_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1048650_pe843817_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1099000_pe865581_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1579320_pe1034427_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-extra-firm-light-blue__1150856_pe884904_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:21.061881+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Mid-range",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "VALEV\u00c5G Pocket sprung mattress - firm/light blue 180x200 cm. A dreamy combination of comfort and support with comfort zones and pocket springs that help you sleep soundly. 5 comfort zones right where you need them support hips and shoulders, creating a natural spine alignment.",
+      "productType": "Mattress",
+      "id": "ikea-00470010",
+      "articleNumber": "004.700.10",
+      "name": "VALEV\u00c5G Pocket sprung mattress - firm/light blue 180x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "180 cm",
+        "Thickness": "24 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 499.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-firm-light-blue-00470010/",
+      "dimensionsMeters": {
+        "width": 1.8,
+        "height": 0.24,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1150857_pe884903_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044460_pe842180_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1155979_pe886828_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1073367_pe855694_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1071102_pe854864_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1370955_pe958921_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044469_pe842186_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__0905227_pe783082_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__0928313_pe789779_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044425_pe842155_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1048650_pe843817_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1099008_pe865588_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1579315_pe1034422_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1150857_pe884903_s5.jpg",
+      "availability": "https://schema.org/InStoreOnly",
+      "fetchedAt": "2026-09-13T04:20:16.571040+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
       "description": "BILLY Bookcase - white 80x28x202 cm. Adjustable shelves; adapt space between shelves according to your needs. A simple unit can be enough storage for a limited space or the foundation for a larger storage solution if your needs change. 1 fixed shelf and 4 adjustable shelves included.",
       "productType": "Bookcase",
       "id": "ikea-00522047",
@@ -107,7 +255,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -308,7 +460,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -533,7 +689,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -734,7 +894,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1015,7 +1179,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1083,7 +1251,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1236,7 +1408,11 @@
         "mount": "ceiling",
         "colorMode": "fixed",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1100.0,
+          "evidence": "IKEA published luminous flux."
+        }
       },
       "features": [
         "Lighting"
@@ -1252,6 +1428,75 @@
       ],
       "canRecommend": false,
       "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "\u00c5FJ\u00c4LL Foam mattress - medium firm/white 90x200 cm. Two layers of foam provide sleeping comfort and support. A layer of wadding in the cover adds cushioning. The cover feels soft to the touch. The mattress is roll-packed so it\u2019s easier to bring home Care instructions can be found inside the cover.",
+      "productType": "Mattress",
+      "id": "ikea-20568647",
+      "articleNumber": "205.686.47",
+      "name": "\u00c5FJ\u00c4LL Foam mattress - medium firm/white 90x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Foam & latex mattresses",
+      "brand": "IKEA",
+      "color": "white",
+      "variantLabel": "medium firm/white",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "90 cm",
+        "Thickness": "12 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 149.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/afjaell-foam-mattress-medium-firm-white-20568647/",
+      "dimensionsMeters": {
+        "width": 0.9,
+        "height": 0.12,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__0986620_pe818094_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1044441_pe842162_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1211094_pe910611_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1044426_pe842150_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1370964_pe958930_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__0976032_pe812963_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1221219_pe913665_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1024266_pe835861_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__1027661_pe834972_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-medium-firm-white__0986620_pe818094_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:21:04.613535+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Budget",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
@@ -1536,7 +1781,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1797,7 +2046,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1876,7 +2129,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1945,7 +2202,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -2016,7 +2277,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -2299,6 +2564,222 @@
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
+      "description": "VADS\u00d6 Sprung mattress - extra firm/light blue 90x200 cm. A single layer of springs gives a uniform and stable sleeping surface. The cover with wadding is durable and smooth. Bonnell springs have an open construction that allows air to circulate and the mattress to breathe.",
+      "productType": "Mattress",
+      "id": "ikea-40453589",
+      "articleNumber": "404.535.89",
+      "name": "VADS\u00d6 Sprung mattress - extra firm/light blue 90x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue",
+      "variantLabel": "extra firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "90 cm",
+        "Thickness": "17 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 79.9,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vadsoe-sprung-mattress-extra-firm-light-blue-40453589/",
+      "dimensionsMeters": {
+        "width": 0.9,
+        "height": 0.17,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__1077760_pe856997_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__0928310_pe789775_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__0954659_pe803417_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__1071103_pe854863_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__1370961_pe958927_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__0898835_pe782794_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__1098944_pe865564_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__1578130_pe1033813_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vadsoe-sprung-mattress-extra-firm-light-blue__1077760_pe856997_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:23.176915+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Budget",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "VATNESTR\u00d6M Pocket sprung mattress - firm/natural 180x200 cm. The natural materials in this mattress create a balanced sleeping environment and regulate the temperature while helping you to sleep soundly during both warm and chilly nights. 218 pocket springs/sq.m.",
+      "productType": "Mattress",
+      "id": "ikea-40476411",
+      "articleNumber": "404.764.11",
+      "name": "VATNESTR\u00d6M Pocket sprung mattress - firm/natural 180x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "beige",
+      "variantLabel": "firm/natural",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "180 cm",
+        "Thickness": "26 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 1199.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vatnestroem-pocket-sprung-mattress-firm-natural-40476411/",
+      "dimensionsMeters": {
+        "width": 1.8,
+        "height": 0.26,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1298620_pe936249_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1044430_pe842154_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1155991_pe886833_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1370969_pe958935_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__0801446_pe768134_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1048653_pe843814_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1044472_pe842183_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__0997979_ph175780_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__0792127_pe764667_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1296341_pe935804_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__0964365_ph173555_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__0954973_pe803620_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1578701_pe1034256_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vatnestroem-pocket-sprung-mattress-firm-natural__1298620_pe936249_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:33.363159+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "beige",
+        "wood tones"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "\u00c5NNELAND Hybrid mattress - firm/white 150x200 cm. A well-balanced hybrid mattress that combines multiple layers of foam and pockets springs to help you wake up feeling refreshed. 5 comfort zones right where you need them support hips and shoulders, creating a natural spine alignment.",
+      "productType": "Mattress",
+      "id": "ikea-40481709",
+      "articleNumber": "404.817.09",
+      "name": "\u00c5NNELAND Hybrid mattress - firm/white 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Foam & latex mattresses",
+      "brand": "IKEA",
+      "color": "white",
+      "variantLabel": "firm/white",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "150 cm",
+        "Thickness": "24 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 599.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/anneland-hybrid-mattress-firm-white-40481709/",
+      "dimensionsMeters": {
+        "width": 1.5,
+        "height": 0.24,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1015263_pe829963_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1044440_pe842158_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1048637_pe843805_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1044422_pe842146_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1047098_pe843242_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1370980_pe958922_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1050070_pe844631_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1062615_pe851032_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1044467_pe842181_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1221215_pe913662_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1048647_pe843811_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1015231_pe829949_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1136636_pe879454_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1578075_pe1033764_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/anneland-hybrid-mattress-firm-white__1015263_pe829963_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:29.362850+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
       "description": "STOCKHOLM 2025 Floor lamp - white textile/brass-plated 159 cm. The textile shade provides a diffused and decorative light. The lamp base is made of a natural stone called travertine, which gives it a unique expression with natural variations. The lamp stands stable thanks to the heavy stone base.",
       "productType": "Lighting",
       "id": "ikea-40585924",
@@ -2353,7 +2834,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -2858,7 +3343,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -2877,6 +3366,152 @@
       ],
       "canRecommend": false,
       "priceBand": "Budget",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "V\u00c5GSTRANDA Pocket sprung mattress - extra firm/light blue 150x200 cm. Our innovation for sleeping comfort \u2013 S-core pocket springs distributed in a wave shape. Two layers of pocket springs for double comfort and support will help you wake up feeling refreshed.",
+      "productType": "Mattress",
+      "id": "ikea-50450750",
+      "articleNumber": "504.507.50",
+      "name": "V\u00c5GSTRANDA Pocket sprung mattress - extra firm/light blue 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "extra firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "150 cm",
+        "Thickness": "28 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 799.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vagstranda-pocket-sprung-mattress-extra-firm-light-blue-50450750/",
+      "dimensionsMeters": {
+        "width": 1.5,
+        "height": 0.28,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1150860_pe884902_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1044458_pe842172_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1162591_pe886836_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1047099_pe843243_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1370968_pe958934_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__0928315_pe789781_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1044468_pe842182_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1071100_pe854862_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__0905248_pe783087_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1044423_pe842147_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1155985_pe886830_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__0997701_ph175778_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__0997986_ph175772_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1124859_pe875301_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1579306_pe1034419_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vagstranda-pocket-sprung-mattress-extra-firm-light-blue__1150860_pe884902_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:31.970013+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "VESTER\u00d6Y Pocket sprung mattress - extra firm/light blue 150x200 cm. Pocket springs that respond independently without transferring motion to others. A layer of foam on the top adds comfort. Soft quilted stretch cover with added wadding. The mattress is roll-packed so it\u2019s easier to bring home",
+      "productType": "Mattress",
+      "id": "ikea-50470060",
+      "articleNumber": "504.700.60",
+      "name": "VESTER\u00d6Y Pocket sprung mattress - extra firm/light blue 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "extra firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "150 cm",
+        "Thickness": "20 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 299.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vesteroey-pocket-sprung-mattress-extra-firm-light-blue-50470060/",
+      "dimensionsMeters": {
+        "width": 1.5,
+        "height": 0.2,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1150852_pe884907_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1044459_pe842173_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1155952_pe886827_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1370976_pe958942_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1044424_pe842148_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1071101_pe854865_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__0905192_pe783062_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1094378_pe863398_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1579333_pe1034433_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-extra-firm-light-blue__1150852_pe884907_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:19:14.320080+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "priceBand": "Mid-range",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
@@ -2942,7 +3577,11 @@
         "mount": "floor",
         "colorMode": "fixed",
         "dimmable": true,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3097,7 +3736,11 @@
         "mount": "ceiling",
         "colorMode": "rgb",
         "dimmable": true,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 800.0,
+          "evidence": "IKEA published luminous flux."
+        }
       },
       "features": [
         "Lighting",
@@ -3238,7 +3881,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3364,7 +4011,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3548,7 +4199,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3622,7 +4277,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3641,6 +4300,145 @@
       ],
       "canRecommend": false,
       "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "VESTMARKA Sprung mattress - firm/light blue 90x200 cm. A single layer of springs gives a uniform and stable sleeping surface. A layer of foam adds a cushioning feel. Bonnell springs have an open construction that allows air to circulate and the mattress to breathe.",
+      "productType": "Mattress",
+      "id": "ikea-70451273",
+      "articleNumber": "704.512.73",
+      "name": "VESTMARKA Sprung mattress - firm/light blue 90x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "90 cm",
+        "Thickness": "18 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 99.9,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vestmarka-sprung-mattress-firm-light-blue-70451273/",
+      "dimensionsMeters": {
+        "width": 0.9,
+        "height": 0.18,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1150829_pe884908_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1044455_pe842169_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1155951_pe886826_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1071099_pe854861_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1370959_pe958925_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__0905185_pe783057_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1110121_pe870375_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__0928311_pe789776_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1578570_pe1034202_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vestmarka-sprung-mattress-firm-light-blue__1150829_pe884908_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:21.351109+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Budget",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "\u00c5FJ\u00c4LL Foam mattress - firm/white 90x200 cm. A single layer of foam provides sleeping comfort and support. A layer of wadding in the cover adds cushioning. The cover feels soft to the touch. The mattress is roll-packed so it\u2019s easier to bring home Care instructions can be found inside the cover.",
+      "productType": "Mattress",
+      "id": "ikea-70568635",
+      "articleNumber": "705.686.35",
+      "name": "\u00c5FJ\u00c4LL Foam mattress - firm/white 90x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Foam & latex mattresses",
+      "brand": "IKEA",
+      "color": "white",
+      "variantLabel": "firm/white",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "90 cm",
+        "Thickness": "12 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 149.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/afjaell-foam-mattress-firm-white-70568635/",
+      "dimensionsMeters": {
+        "width": 0.9,
+        "height": 0.12,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__0986620_pe818094_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1044441_pe842162_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1155988_pe886831_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1044426_pe842150_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1370979_pe958945_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__0976032_pe812963_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1221219_pe913665_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1024266_pe835861_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__1027661_pe834972_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/afjaell-foam-mattress-firm-white__0986620_pe818094_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:26.274071+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Budget",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
@@ -3771,7 +4569,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3838,7 +4640,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -4211,7 +5017,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -4230,6 +5040,74 @@
       "priceBand": "Budget",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating.",
       "modelDimensionReview": "Model does not agree with published dimensions within 10%; manual review needed."
+    },
+    {
+      "description": "\u00c5GOTNES Foam mattress - firm/light blue 90x200 cm. A mattress with one layer of foam and a durable, smooth cover. A layer of wadding in the cover adds cushioning. The complete mattress is covered by a 10 year guarantee. You can read about the terms in the guarantee brochure.",
+      "productType": "Mattress",
+      "id": "ikea-80480859",
+      "articleNumber": "804.808.59",
+      "name": "\u00c5GOTNES Foam mattress - firm/light blue 90x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Foam & latex mattresses",
+      "brand": "IKEA",
+      "color": "blue",
+      "variantLabel": "firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "90 cm",
+        "Thickness": "10 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 89.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/agotnes-foam-mattress-firm-light-blue-80480859/",
+      "dimensionsMeters": {
+        "width": 0.9,
+        "height": 0.1,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__0986609_pe818096_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__1044449_pe842163_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__1155989_pe886832_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__1370971_pe958937_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__0975992_pe812953_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__1150599_pe884637_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__1024307_pe835847_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__1578053_pe1033743_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/agotnes-foam-mattress-firm-light-blue__0986609_pe818096_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:30.770603+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Budget",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
       "description": "HEMNES Glass-door cabinet with 3 drawers - grey-green/light brown stained 90x197 cm. Solid wood has a natural feel. With a glass-door cabinet you can show off as well as protect your glassware or your favourite collection. Large drawers for hidden, dust-free storage. 3 adjustable shelves included.",
@@ -4575,7 +5453,11 @@
         "mount": "surface",
         "colorMode": "fixed",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 220.0,
+          "evidence": "IKEA published luminous flux."
+        }
       },
       "features": [
         "Lighting"
@@ -4648,7 +5530,11 @@
         "mount": "ceiling",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 1055,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -4669,6 +5555,80 @@
       ],
       "canRecommend": false,
       "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "VALEV\u00c5G Pocket sprung mattress - firm/light blue 90x200 cm. A dreamy combination of comfort and support with comfort zones and pocket springs that help you sleep soundly. 5 comfort zones right where you need them support hips and shoulders, creating a natural spine alignment.",
+      "productType": "Mattress",
+      "id": "ikea-90450710",
+      "articleNumber": "904.507.10",
+      "name": "VALEV\u00c5G Pocket sprung mattress - firm/light blue 90x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "90 cm",
+        "Thickness": "24 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 239.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-firm-light-blue-90450710/",
+      "dimensionsMeters": {
+        "width": 0.9,
+        "height": 0.24,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1150856_pe884904_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044460_pe842180_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1155979_pe886828_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1073367_pe855694_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1071102_pe854864_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1370955_pe958921_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044469_pe842186_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__0905227_pe783082_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__0928314_pe789778_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044425_pe842155_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1048650_pe843817_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1099011_pe865591_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1579320_pe1034427_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1150856_pe884904_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:20:16.563725+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "readyForPreview": false,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Mid-range",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
@@ -4854,7 +5814,11 @@
         "mount": "surface",
         "colorMode": "fixed",
         "dimmable": true,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Storage",
@@ -4984,7 +5948,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": true,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -5063,7 +6031,11 @@
         "mount": "surface",
         "colorMode": "fixed",
         "dimmable": true,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 100.0,
+          "evidence": "IKEA published luminous flux."
+        }
       },
       "features": [
         "Lighting"
@@ -5144,6 +6116,80 @@
       ],
       "canRecommend": false,
       "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "MALM Bed frame, high - white/Lur\u00f6y 150x200 cm. Adjustable bed sides allow you to use mattresses of different thicknesses. Suitable for business use. This versatile bed frame will look great with your choice of textiles and bedroom furniture. Mattress and bedlinen are sold separately.",
+      "productType": "Bed",
+      "id": "ikea-99009450",
+      "articleNumber": "990.094.50",
+      "name": "MALM Bed frame, high - white/Lur\u00f6y 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Queen and king bed frames",
+      "brand": "IKEA",
+      "color": "white",
+      "variantLabel": "white/Lur\u00f6y",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "209 cm",
+        "Width": "166 cm",
+        "Footboard height": "38 cm",
+        "Headboard height": "100 cm",
+        "Mattress length": "200 cm",
+        "Mattress width": "150 cm",
+        "Height": "100 cm",
+        "Free height under furniture": "21 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "height": "Product JSON-LD",
+        "depth": "Product JSON-LD"
+      },
+      "price": 289.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/malm-bed-frame-high-white-luroey-s99009450/",
+      "dimensionsMeters": {
+        "width": 1.6600000000000001,
+        "height": 1.0,
+        "depth": 2.09
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__0749130_pe745499_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__0800857_ph163673_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__1273465_pe930077_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__1101527_pe866706_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__1101528_pe866707_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__1101529_pe866708_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__0860683_pe566696_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__1499340_pe1006574_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white-luroey__0749130_pe745499_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:21:04.519739+00:00",
+      "modelCandidates": [],
+      "modelStatus": "unavailable",
+      "modelUrl": null,
+      "modelSourceUrl": null,
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "priceRange": {
+        "lowPrice": "289",
+        "highPrice": "349"
+      },
+      "priceNote": "Page-listed offer; conditions may apply. Verify the current price at IKEA.",
+      "priceValidUntil": "2026-09-30Z",
+      "readyForPreview": false,
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [
+        "3D model unavailable"
+      ],
+      "canRecommend": false,
+      "priceBand": "Mid-range",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {

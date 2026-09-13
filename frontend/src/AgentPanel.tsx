@@ -38,14 +38,14 @@ export default function AgentPanel({ connection, selected, onSelect, disabled }:
     <p className="feedback-stage" role="status">{feedbackStage && `Update ${feedbackStage}`}</p>
     {state?.validationIssues.map(issue => <p role="alert" className="over" key={issue}>{issue}</p>)}
     {state?.concept.summary && <div className="concept-summary"><h3>{state.concept.title}</h3><p>{state.concept.summary}</p><small>{[...state.concept.palette, ...state.concept.materials].join(' · ')}</small></div>}
-    {slots.length > 0 && <button disabled={blocked || !slots.some(s => s.catalogId && !s.locked)} onClick={() => { setReplacement([]); setReason('') }}>Reroll unlocked</button>}
+    {slots.length > 0 && <button disabled={blocked || !slots.some(s => s.catalogId && !s.locked && !s.door)} onClick={() => { setReplacement([]); setReason('') }}>Reroll unlocked</button>}
     {groups.map(group => <section className="concept-group" key={group}><div className="group-title"><h3>{group}</h3><button disabled={blocked} onClick={() => { setScope(slots.filter(s => `${s.zone} / ${s.group}` === group).map(s => s.id)); document.getElementById('design-message')?.focus() }}>Comment</button></div>
       {slots.filter(s => `${s.zone} / ${s.group}` === group).map(slot => {
         const p = catalog.find(p => p.id === slot.catalogId)
         return <article key={slot.id} className={`concept-item ${selected === slot.id ? 'selected' : ''}`}>
           <button className="concept-select" onClick={() => onSelect(slot.id)}>{p?.thumbnailUrl && <img src={p.thumbnailUrl} alt="" loading="lazy" />}<span><small>{slot.label}{slot.anchor ? ' · ANCHOR' : ''}</small><strong>{p?.name ?? 'Finding a piece…'}</strong></span></button>
           <p>{slot.explanation}</p>{slot.replacing && <small>Finding an alternative; current piece stays visible.</small>}
-          {p && <div className="concept-actions"><button disabled={blocked || slot.liked} onClick={() => send({ type: 'feedback.send', action: 'like', slotIds: [slot.id], expectedProducts: expected([slot.id]) })}>{slot.liked ? 'Liked' : 'Like'}</button><button disabled={blocked} onClick={() => send({ type: 'item.lock', slotIds: [slot.id], expectedProducts: expected([slot.id]), locked: !slot.locked })}>{slot.locked ? 'Unlock' : 'Lock'}</button><button disabled={blocked || slot.locked || slot.replacing} onClick={() => { setReplacement([slot.id]); setReason('') }}>Replace</button></div>}
+          {p && <div className="concept-actions"><button disabled={blocked || slot.liked} onClick={() => send({ type: 'feedback.send', action: 'like', slotIds: [slot.id], expectedProducts: expected([slot.id]) })}>{slot.liked ? 'Liked' : 'Like'}</button><button disabled={blocked} onClick={() => send({ type: 'item.lock', slotIds: [slot.id], expectedProducts: expected([slot.id]), locked: !slot.locked })}>{slot.locked ? 'Unlock' : 'Lock'}</button><button disabled={blocked || slot.locked || slot.replacing || !!slot.door} onClick={() => { setReplacement([slot.id]); setReason('') }}>Replace</button></div>}
         </article>
       })}
     </section>)}

@@ -73,7 +73,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                 if not isinstance(payload, dict):
                     raise ValueError()
                 kind = payload.get("type")
-                limit = 2_000_000 if kind == "session.restore" else 510_000 if kind == "catalog.import" else 32_000
+                limit = 2_000_000 if kind in {"session.restore", "session.restore.preview"} else 510_000 if kind == "catalog.import" else 32_000
                 if len(raw.encode("utf-8")) > limit:
                     queue.put_nowait(error_event("message_too_large", "This command exceeds its message size limit."))
                     continue
@@ -87,7 +87,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                     session, reset = app.state.sessions.get(token)
                     queue.put_nowait(session.envelope(reset))
                     session.subscribers.add(queue)
-                elif kind in {"item.add", "item.update", "item.delete", "room.update", "fixture.update", "room.clear", "room.undo", "catalog.import", "session.restore"}:
+                elif kind in {"session.restore.preview", "item.replace", "item.add", "item.update", "item.delete", "room.update", "fixture.update", "room.clear", "room.undo", "catalog.import", "session.restore"}:
                     if session is None:
                         queue.put_nowait(error_event("session_required", "Initialize a session first."))
                         continue

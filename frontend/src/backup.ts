@@ -1,10 +1,11 @@
 import type { Backup, DesignState, GeneratedProduct, Product } from './types'
 import type { Product as StudioProduct, Scene } from './catalog'
 
-export const backupKey = 'cozy.studio.v2'
-const samples = new Set(['desk', 'bed', 'sofa', 'shelf', 'chair', 'coffee', 'nightstand', 'rug', 'demo-lamp', 'demo-ceiling-fan'])
-const categories = new Set(['desk', 'bed', 'sofa', 'shelf', 'chair', 'coffee_table', 'side_table', 'rug', 'lamp', 'dining_table', 'wardrobe', 'dresser', 'plant', 'custom'])
+export const backupKey = 'cozy.studio.v3'
+const samples = new Set(['room-door', 'desk', 'bed', 'sofa', 'shelf', 'chair', 'coffee', 'nightstand', 'rug', 'demo-lamp', 'demo-ceiling-fan'])
+const categories = new Set(['room-door', 'desk', 'bed', 'sofa', 'shelf', 'chair', 'coffee_table', 'side_table', 'rug', 'lamp', 'dining_table', 'wardrobe', 'dresser', 'plant', 'custom', 'mattress', 'door'])
 function customCategory(p: GeneratedProduct): string {
+  if (p.door) return 'door'
   if (p.lighting) return 'lamp'
   const basename = p.id.replace(/^custom-/, '')
   const aliases: Record<string, string> = { desk: 'desk', bed: 'bed', sofa: 'sofa', shelf: 'shelf', chair: 'chair', coffee: 'coffee_table', nightstand: 'side_table', rug: 'rug' }
@@ -14,14 +15,14 @@ function customCategory(p: GeneratedProduct): string {
 
 export function generatedProduct(p: StudioProduct): GeneratedProduct {
   return { id: p.id, name: p.name, category: p.category, price: p.price, dimensions: p.dimensions,
-    parts: p.parts, ...(p.lighting ? { lighting: p.lighting } : {}) }
+    parts: p.parts, productType: p.productType, priceNote: p.priceNote, placement: p.placement, door: p.door, ...(p.lighting ? { lighting: p.lighting } : {}) }
 }
 
 export function makeBackup(state: DesignState, products: Product[]): Backup {
   const { total: _total, complete: _complete, validationIssues: _issues, undoCount: _undo, ...saved } = state
-  return { version: 2, state: saved, products: products.filter(p => p.id.startsWith('custom-')).map(p => ({
+  return { version: 3, state: saved, products: products.filter(p => p.id.startsWith('custom-')).map(p => ({
     id: p.id, name: p.name, category: p.category, price: p.price, dimensions: [p.width, p.height, p.depth],
-    parts: p.parts ?? [], ...(p.lighting ? { lighting: p.lighting } : {}),
+    parts: p.parts ?? [], productType: p.productType, priceNote: p.priceNote, placement: p.placement, door: p.door, ...(p.lighting ? { lighting: p.lighting } : {}),
   })) }
 }
 
@@ -40,10 +41,10 @@ export function migrateLegacy(raw: string, catalog: Product[]): Backup {
     return [i.id, { id: i.id, label: (p?.name ?? generated!.name).slice(0, 80), catalogId: id,
       category: p?.category ?? customCategory(generated!), zone: 'Room', group: 'Your additions', anchor: false,
       x: i.x - scene.width / 2, z: i.z - scene.depth / 2, rotation: i.rotation, elevation: i.elevation ?? 0,
-      light: i.light ?? null, locked: i.locked, liked: false, replacing: false, explanation: 'Restored from this device.' }]
+      supportId: i.supportId ?? null, door: i.door ?? null, light: i.light ?? null, locked: i.locked, liked: false, replacing: false, explanation: 'Restored from this device.' }]
   }))
   return { version: 2, products: custom, state: { revision: 0,
-    room: { width: scene.width, depth: scene.depth, height: 2.7, daylight: scene.daylight ?? 1 },
+    room: { width: scene.width, depth: scene.depth, height: scene.height ?? 2.7, windows: scene.windows ?? [{ wall: 'east', offset: .5, width: Math.min(1.8, scene.depth - .4), height: 1.4, sill: .9 }], sunHour: scene.sunHour ?? ((scene.daylight ?? 1) === 0 ? 20 : 9), daylight: scene.daylight ?? 1 },
     brief: '', budget: scene.budget || null, concept: { title: 'Your saved room', summary: '', palette: [], materials: [] },
     slots, feedback: [], rejected: {}, rerollTargets: null } }
 }

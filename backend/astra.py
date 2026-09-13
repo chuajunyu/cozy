@@ -62,6 +62,7 @@ class AstraDesigner:
             session.set_status("error", "Astra could not continue")
         finally:
             self.active = False
+            session.room_permissions.clear()
             self.connection = None
             if self.client is None:
                 await client.close()
@@ -189,6 +190,7 @@ class AstraDesigner:
                 self.active = True
             elif id not in self.continued:
                 self.active = False
+                session.room_permissions.clear()
                 self.active_id = None
                 async with session.lock:
                     complete = session.snapshot()["complete"]

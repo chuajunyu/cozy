@@ -1,3 +1,10 @@
+import { fixtureIntensity } from './lighting'
+import { liftToSupport, isAnchored, settleScene } from './placement'
+import { WINDOW_TRANSMITTANCE } from './daylightTransport'
+import Daylight from './Daylight'
+import RoomShell from './RoomShell'
+import DoorPiece, { DoorVisual } from './DoorPiece'
+import { sunAt } from './sunlight'
 import {
   Component,
   Suspense,
@@ -7,7 +14,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Canvas, type ThreeEvent, useThree } from '@react-three/fiber'
+import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber'
 import {
   OrbitControls,
   OrthographicCamera,
@@ -15,10 +22,10 @@ import {
   Html,
   useGLTF,
 } from '@react-three/drei'
-import { Plane, Vector3 } from 'three'
+import { Group, Mesh, Plane, Vector3 } from 'three'
 import { normalizeModel } from './model'
 import ProceduralFurniture from './Furniture'
-import { type Item, type Product, type Scene, validPlacement } from './catalog'
+import { type Item, type Product, type Scene } from './catalog'
 
 class ModelBoundary extends Component<
   { children: ReactNode; product: Product },
@@ -40,10 +47,16 @@ class ModelBoundary extends Component<
 }
 function GlbFurniture({ product }: { product: Product }) {
   const gltf = useGLTF(product.modelUrl!, '/draco/')
-  const model = useMemo(() => normalizeModel(gltf.scene, product.dimensions), [gltf, product])
+  const model = useMemo(() => {
+    const instance = normalizeModel(gltf.scene, product.dimensions)
+    instance.traverse(o => { if (o instanceof Mesh) o.material = Array.isArray(o.material) ? o.material.map(m => m.clone()) : o.material.clone() })
+    return instance
+  }, [gltf, product])
+  useEffect(() => () => { model.traverse(o => { if (o instanceof Mesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose()) }) }, [model])
   return <primitive object={model} />
 }
 export function Furniture({ product }: { product: Product }) {
+  if (product.door) return <DoorVisual product={product} />
   if (product.modelUrl)
     return (
       <ModelBoundary key={product.modelUrl} product={product}>
@@ -89,8 +102,7 @@ function FixtureLight({
   settings?: Item['light']
 }) {
   if (!product.lighting || settings?.on === false) return null
-  const color = settings?.color ?? '#ffd3a0'
-  const brightness = settings?.brightness ?? 0.7
+  const color = product.lighting.colorMode === 'fixed' ? '#ffd3a0' : settings?.color ?? '#ffd3a0'
   const emitter = product.lighting.emitter ?? [
     0,
     product.dimensions[1] *
@@ -101,7 +113,7 @@ function FixtureLight({
     <group position={emitter}>
       <pointLight
         color={color}
-        intensity={brightness * 12}
+        intensity={fixtureIntensity(product)}
         distance={7}
         decay={2}
       />
@@ -176,9 +188,31 @@ function Placed({
   const dragging = useRef(false)
   const offset = useRef({ x: 0, z: 0 })
   const current = useRef<Item | null>(null)
-  const plane = new Plane(new Vector3(0, 1, 0), 0)
+  const plane = new Plane(new Vector3(0, 1, 0), -(item.elevation ?? 0))
   const active = preview ?? item
-  const valid = validPlacement(active, scene, catalog)
+  const drop = settleScene({ ...scene, items: scene.items.map(i => i.id === active.id ? active : i) }, scene, catalog)
+  const landing = drop.error ? null : drop.scene.items.find(i => i.id === active.id)!
+  const valid = landing !== null
+  const group = useRef<Group>(null)
+  const height = useRef(item.elevation ?? 0)
+  const velocity = useRef(0)
+  const { invalidate } = useThree()
+  useFrame((_, delta) => {
+    const destination = active.elevation ?? 0
+    if (dragging.current || isAnchored(product) || destination >= height.current) {
+      height.current = destination
+      velocity.current = 0
+    } else if (height.current > destination) {
+      // Free fall from rest: y = y0 - 1/2*g*t², stopped at stable support.
+      const dt = Math.min(delta, 0.05)
+      height.current = Math.max(destination, height.current - velocity.current * dt - 4.905 * dt * dt)
+      velocity.current += 9.81 * dt
+      if (height.current > destination) invalidate()
+      else velocity.current = 0
+    }
+    if (group.current) group.current.position.y = height.current
+  })
+  useEffect(() => { invalidate() }, [item.elevation, invalidate])
   useEffect(
     () => () => {
       if (dragging.current) onDrag(false)
@@ -198,6 +232,7 @@ function Placed({
       x: p.x - (item.x),
       z: p.z - (item.z),
     }
+    current.current = null
     dragging.current = true
     onDrag(true)
     ;(e.target as unknown as Element).setPointerCapture(e.pointerId)
@@ -207,11 +242,13 @@ function Placed({
     e.stopPropagation()
     const p = e.ray.intersectPlane(plane, new Vector3())
     if (p) {
-      const next = {
+      let next: Item = {
         ...item,
+        supportId: undefined,
         x: Math.round((p.x - offset.current.x) * 20) / 20,
         z: Math.round((p.z - offset.current.z) * 20) / 20,
       }
+      next = liftToSupport(next, scene, catalog)
       current.current = next
       setPreview(next)
     }
@@ -226,11 +263,34 @@ function Placed({
     current.current = null
     setPreview(null)
   }
+  function cancel(e?: ThreeEvent<PointerEvent>) {
+    if (!dragging.current) return
+    e?.stopPropagation()
+    if (e) (e.target as unknown as Element).releasePointerCapture(e.pointerId)
+    dragging.current = false
+    onDrag(false)
+    current.current = null
+    height.current = item.elevation ?? 0
+    velocity.current = 0
+    setPreview(null)
+  }
+  useEffect(() => {
+    const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') cancel() }
+    window.addEventListener('keydown', escape)
+    return () => window.removeEventListener('keydown', escape)
+  })
   return (
+    <>
+    {preview && landing && <mesh position={[landing.x, (landing.elevation ?? 0) + .012, landing.z]} rotation={[-Math.PI / 2, 0, -(landing.rotation * Math.PI) / 180]}>
+      <planeGeometry args={[product.dimensions[0], product.dimensions[2]]} />
+      <meshBasicMaterial color="#88b676" transparent opacity={.4} depthWrite={false} />
+    </mesh>}
     <group
+      ref={group}
+      userData={{ daylightFurniture: true }}
       position={[
         active.x,
-        active.elevation ?? 0,
+        height.current,
         active.z,
       ]}
       rotation={[0, (active.rotation * Math.PI) / 180, 0]}
@@ -253,6 +313,7 @@ function Placed({
         </mesh>
       )}
     </group>
+    </>
   )
 }
 export default function Room({
@@ -262,7 +323,6 @@ export default function Room({
   onSelect,
   onMove,
   top,
-  lightAngle,
   preview,
   bounds = false,
 }: {
@@ -272,12 +332,11 @@ export default function Room({
   onSelect: (id: string | null) => void
   onMove: (item: Item) => void
   top: boolean
-  lightAngle: number
   preview?: Product
   bounds?: boolean
 }) {
   const [drag, setDrag] = useState(false)
-  const radians = (lightAngle * Math.PI) / 180
+  const sun = sunAt(scene.sunHour ?? 9)
   return (
     <Canvas
       shadows
@@ -287,18 +346,21 @@ export default function Room({
       fallback={<p>Enable WebGL to view your room.</p>}
     >
       <ambientLight
-        intensity={preview ? 1.2 : 0.07 + (scene.daylight ?? 1) * 0.7}
+        intensity={preview ? 1.2 : 0}
       />
       <directionalLight
-        position={[Math.cos(radians) * 6, 8, Math.sin(radians) * 6]}
-        intensity={preview ? 2 : (scene.daylight ?? 1) * 2.5}
+        position={preview ? [6, 8, 6] : sun.direction.map(v => v * 20) as [number, number, number]}
+        color={!preview && sun.warm ? '#ffd2a1' : '#fff4df'}
+        intensity={preview ? 2 : sun.intensity * WINDOW_TRANSMITTANCE}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-8}
         shadow-camera-right={8}
         shadow-camera-top={8}
         shadow-camera-bottom={-8}
-        shadow-normalBias={0.025}
+        shadow-normalBias={0.012}
+        shadow-bias={-0.0001}
+        shadow-camera-far={50}
       />
       {preview ? (
         <>
@@ -331,6 +393,7 @@ export default function Room({
           {Array.from({ length: Math.ceil(scene.width / 0.25) }, (_, i) => (
             <mesh
               key={i}
+              receiveShadow
               rotation={[-Math.PI / 2, 0, 0]}
               position={[-scene.width / 2 + i * 0.25, 0.001, 0]}
             >
@@ -338,29 +401,11 @@ export default function Room({
               <meshStandardMaterial color="#b99c78" />
             </mesh>
           ))}
-          {!top && (
-            <>
-              <mesh position={[0, (scene.height ?? 2.6) / 2, -scene.depth / 2 - 0.05]} receiveShadow>
-                <boxGeometry args={[scene.width + 0.2, scene.height ?? 2.6, 0.1]} />
-                <meshStandardMaterial color="#eee9df" />
-              </mesh>
-              <mesh position={[-scene.width / 2 - 0.05, (scene.height ?? 2.6) / 2, 0]} receiveShadow>
-                <boxGeometry args={[0.1, scene.height ?? 2.6, scene.depth]} />
-                <meshStandardMaterial color="#dadfd3" />
-              </mesh>
-              <mesh position={[0, 0.08, -scene.depth / 2 + 0.012]}>
-                <boxGeometry args={[scene.width, 0.16, 0.035]} />
-                <meshStandardMaterial color="#faf7ee" />
-              </mesh>
-              <mesh position={[-scene.width / 2 + 0.012, 0.08, 0]}>
-                <boxGeometry args={[0.035, 0.16, scene.depth]} />
-                <meshStandardMaterial color="#faf7ee" />
-              </mesh>
-            </>
-          )}
+          <RoomShell scene={scene} catalog={catalog} top={top} />
+          <Daylight room={scene} catalog={catalog} />
           {scene.items.map((item) => {
             const p = catalog.find((p) => p.id === item.productId)
-            return p ? (
+            return p?.door ? <DoorPiece key={item.id} item={item} product={p} scene={scene} selected={selected === item.id} onSelect={onSelect} /> : p ? (
               <Placed
                 key={item.id}
                 item={item}

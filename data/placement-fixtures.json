@@ -1,0 +1,23 @@
+{
+  "room": {"width": 6, "depth": 5, "height": 3, "windows": [], "sunHour": 12},
+  "products": [
+    {"id":"table","name":"Table","category":"desk","price":100,"dimensions":[1.4,0.75,0.8],"parts":[],"placement":{"mode":"floor","canSupport":true}},
+    {"id":"tray","name":"Tray","category":"custom","price":10,"dimensions":[0.5,0.1,0.4],"parts":[],"placement":{"mode":"surface","canSupport":true}},
+    {"id":"lamp","name":"Lamp","category":"lamp","price":20,"dimensions":[0.2,0.4,0.2],"parts":[],"placement":{"mode":"surface"}},
+    {"id":"bed","name":"Bed","category":"bed","price":300,"dimensions":[1.7,1,2.1],"parts":[],"placement":{"mode":"floor","support":{"kind":"mattress","width":1.5,"depth":2,"height":0.3,"center":[0,0],"evidence":"Verified test deck"}}},
+    {"id":"mattress","name":"Mattress","category":"mattress","price":100,"dimensions":[1.5,0.24,2],"parts":[],"placement":{"mode":"surface","surfaceKind":"mattress"}},
+    {"id":"door","name":"Door","category":"door","price":0,"dimensions":[0.9,2.1,0.045],"parts":[],"placement":{"mode":"wall"},"door":{"kind":"solid"}}
+  ],
+  "cases": [
+    {"name":"centered support rotation carries nested descendants","before":[{"id":"t","productId":"table","x":0,"z":0},{"id":"tray","productId":"tray","x":0.3,"z":0,"elevation":0.75,"supportId":"t"},{"id":"l","productId":"lamp","x":0.3,"z":0,"elevation":0.85,"supportId":"tray"}],"changes":{"t":{"x":1,"rotation":90}},"expected":{"t":[1,0,0,90],"tray":[1,-0.3,0.75,90],"l":[1,-0.3,0.85,90]}},
+    {"name":"deleting a support settles the whole stack","before":[{"id":"t","productId":"table","x":0,"z":0},{"id":"tray","productId":"tray","x":0,"z":0,"elevation":0.75,"supportId":"t"},{"id":"l","productId":"lamp","x":0,"z":0,"elevation":0.85,"supportId":"tray"}],"remove":["t"],"expected":{"tray":[0,0,0,0],"l":[0,0,0.1,0]}},
+    {"name":"locked descendants reject support moves","before":[{"id":"t","productId":"table","x":0,"z":0},{"id":"l","productId":"lamp","x":0,"z":0,"elevation":0.75,"supportId":"t","locked":true}],"changes":{"t":{"x":1}},"invalid":true},
+    {"name":"support cycles reject atomically","before":[],"add":[{"id":"a","productId":"tray","x":0,"z":0,"elevation":0.2,"supportId":"b"},{"id":"b","productId":"tray","x":0,"z":0,"elevation":0.1,"supportId":"a"}],"invalid":true},
+    {"name":"verified mattress deck permits intended frame overlap","before":[{"id":"b","productId":"bed","x":0,"z":0}],"add":[{"id":"m","productId":"mattress","x":0,"z":0,"elevation":0.3,"supportId":"b"}],"expected":{"b":[0,0,0,0],"m":[0,0,0.3,0]}},
+    {"name":"mattress overhang rejects","before":[{"id":"b","productId":"bed","x":0,"z":0}],"add":[{"id":"m","productId":"mattress","x":0.2,"z":0,"elevation":0.3,"supportId":"b"}],"invalid":true},
+    {"name":"occupied deck rejects second mattress","before":[{"id":"b","productId":"bed","x":0,"z":0},{"id":"m","productId":"mattress","x":0,"z":0,"elevation":0.3,"supportId":"b"}],"add":[{"id":"m2","productId":"mattress","x":0,"z":0,"elevation":0.3,"supportId":"b"}],"invalid":true},
+    {"name":"door uses centered north wall","before":[],"add":[{"id":"d","productId":"door","x":0,"z":0,"door":{"wall":"north","offset":0.5,"open":false}}],"expected":{"d":[0,-2.5,0,0]}},
+    {"name":"door clearance rejects a table","before":[{"id":"d","productId":"door","x":0,"z":-2.5,"door":{"wall":"north","offset":0.5,"open":false}}],"add":[{"id":"t","productId":"table","x":0,"z":-2}],"invalid":true},
+    {"name":"actual room height rejects a high surface object","before":[],"room":{"height":2},"add":[{"id":"l","productId":"lamp","x":0,"z":0,"elevation":1.8}],"invalid":true}
+  ]
+}

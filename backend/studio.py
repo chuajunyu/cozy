@@ -5,20 +5,21 @@ from typing import Literal
 
 from pydantic import Field
 
-from backend.design import DesignState, LightSettings, Model, Room, Slot, require, validate_layout
+from backend.design import DesignState, DoorAnchor, LightSettings, Model, Room, Slot, require, validate_layout
+from backend.placement import alternative_kind, inferred_support, settle_state
 from backend.products import GeneratedProduct, generated
 from backend.sessions import Session
 
 
 class Backup(Model):
-    version: Literal[2]
+    version: Literal[2, 3]
     state: DesignState
     products: list[GeneratedProduct] = Field(default_factory=list, max_length=100)
 
 
 class StudioCommand(Model):
-    type: Literal["item.add", "item.update", "item.delete", "room.update", "fixture.update",
-                  "room.clear", "room.undo", "catalog.import", "session.restore"]
+    type: Literal["item.add", "item.update", "item.delete", "item.replace", "room.update", "fixture.update",
+                  "room.clear", "room.undo", "catalog.import", "session.restore", "session.restore.preview"]
     requestId: str = Field(min_length=1, max_length=100)
     baseRevision: int = Field(ge=0)
     slotId: str | None = Field(default=None, max_length=60, pattern=r"^[a-zA-Z0-9_-]+$")
@@ -29,10 +30,14 @@ class StudioCommand(Model):
     rotation: Literal[0, 90, 180, 270] | None = None
     elevation: float | None = Field(default=None, ge=0, le=5)
     light: LightSettings | None = None
+    supportId: str | None = Field(default=None, max_length=60)
+    door: DoorAnchor | None = None
     room: Room | None = None
     budget: float | None = Field(default=None, gt=0, le=1_000_000)
     product: GeneratedProduct | None = None
     backup: Backup | None = None
+    previewId: str | None = None
+    allowLocked: list[str] = Field(default_factory=list, max_length=100)
 
 
 async def pause(session: Session) -> None:
@@ -48,6 +53,7 @@ async def pause(session: Session) -> None:
     session.task = None
     session.designer = None
     session.previous_response_id = None
+    session.room_permissions.clear()
     session.set_status("idle", "Design paused; your room is preserved")
 
 
@@ -59,12 +65,19 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 session.publish(session.requests[command.requestId])
                 return
             require(command.baseRevision == session.state.revision, "stale_revision", "The room changed. Review it and try again.")
+            if command.type == 'session.restore.preview':
+                from backend.restore import preview_restore
+                event = preview_restore(session, command)
+                session.requests[command.requestId] = event
+                session.publish(event)
+                return
             if command.type == "room.undo":
                 require(bool(session.history), "empty_history", "There is no room change to undo.")
             if command.type == "room.clear":
                 require(not any(s.locked for s in session.state.slots.values()), "locked", "Unlock pieces before clearing the room.")
             if command.type == "session.restore":
                 require(session.state.revision == 0 and not session.state.slots, "restore_conflict", "A live room cannot be replaced by a backup.")
+                require(command.previewId is not None, 'missing_preview', 'Preview the backup before restoring it.')
             # Fence commits during the cancellation gap, including fresh get-state calls.
             stopping = command.type in {"room.undo", "room.clear", "session.restore"}
             if stopping:
@@ -78,10 +91,11 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             custom = dict(session.custom_products)
             kind = command.type
             slot = state.slots.get(command.slotId or "")
-            if kind in {"item.update", "item.delete", "fixture.update"}:
+            if kind in {"item.update", "item.delete", "fixture.update", "item.replace"}:
                 require(slot is not None and slot.catalogId is not None, "unknown_slot", "Select a placed item.")
                 require(command.expectedProduct == slot.catalogId, "item_changed", "The selected product changed.")
-                if kind != "fixture.update":
+                door_switch = kind == 'item.update' and slot.door and command.door and slot.door.wall == command.door.wall and slot.door.offset == command.door.offset and not any(f in command.model_fields_set for f in ('x','z','rotation','elevation','supportId'))
+                if kind != "fixture.update" and not door_switch:
                     require(not slot.locked, "locked", "Unlock the piece before changing its placement.")
             if kind == "item.add":
                 require(command.slotId is not None and command.slotId not in state.slots, "duplicate_slot", "Use a new item ID.")
@@ -91,12 +105,32 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 state.slots[command.slotId] = Slot(id=command.slotId, label=p["name"][:80], category=p["category"],
                     zone="Room", group="Your additions", catalogId=p["id"], x=command.x, z=command.z,
                     rotation=command.rotation or 0, elevation=command.elevation or 0, light=command.light,
+                    supportId=command.supportId, door=command.door,
                     explanation="Added by you.")
             elif kind == "item.update":
                 for field in ("x", "z", "rotation", "elevation"):
                     value = getattr(command, field)
                     if value is not None:
                         setattr(slot, field, value)
+                if 'supportId' in command.model_fields_set:
+                    slot.supportId = command.supportId
+                if command.door is not None:
+                    slot.door = command.door
+            elif kind == 'item.replace':
+                p = products.get(command.catalogId)
+                require(p is not None and not p.get('door') and not slot.door, 'replacement', 'Choose a furniture alternative.')
+                require(alternative_kind(p) == alternative_kind(products[slot.catalogId]), 'category_mismatch', 'Choose the same furniture type.')
+                slot.catalogId = p['id']
+                slot.category = p['category']
+                slot.liked = slot.replacing = False
+                slot.explanation = 'Chosen by you from similar pieces.'
+                state.rejected.pop(slot.id, None)
+                if state.rerollTargets:
+                    state.rerollTargets = [id for id in state.rerollTargets if id != slot.id] or None
+                if not p.get('lighting'):
+                    slot.light = None
+                elif slot.light and (p['lighting']['colorMode'] == 'fixed' or p['lighting']['colorMode'] == 'white-spectrum' and slot.light.color.lower() not in {'#ffd3a0','#fff4dd','#dceaff'}):
+                    slot.light.color = '#ffd3a0'
             elif kind == "fixture.update":
                 require(command.light is not None, "missing_light", "Supply fixture settings.")
                 slot.light = command.light
@@ -129,6 +163,9 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 require(len(custom) < 100, "catalog_limit", "This session supports 100 custom products.")
                 custom[p["id"]] = p
             elif kind == "session.restore":
+                if command.previewId:
+                    from backend.restore import apply_preview
+                    command.backup = apply_preview(session, command)
                 require(command.backup is not None, "missing_backup", "Supply a room backup.")
                 custom = {}
                 for raw in command.backup.products:
@@ -141,11 +178,20 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
                 for item in state.slots.values():
                     item.replacing = False
             products = {**products, **custom}
+            if kind in {'item.add', 'item.update', 'item.delete', 'item.replace', 'room.update'}:
+                state = settle_state(state, session.state, products)
+                if kind == 'item.replace':
+                    for old in session.state.slots.values():
+                        parent = inferred_support(old, session.state, products)
+                        if parent:
+                            require(state.slots[old.id].supportId == parent.id, 'support_fit', 'The replacement must preserve supporting surfaces.')
+                    require(abs(state.slots[slot.id].elevation-slot.elevation) <= .005, 'support_fit', 'The replacement must retain its mounting height.')
             validate_layout(state, products)
             if kind == "room.undo":
                 session.history.pop()
             elif kind == "session.restore":
                 session.history.clear()
+                session.restore_previews.clear()
             elif kind != "catalog.import":
                 session.remember()
             state.revision = session.state.revision + 1

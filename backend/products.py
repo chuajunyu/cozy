@@ -15,6 +15,7 @@ CATEGORIES = {
     "Bedside table": "side_table", "Dining table": "dining_table",
     "Wardrobe": "wardrobe", "Chest of drawers": "dresser", "Lighting": "lamp",
     "Floor lamp": "lamp",
+    "Mattress": "mattress",
 }
 
 
@@ -29,25 +30,67 @@ class Part(DataModel):
     color: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
 
 
+class LightOutput(DataModel):
+    lumens: float = Field(gt=0, le=20000)
+    evidence: str = Field(max_length=1000)
+
+
+class Deck(DataModel):
+    kind: Literal['mattress']
+    width: float = Field(gt=0, le=10)
+    depth: float = Field(gt=0, le=10)
+    height: float = Field(gt=0, le=5)
+    center: tuple[float, float]
+    evidence: str = Field(max_length=1000)
+
+
+class PlacementCapabilities(DataModel):
+    mode: Literal['floor', 'surface', 'ceiling', 'wall']
+    canSupport: bool | None = None
+    surfaceKind: Literal['mattress'] | None = None
+    support: Deck | None = None
+
+
+class DoorProduct(DataModel):
+    kind: Literal['solid']
+
+
 class Lighting(DataModel):
     mount: Literal["floor", "surface", "ceiling"]
     colorMode: Literal["fixed", "white-spectrum", "rgb", "bulb-dependent"]
     dimmable: bool
     evidence: str = Field(max_length=1000)
     emitter: tuple[float, float, float] | None = None
+    output: LightOutput | None = None
 
 
 class GeneratedProduct(DataModel):
     id: str = Field(pattern=r"^[a-zA-Z0-9_-]{1,60}$")
     name: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1, max_length=40)
+    productType: str | None = Field(default=None, max_length=80)
+    priceNote: str | None = Field(default=None, max_length=1000)
     price: float = Field(ge=0, le=1_000_000)
     dimensions: tuple[float, float, float]
     parts: list[Part] = Field(min_length=1, max_length=150)
     lighting: Lighting | None = None
+    placement: PlacementCapabilities | None = None
+    door: DoorProduct | None = None
 
     @model_validator(mode="after")
     def geometry(self):
+        if self.door:
+            if not self.placement or self.placement.mode != 'wall' or self.lighting or self.price != 0:
+                raise ValueError('Doors must be unpriced wall elements without lighting.')
+            w, h, d = self.dimensions
+            if not .5 <= w <= 2 or not 1.8 <= h <= 2.5 or not 0 < d <= .2 or self.placement.canSupport or self.placement.support:
+                raise ValueError('Invalid door dimensions or support capabilities.')
+        elif self.placement and self.placement.mode == 'wall':
+            raise ValueError('Wall placement requires door capabilities.')
+        if self.placement and self.placement.support:
+            deck = self.placement.support
+            if deck.height > self.dimensions[1] or abs(deck.center[0]) + deck.width / 2 > self.dimensions[0] / 2 + .005 or abs(deck.center[1]) + deck.depth / 2 > self.dimensions[2] / 2 + .005:
+                raise ValueError('Mattress deck must fit the product bounds.')
         if not self.id.startswith(('custom-', 'sample-')) and len(self.id) > 53:
             raise ValueError("Use a shorter product ID to allow its catalog prefix.")
         if any(n <= 0 or n > 10 for n in self.dimensions):
@@ -75,13 +118,13 @@ def generated(raw: dict, prefix: str = "custom-") -> dict:
     w, h, d = p.pop("dimensions")
     group = p["category"]
     sample_categories = {"desk": "desk", "bed": "bed", "sofa": "sofa", "shelf": "shelf", "chair": "chair", "coffee": "coffee_table", "nightstand": "side_table", "rug": "rug"}
-    category = "lamp" if p.get("lighting") else sample_categories.get(p["id"].removeprefix(prefix), p["category"])
-    if category not in {*CATEGORIES.values(), "rug", "coffee_table", "plant", "side_table", "custom"}:
+    category = "door" if p.get('door') else "lamp" if p.get("lighting") else sample_categories.get(p["id"].removeprefix(prefix), p["category"])
+    if category not in {*CATEGORIES.values(), "door", "rug", "coffee_table", "plant", "side_table", "custom"}:
         category = "custom"
     return {**p, "category": category, "collection": group, "width": w, "height": h, "depth": d,
             "modelId": "parts", "color": p["parts"][0]["color"], "material": "", "style": "",
             "currency": "SGD", "illustrative": True, "floorLayer": category == "rug",
-            "readyForPreview": True, "canRecommend": True}
+            "readyForPreview": True, "canRecommend": not bool(p.get('door'))}
 
 
 def validate_glb(path: Path) -> dict:

@@ -9,6 +9,7 @@ from pydantic import Field
 from backend.astra import AstraDesigner
 from backend.design import DesignError, Model, Room, require
 from backend.sessions import Session
+from backend.architecture import explicit_permissions
 
 
 class Command(Model):
@@ -53,7 +54,7 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
         state = session.state.model_copy(deep=True)
         slots = list(dict.fromkeys(command.slotIds))
         if command.action == "reroll_unlocked" and command.type == "feedback.send":
-            slots = [id for id, slot in state.slots.items() if slot.catalogId and not slot.locked]
+            slots = [id for id, slot in state.slots.items() if slot.catalogId and not slot.locked and not slot.door]
         for id in slots:
             require(id in state.slots, "unknown_slot", "That furniture slot no longer exists.")
             if id in command.expectedProducts:
@@ -87,6 +88,7 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
                     state.slots[id].liked = True
                 text = "I like these choices (soft preference, not a lock): " + ", ".join(slots)
             elif command.action in {"reroll", "reroll_unlocked"}:
+                require(all(not state.slots[id].door for id in slots), 'architecture_permission', 'Doors are room elements; request their edits explicitly in chat.')
                 require(bool(slots), "missing_target", "Select an unlocked recommendation to replace.")
                 for id in slots:
                     slot = state.slots[id]
@@ -106,6 +108,11 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
         if command.type == "item.lock" or state.budget != session.state.budget:
             session.remember()
         session.state = state
+        if command.type in {'chat.send', 'feedback.send'}:
+            session.room_permissions.clear()
+            grants = explicit_permissions(command.text) if command.type == 'chat.send' or command.action == 'comment' else []
+            if grants:
+                session.room_permissions[command.requestId] = grants
         session.message("user", text, command.requestId)
         session.broadcast_state()
         ack = {"type": "feedback.ack", "requestId": command.requestId, "stage": "received"}

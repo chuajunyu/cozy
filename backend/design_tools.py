@@ -7,9 +7,11 @@ from pydantic import ValidationError
 from backend.catalog import search
 from backend.design import ConceptUpdate, DesignError, DesignPatch, apply_patch, snapshot, update_concept
 from backend.sessions import Session
+from backend.architecture import RoomEdit, edit_room
 
 
 TOOLS = [
+    {'type': 'function', 'name': 'edit_room', 'description': 'Edit architecture only for an explicit current user request. Use the requestId and permitted operation from get_design_state roomEditPermissions. Broad design requests never allow architecture changes.', 'parameters': RoomEdit.model_json_schema(), 'strict': False},
     {"type": "function", "name": "get_design_state", "description": "Read authoritative room, concept, feedback, rejected candidates, locks and current revision. Always read after feedback or a rejected patch.",
      "parameters": {"type": "object", "properties": {}, "additionalProperties": False}, "strict": True},
     {"type": "function", "name": "search_catalog", "description": "Find available, locally renderable IKEA and demo products. IKEA prices are dated SGD offers; sample prices are illustrative. Query ranks complementary style/material preferences; dimensions and price filter results.",
@@ -24,8 +26,8 @@ INSTRUCTIONS = """You are Cozy's interior designer, collaborating with the user 
 Use brief -> cohesive concept -> anchor groups -> supporting groups -> whole-room review.
 Stream brief user-facing explanations of your actual design choices and trade-offs. Do not expose
 private reasoning or invent searches, measurements, comfort claims, availability, or product links.
-Use only search_catalog results. IKEA products carry dated SGD prices, availability, and source evidence. Demo/custom products are illustrative. Do not invent missing material or style facts.
-Catalog categories are sofa, rug, coffee_table, bed, desk, chair, lamp, shelf, side_table, plant, dining_table, wardrobe, dresser, custom. Search to discover available products.
+Preserve doors, windows, room dimensions and sun settings unless roomEditPermissions explicitly permits a requested edit. Ambiguous requests such as make it brighter do not grant permission: clarify before changing architecture. Furniture patches cannot alter doors. Place mattresses only on verified decks and surface objects on compatible supports, using supportId. Read support metadata and reserve door swings. Use only search_catalog results. IKEA products carry dated SGD prices, availability, and source evidence. Demo/custom products are illustrative. Do not invent missing material or style facts.
+Catalog categories are sofa, rug, coffee_table, bed, desk, chair, lamp, shelf, side_table, plant, dining_table, wardrobe, dresser, mattress, custom. Search to discover available products.
 Infer routine preferences and explain assumptions. Ask one focused question only when necessary;
 otherwise continue to a complete design without requiring approval for each group.
 Read get_design_state first. The supplied current state overrides assumptions from earlier chat.
@@ -61,13 +63,15 @@ async def execute_tool(session: Session, call_id: str, name: str, arguments: str
             if not isinstance(args, dict):
                 raise ValueError("Tool arguments must be an object.")
             if name == "get_design_state":
-                result = {"ok": True, "state": session.snapshot()}
+                result = {"ok": True, "state": session.snapshot(), 'roomEditPermissions': session.room_permissions}
+            elif name == 'edit_room':
+                result = edit_room(session, args)
             elif name == "search_catalog":
                 matches = search(**args, products=session.products)
                 # Geometry and ingestion diagnostics belong in the renderer, not model context.
                 fields = {"id", "name", "category", "width", "height", "depth", "price", "currency",
                           "color", "material", "style", "illustrative", "floorLayer", "lighting",
-                          "productUrl", "fetchedAt", "availability", "features", "priceNote"}
+                          "productUrl", "fetchedAt", "availability", "features", "priceNote", 'placement', 'productType'}
                 result = {"ok": True, "totalMatches": len(matches),
                           "products": [{k: v for k, v in p.items() if k in fields} for p in matches[:30]],
                           "hint": "Narrow category, price, width or query to explore other matches."}

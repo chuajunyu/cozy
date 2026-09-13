@@ -17,6 +17,8 @@ class Session:
     custom_products: dict = field(default_factory=dict)
     history: list[DesignState] = field(default_factory=list)
     generation: int = 0
+    room_permissions: dict = field(default_factory=dict)
+    restore_previews: dict = field(default_factory=dict)
     command_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     subscribers: set[asyncio.Queue] = field(default_factory=set)

@@ -1,6 +1,96 @@
 {
   "products": [
     {
+      "description": "MALM Bed frame, high - white 150x200 cm. This versatile bed frame will look great with your choice of textiles and bedroom furniture. Suitable for business use. You can easily vacuum under the bed frame to keep the space clean and dust-free. Must be completed with SKORVA midbeam.",
+      "productType": "Bed",
+      "id": "ikea-00274924",
+      "articleNumber": "002.749.24",
+      "name": "MALM Bed frame, high - white 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": null,
+      "brand": "IKEA",
+      "color": "white",
+      "variantLabel": "white",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "209 cm",
+        "Width": "166 cm",
+        "Footboard height": "38 cm",
+        "Headboard height": "100 cm",
+        "Mattress length": "200 cm",
+        "Mattress width": "150 cm",
+        "Height": "100 cm",
+        "Free height under furniture": "21 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "height": "Product JSON-LD",
+        "depth": "Product JSON-LD"
+      },
+      "price": 179.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/malm-bed-frame-high-white-00274924/",
+      "dimensionsMeters": {
+        "width": 1.6600000000000001,
+        "height": 1.0,
+        "depth": 2.09
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white__0749130_pe745499_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/malm-bed-frame-high-white__0749130_pe745499_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:33.037490+00:00",
+      "modelCandidates": [
+        "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV_01/simple/glb/25b301ffe884885e5c4fbdbcaa8b5c62-G-40249471-e300ffb43ff27a5fa5fd780727eb6a9af85a3649-simple.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV_01/simple/glb/33d2389eb59fba9783e56952c4272c15-G-40249471-0485f9d032775e8d1be57f4c213230e441f88318-simple.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV_01/simple/glb/4df4de3c9f394076651911b8bf058333-G-40249471-b4c80fbb534c5f3aa3c45da3af35b6c7eb388b23-simple.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV_01/simple/glb/8d73f5a8a247eaf17cca49035d41cbeb-G-40249471-8da3b359cbcef08c53f91daae58584da483066b0-simple.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV_01/simple/glb/cd2b1761bdb574517016f29aab47f18f-G-40249471-f75e4651c90c744fce60c2a344a8756bd6c7663f-simple.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV01/simple/glb_draco/G-40249471-dd539c2a97db81e475b2fb0f53136820a5c11320_8223afe0f08d4c65b866c09c6eca45df.glb?cn=pip"
+      ],
+      "modelStatus": "downloaded",
+      "modelUrl": "/models/ikea/00274924.glb",
+      "modelSourceUrl": "https://web-api.ikea.com/dimma/assets/geomagical/40249471/PS01_S01_NV_01/simple/glb/25b301ffe884885e5c4fbdbcaa8b5c62-G-40249471-e300ffb43ff27a5fa5fd780727eb6a9af85a3649-simple.glb?cn=pip",
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "priceRange": {
+        "lowPrice": "179",
+        "highPrice": "239"
+      },
+      "priceNote": "Page-listed offer; conditions may apply. Verify the current price at IKEA.",
+      "priceValidUntil": "2026-09-30Z",
+      "modelBytes": 398356,
+      "modelExtensions": [
+        "KHR_draco_mesh_compression"
+      ],
+      "readyForPreview": true,
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [],
+      "canRecommend": true,
+      "placement": {
+        "mode": "floor",
+        "support": {
+          "kind": "mattress",
+          "width": 1.5,
+          "depth": 2,
+          "height": 0.265,
+          "center": [
+            0,
+            0
+          ],
+          "evidence": "Assumed LUR\u00d6Y slatted base at the lower MALM rail setting, based on the measured MALM/LUR\u00d6Y model. Bare frame asset omits slats; verify the purchased base."
+        }
+      },
+      "priceBand": "Budget",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
       "description": "MICKE Desk - black-brown 105x50 cm. It\u2019s easy to keep sockets and cables out of sight but close at hand with the cable outlet at the back. You can mount the storage unit to the right or left, according to your space or preference. Drawer stops prevent the drawers from being pulled out too far.",
       "productType": "Desk",
       "id": "ikea-00354275",
@@ -977,6 +1067,90 @@
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
+      "description": "VITM\u00c5SEN Pocket sprung mattress - with latex extra firm/light blue 120x200 cm. A 3 cm thick layer of latex provide high pressure-relieving capacity, enabling your body to relax more fully. The 5 comfort zones in the mattress give very precise support and relieve pressure on your shoulders and hips.",
+      "productType": "Mattress",
+      "id": "ikea-10552114",
+      "articleNumber": "105.521.14",
+      "name": "VITM\u00c5SEN Pocket sprung mattress - with latex extra firm/light blue 120x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue",
+      "variantLabel": "with latex extra firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Thickness": "25 cm",
+        "Width": "120 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 399.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue-10552114/",
+      "dimensionsMeters": {
+        "width": 1.2,
+        "height": 0.25,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1167320_pe891520_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1220589_pe913500_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1217181_pe912601_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1217183_pe912603_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1220592_pe913501_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1220593_pe913502_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1217184_pe912604_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1167324_pe891524_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1234915_pe917258_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1391258_pe965730_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1578572_pe1034204_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vitmasen-pocket-sprung-mattress-with-latex-extra-firm-light-blue__1167320_pe891520_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:24.021730+00:00",
+      "modelCandidates": [
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp3/glb/ceeca68ef027d94efe185aa30c5eb62b-10552114_PS01_S01_NV01_RQP3_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp3/glb/fdc07a485edbadc376310ea1b1f0b8fe-10552114_PS01_S01_NV01_RQP3_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp2/glb/d87a669d823808593761197d101136da-10552114_PS01_S01_NV01_RQP2_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp2/glb/e6e1f66b00adb74ebb0fff1913343b8b-10552114_PS01_S01_NV01_RQP2_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp1/glb/88fc716632f34b8985241a7c8c8f4eb1-10552114_PS01_S01_NV01_RQP1_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp1/glb/9396eccd636a9dce9efbcaf968a3c74c-10552114_PS01_S01_NV01_RQP1_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp3/glb_draco/bc79d693ca14c60f29015de823381c85-10552114_PS01_S01_NV01_RQP3_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp3/glb_draco/de641c3f31cb0cd8032553cb8ecad691-10552114_PS01_S01_NV01_RQP3_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp2/glb_draco/5ef90d555106362ebcef32d2ba210191-10552114_PS01_S01_NV01_RQP2_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp2/glb_draco/9140f505f1dd8a0851d4442b1fe741c4-10552114_PS01_S01_NV01_RQP2_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp1/glb_draco/4216dce5ac8e341ca7e456235556f914-10552114_PS01_S01_NV01_RQP1_4.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp1/glb_draco/d1d00bfdbdd2bd81eb9a34e83c84638c-10552114_PS01_S01_NV01_RQP1_4.0.glb?cn=pip"
+      ],
+      "modelStatus": "downloaded",
+      "modelUrl": "/models/ikea/10552114.glb",
+      "modelSourceUrl": "https://web-api.ikea.com/dimma/assets/1.2/10552114/PS01_S01_NV01/rqp3/glb/ceeca68ef027d94efe185aa30c5eb62b-10552114_PS01_S01_NV01_RQP3_4.0.glb?cn=pip",
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "modelBytes": 804808,
+      "modelExtensions": [],
+      "readyForPreview": true,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [],
+      "canRecommend": true,
+      "priceBand": "Mid-range",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
       "description": "BRUKSVARA Bed frame - white 90x200 cm. The headboard with its soft pad is comfortable to lean against while reading or watching TV in bed. The metal legs are strong and stable and add to the bed\u00b4s character. The headboard's soft pad is easy to remove if you want to change the expression of the bed.",
       "productType": "Bed",
       "id": "ikea-10558205",
@@ -1032,7 +1206,21 @@
       "missingFields": [],
       "canRecommend": true,
       "priceBand": "Budget",
-      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating.",
+      "placement": {
+        "mode": "floor",
+        "support": {
+          "kind": "mattress",
+          "width": 0.9,
+          "depth": 2,
+          "height": 0.334,
+          "center": [
+            0,
+            0
+          ],
+          "evidence": "Deck sampled from downloaded BRUKSVARA GLB triangles, normalized to catalog height; approximately 33.4 cm."
+        }
+      }
     },
     {
       "description": "BOLLSIDAN Laptop stand - walnut effect/black 68x36 cm. A flexible and versatile solution that you can use throughout the home and for many different activities. Height-adjustable using a gas spring mechanism. No cables are attached so it easy to move the table to where you need it.",
@@ -1354,8 +1542,22 @@
       "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
       "missingFields": [],
       "canRecommend": true,
-      "priceBand": "Mid-range",
-      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+      "priceBand": "Budget",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating.",
+      "placement": {
+        "mode": "floor",
+        "support": {
+          "kind": "mattress",
+          "width": 1.2,
+          "depth": 2,
+          "height": 0.265,
+          "center": [
+            0,
+            0
+          ],
+          "evidence": "Assumed LUR\u00d6Y slatted base at the lower MALM rail setting, based on the measured MALM/LUR\u00d6Y model. Bare frame asset omits slats; verify the purchased base."
+        }
+      }
     },
     {
       "description": "LACK Coffee table - black-brown 90x55 cm. Separate shelf for magazines, etc. helps you keep your things organised and the table top clear. The design makes this piece of furniture easy to place, easy to use for various needs, and easy to match with other furnishings. Easy to assemble.",
@@ -1478,6 +1680,95 @@
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
     {
+      "description": "VESTER\u00d6Y Pocket sprung mattress - firm/light blue 150x200 cm. Pocket springs that respond independently without transferring motion to others. Edge-to-edge pocket springs allow air to circulate for better breathability and there is no loss of comfort if 2 mattresses are placed next to each other.",
+      "productType": "Mattress",
+      "id": "ikea-20450643",
+      "articleNumber": "204.506.43",
+      "name": "VESTER\u00d6Y Pocket sprung mattress - firm/light blue 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "150 cm",
+        "Thickness": "20 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 299.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/vesteroey-pocket-sprung-mattress-firm-light-blue-20450643/",
+      "dimensionsMeters": {
+        "width": 1.5,
+        "height": 0.2,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1150852_pe884907_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1044459_pe842173_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1155952_pe886827_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1370976_pe958942_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1044424_pe842148_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1071101_pe854865_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__0905192_pe783062_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1094378_pe863398_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1579333_pe1034433_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/vesteroey-pocket-sprung-mattress-firm-light-blue__1150852_pe884907_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:22:21.567856+00:00",
+      "modelCandidates": [
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp2/glb/20450643_PS01_S01_NV01_IQP2_2.0_c19e67f51ed974e84d075efefcf74784.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp2/glb/e5f977fa78ec4006b755aff11593653b-20450643_PS01_S01_NV01_IQP2_2.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp1/glb/7146cca4c29c4dddb220fda8f7db7659-20450643_PS01_S01_NV01_IQP1_2.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp1/glb/20450643_PS01_S01_NV01_IQP1_2.0_cecd770f2ab58a5c042991fd97cc4d75.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp3/glb/048dd03e6355449a9c28c6669c14fdfd-20450643_PS01_S01_NV01_IQP3_2.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp3/glb/20450643_PS01_S01_NV01_IQP3_2.0_d7c8f11c21d0593f470892a9824956bd.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/rqp3/glb/20450643_PS01_S01_NV01_RQP3_4.0_b577ad04b54947ae8f15fcc5387cc706.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/rqp2/glb/20450643_PS01_S01_NV01_RQP2_4.0_e632bc5980de4b74a725b734da874f46.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/rqp1/glb/20450643_PS01_S01_NV01_RQP1_4.0_c183dcd0e09c4e3481e29a2f37f030e8.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp2/glb_draco/20450643_PS01_S01_NV01_IQP2_2.0_18e1483015bb8dfd5a3298d3b4c7eb72.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp2/glb_draco/27fcb0d7967441c4bdbb388cfb427601-20450643_PS01_S01_NV01_IQP2_2.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp1/glb_draco/20450643_PS01_S01_NV01_IQP1_2.0_726bcc7bcb478d81668ace521cabfac4.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp1/glb_draco/8a0c5e60b84549dea0d5b42236af126a-20450643_PS01_S01_NV01_IQP1_2.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp3/glb_draco/73575e17ebc24af8adbaef8974bc2c36-20450643_PS01_S01_NV01_IQP3_2.0.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp3/glb_draco/20450643_PS01_S01_NV01_IQP3_2.0_e1e475a637a1d4ece18899ba24309e2a.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/rqp3/glb_draco/20450643_PS01_S01_NV01_RQP3_4.0_bd1b8dda4ac24bfda51ae9ed88ea7718.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/rqp2/glb_draco/20450643_PS01_S01_NV01_RQP2_4.0_2f116e64edeb4fbabc0dec7d42ad9d17.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/rqp1/glb_draco/20450643_PS01_S01_NV01_RQP1_4.0_3b592ab3ec1b464281f456fa8507d79b.glb?cn=pip"
+      ],
+      "modelStatus": "downloaded",
+      "modelUrl": "/models/ikea/20450643.glb",
+      "modelSourceUrl": "https://web-api.ikea.com/dimma/assets/1.2/20450643/PS01_S01_NV01/iqp2/glb/20450643_PS01_S01_NV01_IQP2_2.0_c19e67f51ed974e84d075efefcf74784.glb?cn=pip",
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "modelBytes": 3359172,
+      "modelExtensions": [],
+      "readyForPreview": true,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [],
+      "canRecommend": true,
+      "priceBand": "Mid-range",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
       "description": "T\u00c5GARP Floor uplighter - black/white. Gives a diffused light which is good for spreading a lot of light around the room. Light bulb sold separately. IKEA recommends LED bulb E27 globe opal white. This product bears the CE mark.",
       "productType": "Floor lamp",
       "id": "ikea-20464051",
@@ -1534,7 +1825,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -1606,7 +1901,21 @@
       "missingFields": [],
       "canRecommend": true,
       "priceBand": "Budget",
-      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating.",
+      "placement": {
+        "mode": "floor",
+        "support": {
+          "kind": "mattress",
+          "width": 0.9,
+          "depth": 2,
+          "height": 0.261,
+          "center": [
+            0,
+            0
+          ],
+          "evidence": "Deck sampled from downloaded VEVELSTAD GLB triangles, normalized to catalog height; approximately 26.1 cm."
+        }
+      }
     },
     {
       "description": "VARMBLIXT LED table/wall lamp - orange glass/round 30 cm. Creates a soft, cosy mood light in your home. Table lamp or wall lamp \u2013 you can decide since the lamp can also be mounted on the wall. You never have to change a light bulb as this lamp has LED light sources built right into it.",
@@ -1670,7 +1979,11 @@
         "mount": "surface",
         "colorMode": "fixed",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 85.0,
+          "evidence": "IKEA published luminous flux."
+        }
       },
       "features": [
         "Lighting"
@@ -1844,7 +2157,21 @@
       "missingFields": [],
       "canRecommend": true,
       "priceBand": "Mid-range",
-      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating.",
+      "placement": {
+        "mode": "floor",
+        "support": {
+          "kind": "mattress",
+          "width": 1.8,
+          "depth": 2,
+          "height": 0.265,
+          "center": [
+            0,
+            0
+          ],
+          "evidence": "Assumed LUR\u00d6Y slatted base at the lower MALM rail setting, based on the measured MALM/LUR\u00d6Y model. Bare frame asset omits slats; verify the purchased base."
+        }
+      }
     },
     {
       "description": "\u00c5RSTID Table lamp - brass/white. The textile shade provides a diffused and decorative light. Light bulb sold separately. IKEA recommends LED bulb E27 globe opal white. Use an opal light bulb if you have an ordinary lamp shade or lamp and want an even, diffused distribution of light.",
@@ -1916,7 +2243,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -2064,7 +2395,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -2139,6 +2474,87 @@
       "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
       "missingFields": [],
       "canRecommend": true,
+      "priceBand": "Mid-range",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+    },
+    {
+      "description": "VALEV\u00c5G Pocket sprung mattress - firm/light blue 150x200 cm. A dreamy combination of comfort and support with comfort zones and pocket springs that help you sleep soundly. 5 comfort zones right where you need them support hips and shoulders, creating a natural spine alignment.",
+      "productType": "Mattress",
+      "id": "ikea-30450671",
+      "articleNumber": "304.506.71",
+      "name": "VALEV\u00c5G Pocket sprung mattress - firm/light blue 150x200 cm",
+      "category": "Bedroom",
+      "sourceCategory": "Spring mattresses",
+      "brand": "IKEA",
+      "color": "blue, white",
+      "variantLabel": "firm/light blue",
+      "colorSource": "Product JSON-LD",
+      "measurements": {
+        "Length": "200 cm",
+        "Width": "150 cm",
+        "Thickness": "24 cm"
+      },
+      "dimensionSources": {
+        "width": "Product JSON-LD",
+        "depth": "Product JSON-LD",
+        "height": "Visible measurements: Thickness"
+      },
+      "price": 399.0,
+      "currency": "SGD",
+      "productUrl": "https://www.ikea.com/sg/en/p/valevag-pocket-sprung-mattress-firm-light-blue-30450671/",
+      "dimensionsMeters": {
+        "width": 1.5,
+        "height": 0.24,
+        "depth": 2.0
+      },
+      "images": [
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1150857_pe884903_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044460_pe842180_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1155979_pe886828_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1073367_pe855694_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1071102_pe854864_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1370955_pe958921_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044469_pe842186_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__0905227_pe783082_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__0928313_pe789779_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1044425_pe842155_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1048650_pe843817_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1099005_pe865596_s5.jpg",
+        "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1579315_pe1034422_s5.jpg"
+      ],
+      "thumbnailUrl": "https://www.ikea.com/sg/en/images/products/valevag-pocket-sprung-mattress-firm-light-blue__1150857_pe884903_s5.jpg",
+      "availability": "https://schema.org/InStock",
+      "fetchedAt": "2026-09-13T04:19:08.446605+00:00",
+      "modelCandidates": [
+        "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp3/glb/30450671_PS01_S01_NV01_RQP3_4.0_d14b0aca160b4eeaa232ca9e6ab7953a.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp2/glb/30450671_PS01_S01_NV01_RQP2_4.0_318276c0fcc94189b2d7cb6a8b63def3.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp1/glb/30450671_PS01_S01_NV01_RQP1_4.0_ed8f38201f224776b1dcd93550cb25f7.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp3/glb_draco/30450671_PS01_S01_NV01_RQP3_4.0_92604b34d51d4156a0f240f28683725a.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp2/glb_draco/30450671_PS01_S01_NV01_RQP2_4.0_7ee7ff9f741743939332647b08a1c837.glb?cn=pip",
+        "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp1/glb_draco/30450671_PS01_S01_NV01_RQP1_4.0_230cadc6b9564dc384482bddfe5090d7.glb?cn=pip"
+      ],
+      "modelStatus": "downloaded",
+      "modelUrl": "/models/ikea/30450671.glb",
+      "modelSourceUrl": "https://web-api.ikea.com/dimma/assets/1.2/30450671/PS01_S01_NV01/rqp3/glb/30450671_PS01_S01_NV01_RQP3_4.0_d14b0aca160b4eeaa232ca9e6ab7953a.glb?cn=pip",
+      "modelLicense": "IKEA asset; local evaluation only. Redistribution rights not established.",
+      "modelBytes": 845600,
+      "modelExtensions": [],
+      "readyForPreview": true,
+      "features": [],
+      "featureEvidence": {},
+      "colorFamilies": [
+        "white",
+        "blue"
+      ],
+      "materialsMentioned": [],
+      "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
+      "missingFields": [],
+      "canRecommend": true,
+      "placement": {
+        "mode": "surface",
+        "canSupport": false,
+        "surfaceKind": "mattress"
+      },
       "priceBand": "Mid-range",
       "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
     },
@@ -2591,8 +3007,22 @@
       "materialEvidenceSource": "Product name/description; mentions are not a full material composition.",
       "missingFields": [],
       "canRecommend": true,
-      "priceBand": "Mid-range",
-      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating."
+      "priceBand": "Premium",
+      "priceBandBasis": "Relative price terciles within the imported furniture type; not a quality rating.",
+      "placement": {
+        "mode": "floor",
+        "support": {
+          "kind": "mattress",
+          "width": 1.2,
+          "depth": 2,
+          "height": 0.265,
+          "center": [
+            0,
+            0
+          ],
+          "evidence": "LUR\u00d6Y slat crowns sampled from downloaded MALM/LUR\u00d6Y GLB triangles; approximately 26.5 cm."
+        }
+      }
     },
     {
       "description": "TINGBY Side table on castors - white 64x64 cm. Separate shelf for magazines, etc. helps you keep your things organised and the table top clear. The castors make it easy to move the table if needed. Max load on table top: 10 kg.",
@@ -2952,7 +3382,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3087,7 +3521,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -3889,7 +4327,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -4434,7 +4876,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -4794,7 +5240,11 @@
         "mount": "surface",
         "colorMode": "fixed",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 50.0,
+          "evidence": "IKEA published luminous flux."
+        }
       },
       "features": [
         "Lighting"
@@ -5093,7 +5543,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"
@@ -5188,7 +5642,11 @@
         "mount": "floor",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "dimensionsMeasuredFromModel": true
     },
@@ -6114,7 +6572,11 @@
         "mount": "surface",
         "colorMode": "bulb-dependent",
         "dimmable": false,
-        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative."
+        "evidence": "Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.",
+        "output": {
+          "lumens": 470,
+          "evidence": "Assumed standard bulb output; bulb sold separately or output unverified."
+        }
       },
       "features": [
         "Lighting"

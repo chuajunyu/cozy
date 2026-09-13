@@ -19,6 +19,12 @@ from backend.tests.test_design import QuietDesigner
 
 
 async def edit(session, kind, **kwargs):
+    if kind == 'session.restore' and 'backup' in kwargs and not session.state.slots:
+        from backend.restore import preview_restore
+        preview = preview_restore(session, StudioCommand(type='session.restore.preview', requestId='preview', baseRevision=session.state.revision, backup=kwargs['backup']))
+        if preview['blockers']:
+            raise DesignError('invalid_backup', preview['blockers'][0])
+        kwargs = {'previewId': preview['previewId']}
     command = StudioCommand(type=kind, requestId=f"edit-{session.state.revision}-{kind}",
                             baseRevision=session.state.revision, **kwargs)
     await handle_studio(session, command)

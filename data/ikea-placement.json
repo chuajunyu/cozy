@@ -1,0 +1,98 @@
+{
+  "ikea-10558205": {
+    "placement": {
+      "mode": "floor",
+      "support": {
+        "kind": "mattress",
+        "width": 0.9,
+        "depth": 2,
+        "height": 0.334,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Deck sampled from downloaded BRUKSVARA GLB triangles, normalized to catalog height; approximately 33.4 cm."
+      }
+    }
+  },
+  "ikea-20518271": {
+    "placement": {
+      "mode": "floor",
+      "support": {
+        "kind": "mattress",
+        "width": 0.9,
+        "depth": 2,
+        "height": 0.261,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Deck sampled from downloaded VEVELSTAD GLB triangles, normalized to catalog height; approximately 26.1 cm."
+      }
+    }
+  },
+  "ikea-39199269": {
+    "placement": {
+      "mode": "floor",
+      "support": {
+        "kind": "mattress",
+        "width": 1.2,
+        "depth": 2,
+        "height": 0.265,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "LUR\u00d6Y slat crowns sampled from downloaded MALM/LUR\u00d6Y GLB triangles; approximately 26.5 cm."
+      }
+    }
+  },
+  "ikea-20249486": {
+    "placement": {
+      "mode": "floor",
+      "support": {
+        "kind": "mattress",
+        "width": 1.2,
+        "depth": 2,
+        "height": 0.265,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Assumed LUR\u00d6Y slatted base at the lower MALM rail setting, based on the measured MALM/LUR\u00d6Y model. Bare frame asset omits slats; verify the purchased base."
+      }
+    }
+  },
+  "ikea-00274924": {
+    "placement": {
+      "mode": "floor",
+      "support": {
+        "kind": "mattress",
+        "width": 1.5,
+        "depth": 2,
+        "height": 0.265,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Assumed LUR\u00d6Y slatted base at the lower MALM rail setting, based on the measured MALM/LUR\u00d6Y model. Bare frame asset omits slats; verify the purchased base."
+      }
+    }
+  },
+  "ikea-30249476": {
+    "placement": {
+      "mode": "floor",
+      "support": {
+        "kind": "mattress",
+        "width": 1.8,
+        "depth": 2,
+        "height": 0.265,
+        "center": [
+          0,
+          0
+        ],
+        "evidence": "Assumed LUR\u00d6Y slatted base at the lower MALM rail setting, based on the measured MALM/LUR\u00d6Y model. Bare frame asset omits slats; verify the purchased base."
+      }
+    }
+  }
+}

@@ -61,7 +61,7 @@ def ingest(entry, existing=None):
     if dimensions['depth'] is None: dimensions['depth']=meters(p.get('length'))
     measurements=measurement_table(page)
     dimension_sources={k:'Product JSON-LD' for k,v in dimensions.items() if v is not None}
-    for key,labels in {'width':['Width','Diameter'], 'depth':['Depth','Diameter','Length'], 'height':['Height','Max. height','Height including back cushions','Headboard height']}.items():
+    for key,labels in {'width':['Width','Diameter'], 'depth':['Depth','Diameter','Length'], 'height':['Height','Max. height','Height including back cushions','Headboard height','Thickness']}.items():
         if dimensions[key] is None:
             for label in labels:
                 value=meters(measurements.get(label))
@@ -118,6 +118,9 @@ FEATURE_RULES = {
 }
 
 def enrich(product):
+    placement_path = ROOT / 'data/ikea-placement.json'
+    if placement_path.exists():
+        product.update(json.loads(placement_path.read_text()).get(product['id'], {}))
     text=product.get('description','')
     source=product['name']+'. '+text
     features=[]; evidence={}
@@ -133,6 +136,20 @@ def enrich(product):
         product['lighting']={'mount':mount,'colorMode':mode,'dimmable':bool(re.search(r'dimmable|dim the light',source,re.I)),'evidence':'Capabilities extracted from product name and description. Bulb-dependent fixtures require a separately verified bulb; light output in Cozy is illustrative.'}
         features.append('Lighting')
         if mode in ['rgb','white-spectrum']:features.append('Adjustable light color')
+    if product.get('lighting'):
+        flux = re.fullmatch(r'([0-9.]+)\s*lm', product.get('measurements', {}).get('Luminous flux', ''))
+        lumens = float(flux[1]) if flux else (1055 if product['lighting']['mount'] == 'ceiling' else 470)
+        product['lighting']['output'] = {
+            'lumens': lumens,
+            'evidence': 'IKEA published luminous flux.' if flux else 'Assumed standard bulb output; bulb sold separately or output unverified.',
+        }
+    if re.search(r'\bmattress\b', name) and not re.search(r'bed|pad|protector|cover', name):
+        product['placement'] = {'mode': 'surface', 'canSupport': False, 'surfaceKind': 'mattress'}
+        if not product['dimensionsMeters'].get('height'):
+            thickness = meters(product.get('measurements', {}).get('Thickness'))
+            if thickness:
+                product['dimensionsMeters']['height'] = thickness
+                product.setdefault('dimensionSources', {})['height'] = 'Visible measurements: Thickness'
     product['features']=features
     product['featureEvidence']=evidence
     color=((product.get('color') or '')+' '+product.get('variantLabel','')).lower()
@@ -155,7 +172,7 @@ def enrich(product):
     product['readyForPreview']=not gaps
     product['canRecommend']=not gaps and product.get('availability','').rsplit('/',1)[-1] in ['InStock','LimitedAvailability','PreOrder']
     name=product['name'].lower()
-    type_rules=[('Bedside table',r'bedside|chest of 2 drawers'),('Sofa',r'sofa'),('Armchair',r'armchair|wing chair|easy chair|lounge chair'),('Bed',r'bed frame|bed,|day-bed'),('Wardrobe',r'wardrobe'),('Chest of drawers',r'chest of'),('Bookcase',r'bookcase|shelving unit'),('Office chair',r'office chair|swivel chair|gaming chair|desk chair'),('Desk',r'desk|laptop stand'),('Dining table',r'dining table|extendable table'),('Coffee / side table',r'coffee table|side table|tray table|nest of tables'),('Dining chair',r'chair'),('Lighting',r'lamp')]
+    type_rules=[('Mattress',r'^(?!.*(?:bed|pad|protector|cover)).*mattress'),('Bedside table',r'bedside|chest of 2 drawers'),('Sofa',r'sofa'),('Armchair',r'armchair|wing chair|easy chair|lounge chair'),('Bed',r'bed frame|bed,|day-bed'),('Wardrobe',r'wardrobe'),('Chest of drawers',r'chest of'),('Bookcase',r'bookcase|shelving unit'),('Office chair',r'office chair|swivel chair|gaming chair|desk chair'),('Desk',r'desk|laptop stand'),('Dining table',r'dining table|extendable table'),('Coffee / side table',r'coffee table|side table|tray table|nest of tables'),('Dining chair',r'chair'),('Lighting',r'lamp')]
     product['productType']=next((kind for kind,pattern in type_rules if re.search(pattern,name)),product.get('productType') or product.get('sourceCategory') or product['category'])
     return product
 

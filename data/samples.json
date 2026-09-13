@@ -1,6 +1,46 @@
 [
   {
+    "id": "room-door",
+    "name": "Classic door",
+    "category": "Doors",
+    "productType": "door",
+    "price": 0,
+    "priceNote": "Room element · price not included",
+    "dimensions": [
+      0.9,
+      2.1,
+      0.045
+    ],
+    "door": {
+      "kind": "solid"
+    },
+    "placement": {
+      "mode": "wall",
+      "canSupport": false
+    },
+    "parts": [
+      {
+        "shape": "box",
+        "size": [
+          0.9,
+          2.1,
+          0.045
+        ],
+        "position": [
+          0,
+          1.05,
+          0
+        ],
+        "color": "#ece5d9"
+      }
+    ]
+  },
+  {
     "id": "desk",
+    "placement": {
+      "mode": "floor",
+      "canSupport": true
+    },
     "name": "Everyday desk",
     "category": "Workspace",
     "price": 149,
@@ -278,6 +318,10 @@
   },
   {
     "id": "shelf",
+    "placement": {
+      "mode": "floor",
+      "canSupport": true
+    },
     "name": "Open oak shelf",
     "category": "Storage",
     "price": 119,
@@ -500,6 +544,10 @@
   },
   {
     "id": "coffee",
+    "placement": {
+      "mode": "floor",
+      "canSupport": true
+    },
     "name": "Gather coffee table",
     "category": "Living",
     "price": 89,
@@ -583,6 +631,10 @@
   },
   {
     "id": "nightstand",
+    "placement": {
+      "mode": "floor",
+      "canSupport": true
+    },
     "name": "Little bedside",
     "category": "Bedroom",
     "price": 59,

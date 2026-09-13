@@ -1,4 +1,6 @@
-import type { Product as WireProduct } from "./types"
+import type { Product as WireProduct } from './types'
+import type { RoomWindow, Wall } from './sunlight'
+import { validDoors } from './doors.ts'
 export type Vec3 = [number, number, number]
 export type Part = {
   shape: 'box' | 'cylinder'
@@ -28,12 +30,20 @@ export type Product = {
   priceBand?: string
   dimensionsMeasuredFromModel?: boolean
   readyForPreview?: boolean
+  door?: { kind: 'solid' }
   lighting?: {
     mount: 'floor' | 'surface' | 'ceiling'
     colorMode: 'fixed' | 'white-spectrum' | 'rgb' | 'bulb-dependent'
     dimmable: boolean
     evidence: string
     emitter?: Vec3
+    output?: { lumens: number; evidence: string }
+  }
+  placement?: {
+    mode: 'floor' | 'surface' | 'ceiling' | 'wall'
+    canSupport?: boolean
+    surfaceKind?: 'mattress'
+    support?: { kind: 'mattress'; width: number; depth: number; height: number; center: [number, number]; evidence: string }
   }
   priceNote?: string
 }
@@ -44,8 +54,10 @@ export type Item = {
   z: number
   rotation: number
   locked: boolean
+  supportId?: string
   elevation?: number
   light?: { on: boolean; brightness: number; color: string }
+  door?: { wall: Wall; offset: number; open: boolean }
 }
 export type Scene = {
   revision?: number
@@ -53,6 +65,8 @@ export type Scene = {
   width: number
   depth: number
   budget: number
+  windows?: RoomWindow[]
+  sunHour?: number
   daylight?: number
   items: Item[]
 }
@@ -82,7 +96,20 @@ function table(w: number, d: number, h: number): Part[] {
 }
 export const initialCatalog: Product[] = [
   {
+    id: 'room-door',
+    name: 'Classic door',
+    category: 'Doors',
+    productType: 'door',
+    price: 0,
+    priceNote: 'Room element · price not included',
+    dimensions: [0.9, 2.1, 0.045],
+    door: { kind: 'solid' },
+    placement: { mode: 'wall', canSupport: false },
+    parts: [box([0.9, 2.1, 0.045], [0, 1.05, 0], cream)],
+  },
+  {
     id: 'desk',
+    placement: { mode: 'floor', canSupport: true },
     name: 'Everyday desk',
     category: 'Workspace',
     price: 149,
@@ -124,6 +151,7 @@ export const initialCatalog: Product[] = [
   },
   {
     id: 'shelf',
+    placement: { mode: 'floor', canSupport: true },
     name: 'Open oak shelf',
     category: 'Storage',
     price: 119,
@@ -150,6 +178,7 @@ export const initialCatalog: Product[] = [
   },
   {
     id: 'coffee',
+    placement: { mode: 'floor', canSupport: true },
     name: 'Gather coffee table',
     category: 'Living',
     price: 89,
@@ -158,6 +187,7 @@ export const initialCatalog: Product[] = [
   },
   {
     id: 'nightstand',
+    placement: { mode: 'floor', canSupport: true },
     name: 'Little bedside',
     category: 'Bedroom',
     price: 59,
@@ -289,6 +319,11 @@ export function footprint(item: Item, product: Product) {
 export function validPlacement(item: Item, scene: Scene, catalog: Product[]) {
   const p = catalog.find((p) => p.id === item.productId)
   if (!p) return false
+  if (!validDoors({ ...scene, items: [...scene.items.filter(i => i.id !== item.id), item] }, catalog)) return false
+  if (p.door) return true
+  const candidate = { ...scene, items: [...scene.items.filter(other => other.id !== item.id), item] }
+  if (!validDoors(candidate, catalog)) return false
+  if (p.door) return true
   const y = item.elevation ?? 0
   if (!Number.isFinite(y) || y < 0 || y + p.dimensions[1] > (scene.height ?? 2.6) + 1e-6) return false
   const [w, d] = footprint(item, p)
@@ -383,6 +418,16 @@ export function parseProduct(raw: unknown): Product {
     )
       throw new Error('Invalid product filter attributes.')
   }
+  if (p.placement && (!['floor', 'surface', 'ceiling', 'wall'].includes(p.placement.mode) || (p.placement.canSupport !== undefined && typeof p.placement.canSupport !== 'boolean'))) throw new Error('Invalid placement capabilities.')
+  if (p.door !== undefined && (!p.door || p.door.kind !== 'solid' || p.placement?.mode !== 'wall' || p.dimensions[0] < .5 || p.dimensions[0] > 2 || p.dimensions[1] < 1.8 || p.dimensions[1] > 2.5 || p.dimensions[2] > .2 || p.lighting || p.modelUrl || p.placement.canSupport || p.placement.support || p.placement.surfaceKind))
+    throw new Error('Doors need a solid leaf and wall placement with valid doorway dimensions.')
+  if (p.placement?.mode === 'wall' && !p.door)
+    throw new Error('Wall placement requires door capabilities.')
+  if (p.placement?.surfaceKind !== undefined && p.placement.surfaceKind !== 'mattress')
+    throw new Error('Invalid supported item kind.')
+  const support = p.placement?.support
+  if (support && (support.kind !== 'mattress' || ![support.width, support.depth, support.height].every(n => Number.isFinite(n) && n > 0) || !Array.isArray(support.center) || support.center.length !== 2 || !support.center.every(Number.isFinite) || support.height > p.dimensions[1] || Math.abs(support.center[0]) + support.width / 2 > p.dimensions[0] / 2 + .005 || Math.abs(support.center[1]) + support.depth / 2 > p.dimensions[2] / 2 + .005 || typeof support.evidence !== 'string'))
+    throw new Error('Invalid mattress deck dimensions or provenance.')
   if (p.lighting) {
     if (
       !['floor', 'surface', 'ceiling'].includes(p.lighting.mount) ||
@@ -393,6 +438,8 @@ export function parseProduct(raw: unknown): Product {
       typeof p.lighting.evidence !== 'string'
     )
       throw new Error('Invalid light capabilities.')
+    if (p.lighting.output && (!Number.isFinite(p.lighting.output.lumens) || p.lighting.output.lumens <= 0 || p.lighting.output.lumens > 20000 || typeof p.lighting.output.evidence !== 'string'))
+      throw new Error('Invalid fixed light output.')
     if (p.lighting.emitter && !vector(p.lighting.emitter))
       throw new Error('Invalid light position.')
   }
@@ -437,7 +484,7 @@ export function filterProducts(products: Product[], filters: CatalogFilters) {
   return products.filter((p) => {
     const isIkea = p.id.startsWith('ikea-')
     if (isIkea && p.readyForPreview !== true) return false
-    if (filters.source === 'IKEA' ? !isIkea : isIkea) return false
+    if (filters.source === 'IKEA' ? !isIkea : filters.source === 'Room elements' ? !p.door : isIkea || !!p.door) return false
     const searchable = [p.name, p.color, p.productType, ...(p.features ?? [])]
       .join(' ')
       .toLowerCase()

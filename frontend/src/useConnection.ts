@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { acceptSnapshot } from './snapshot'
 import { backupKey, makeBackup, migrateLegacy } from './backup'
-import type { Backup } from './types'
+import type { Backup, RestorePreview } from './types'
 import type { ChatMessage, Command, DesignState, Product } from './types'
 
 type Status = 'connecting' | 'connected' | 'disconnected'
@@ -20,6 +20,7 @@ export function useConnection() {
   const [feedbackStage, setFeedbackStage] = useState('')
   const [reviewCount, setReviewCount] = useState(0)
   const [backup, setBackup] = useState<string | null>(null)
+  const [restorePreview, setRestorePreview] = useState<RestorePreview | null>(null)
   const [pending, setPending] = useState(false)
   const stateRef = useRef<DesignState | null>(null)
   const catalogRef = useRef<Product[]>([])
@@ -44,13 +45,14 @@ export function useConnection() {
         const payload = JSON.parse(event.data)
         switch (payload.type) {
           case 'session.ready':
+            setRestorePreview(null)
             try { sessionStorage.setItem(sessionKey, payload.sessionId) } catch { /* Browser storage may be disabled. */ }
             setReviewCount(payload.catalogSummary?.reviewCount ?? 0)
             stateRef.current = payload.state; catalogRef.current = payload.catalog
             setState(payload.state); setCatalog(payload.catalog); setMessages(payload.messages)
             setPending(false); pendingRequest.current = null
             try {
-              const stored = localStorage.getItem(backupKey) ?? localStorage.getItem('cozy-studio-v1')
+              const stored = localStorage.getItem(backupKey) ?? localStorage.getItem('cozy.studio.v2') ?? localStorage.getItem('cozy-studio-v1')
               setBackup(payload.state.revision === 0 && stored ? stored : null)
             } catch { /* Storage is optional. */ }
             setAgentStatus(payload.status); setActivity(payload.activity); setStatus('connected')
@@ -61,9 +63,12 @@ export function useConnection() {
             setState(stateRef.current)
             break
           case 'catalog.updated': catalogRef.current = payload.catalog; setCatalog(payload.catalog); break
+          case 'session.restore.preview':
+            setRestorePreview(payload); setPending(false); pendingRequest.current = null
+            break
           case 'command.ack':
             if (payload.requestId === pendingRequest.current) { setPending(false); pendingRequest.current = null }
-            if (payload.requestId === restoreRequest.current) { setBackup(null); restoreRequest.current = null }
+            if (payload.requestId === restoreRequest.current) { setBackup(null); setRestorePreview(null); restoreRequest.current = null }
             setFeedbackStage('applied')
             break
           case 'chat.message':
@@ -117,19 +122,21 @@ export function useConnection() {
     if (!backup) return
     try {
       const raw = JSON.parse(backup)
-      const saved: Backup = raw.version === 2 ? raw : migrateLegacy(backup, catalogRef.current)
-      send({ type: 'session.restore', backup: saved })
+      const saved: Backup = (raw.version === 2 || raw.version === 3) ? raw : migrateLegacy(backup, catalogRef.current)
+      send({ type: 'session.restore.preview', backup: saved })
     } catch (e) { setError(e instanceof Error ? e.message : 'This backup could not be restored. It remains saved.') }
   }
+  function applyRestore(allowLocked: string[]) { if (restorePreview) send({ type: 'session.restore', previewId: restorePreview.previewId, allowLocked }) }
   function dismissBackup() {
     // Preserve the previous save separately before allowing a new room to overwrite it.
     try { if (backup) {
       localStorage.setItem('cozy.studio.archived', backup)
       localStorage.removeItem(backupKey)
       localStorage.removeItem('cozy-studio-v1')
+      localStorage.removeItem('cozy.studio.v2')
     } }
     catch { setError('Could not archive the saved room. Download it before starting fresh.'); return }
-    setBackup(null)
+    setBackup(null); setRestorePreview(null)
   }
-  return { reviewCount, backup, restore, dismissBackup, pending, status, state, catalog, messages, agentStatus, activity, error, feedbackStage, send, reconnect: () => setAttempt(value => value + 1) }
+  return { restorePreview, applyRestore, reviewCount, backup, restore, dismissBackup, pending, status, state, catalog, messages, agentStatus, activity, error, feedbackStage, send, reconnect: () => setAttempt(value => value + 1) }
 }
