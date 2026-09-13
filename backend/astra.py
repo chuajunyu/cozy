@@ -4,6 +4,9 @@ import asyncio
 import json
 import logging
 import os
+import ssl
+
+import certifi
 from collections import deque
 from typing import Any
 
@@ -12,6 +15,14 @@ from openai import AsyncOpenAI
 from backend.design import snapshot
 from backend.design_tools import INSTRUCTIONS, TOOLS, execute_tool
 from backend.sessions import Session
+
+
+def astra_tls_context() -> ssl.SSLContext:
+    # Some macOS Python installs have no native CA bundle. Retain configured
+    # system roots and add the same verified public roots used by HTTP clients.
+    context = ssl.create_default_context()
+    context.load_verify_locations(cafile=certifi.where())
+    return context
 
 
 class AstraDesigner:
@@ -23,6 +34,7 @@ class AstraDesigner:
         self.inbox: asyncio.Queue = asyncio.Queue()
         self.control = asyncio.Lock()
         self.active = False
+        self.voice_turn = False
         self.active_id: str | None = None
         self.waiting: list[dict] = []
         self.sent_steers: deque[dict] = deque()
@@ -43,7 +55,7 @@ class AstraDesigner:
             return
         client = self.client or AsyncOpenAI(timeout=60, max_retries=0)
         try:
-            async with client.responses.connect() as connection:
+            async with client.responses.connect(websocket_connection_options={"ssl": astra_tls_context()}) as connection:
                 self.connection = connection
                 session.set_status("working", "Connecting your brief to Astra")
                 async with asyncio.TaskGroup() as group:
@@ -58,7 +70,10 @@ class AstraDesigner:
                 cause = cause.exceptions[0]
             logging.getLogger(__name__).error("Astra connection failure (%s)", type(cause).__name__)
             # Do not forward exception bodies: upstream errors can contain headers or input.
-            session.publish({"type": "error", "code": "astra_unavailable", "message": "Astra's connection was interrupted. Your room and feedback are saved. Send a message to retry."})
+            message = ("The backend could not verify OpenAI's TLS certificate. Check the backend certificate configuration."
+                       if isinstance(cause, ssl.SSLCertVerificationError)
+                       else "Astra's connection was interrupted. Your room and feedback are saved. Send a message to retry.")
+            session.publish({"type": "error", "code": "astra_unavailable", "message": message})
             session.set_status("error", "Astra could not continue")
         finally:
             self.active = False
@@ -76,6 +91,7 @@ class AstraDesigner:
                     # next brief already includes it in state; don't start a reply.
                     if request.get('background'):
                         continue
+                    self.voice_turn = request["requestId"].startswith("voice-")
                     self.turns = 0
                     # Recover from authoritative state and saved user-facing conversation.
                     history = [{"role": m["role"], "content": m["text"] + ("\nReferenced objects: " + json.dumps(m['references']) if m.get('references') else '')} for m in self.session.messages[-20:] if m["role"] in {"user", "assistant"} and m["text"]]
@@ -99,7 +115,7 @@ class AstraDesigner:
             raise RuntimeError("Session work limit reached")
         self.active = True
         self.active_id = None
-        params: dict = {"model": "gpt-6-astra", "instructions": INSTRUCTIONS,
+        params: dict = {"model": "gpt-6-astra", "instructions": INSTRUCTIONS + ("\nYou are the task backend for a voice conversation. Return a concise factual result in at most 60 words. Do not narrate progress or greet the user; the voice assistant handles conversation." if self.voice_turn else ""),
                         "tools": TOOLS, "input": input, "parallel_tool_calls": False,
                         "reasoning": {"effort": "medium"}, "max_output_tokens": 7000}
         if parent:
@@ -145,7 +161,7 @@ class AstraDesigner:
                 await self.steer(request)
             self.waiting.clear()
         elif kind == "response.output_text.delta":
-            session.delta(event["item_id"], event["delta"])
+            session.delta(event["item_id"], event["delta"], internal=self.voice_turn)
         elif kind == "response.output_item.added" and event["item"].get("type") == "function_call":
             activities = {"search_catalog": "Comparing catalog options", "get_design_state": "Reviewing your room and preferences", "update_concept": "Establishing the whole-room concept", "apply_design_patch": "Checking a coordinated furniture group"}
             session.set_status("working", activities.get(event["item"].get("name"), "Developing your design"))

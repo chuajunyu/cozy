@@ -68,3 +68,15 @@ def test_multiple_inputs_during_startup_are_steered_after_created():
         assert len(designer.connection.steers) == 2
         assert not designer.waiting
     asyncio.run(run())
+
+
+def test_websocket_tls_has_verified_roots_without_native_ca_bundle(monkeypatch):
+    import ssl
+    from backend.astra import astra_tls_context
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    assert context.cert_store_stats()['x509_ca'] == 0
+    monkeypatch.setattr(ssl, 'create_default_context', lambda: context)
+    configured = astra_tls_context()
+    assert configured.check_hostname
+    assert configured.verify_mode == ssl.CERT_REQUIRED
+    assert configured.cert_store_stats()['x509_ca'] > 0

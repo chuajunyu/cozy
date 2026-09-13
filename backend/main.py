@@ -14,8 +14,9 @@ from backend.catalog import CATALOG, CATALOG_SUMMARY
 from backend.design import DesignError
 from backend.messages import error_event, handle_message
 from backend.protocol import Command, handle_command
-from backend.sessions import SessionStore
+from backend.sessions import ConversationRecovery, SessionStore
 from backend.studio import StudioCommand, handle_studio
+from backend.voice import voice_endpoint
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env.local", override=False)
 
@@ -39,6 +40,9 @@ async def health() -> dict[str, str]:
 @app.get("/catalog")
 async def catalog() -> dict:
     return {"products": CATALOG, **CATALOG_SUMMARY}
+
+
+app.websocket("/ws/voice")(voice_endpoint)
 
 
 @app.websocket("/ws")
@@ -73,7 +77,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                 if not isinstance(payload, dict):
                     raise ValueError()
                 kind = payload.get("type")
-                limit = 2_000_000 if kind in {"session.restore", "session.restore.preview"} else 510_000 if kind == "catalog.import" else 32_000
+                limit = 2_000_000 if kind in {"session.init", "session.restore", "session.restore.preview"} else 510_000 if kind == "catalog.import" else 32_000
                 if len(raw.encode("utf-8")) > limit:
                     queue.put_nowait(error_event("message_too_large", "This command exceeds its message size limit."))
                     continue
@@ -84,7 +88,10 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                     token = payload.get("sessionId")
                     if token is not None and (not isinstance(token, str) or len(token) > 100):
                         raise ValueError()
+                    recovery = ConversationRecovery.model_validate({'messages': payload.get('messages', [])})
                     session, reset = app.state.sessions.get(token)
+                    if reset:
+                        session.messages = recovery.history()
                     queue.put_nowait(session.envelope(reset))
                     session.subscribers.add(queue)
                 elif kind in {"session.restore.preview", "item.replace", "item.add", "item.update", "item.delete", "room.update", "fixture.update", "room.clear", "room.undo", "catalog.import", "session.restore"}:

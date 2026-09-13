@@ -322,3 +322,9 @@ small, .muted { font-size: 12px; color: #6e7569; line-height: 1.6; }
 
 .chat-activity { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 5px 2px; margin: 4px 0; color: #747b6f; font-size: 11px; line-height: 1.5; }
 .chat-activity .object-pill { font-size: 11px; padding: 3px 7px; }
+.voice-controls { display: grid; gap: 8px; padding: 12px 0; border-bottom: 1px solid #d9ddd7; }
+.voice-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.voice-controls small { color: #59635d; }
+.voice-controls audio { width: 100%; height: 32px; }
+
+.voice-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; cursor: pointer; }

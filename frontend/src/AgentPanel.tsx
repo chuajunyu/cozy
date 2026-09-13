@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import type { useConnection } from './useConnection'
 import ObjectPill from './ObjectPill'
+import VoiceControls from './VoiceControls'
 import { displayMessage, objectReference } from './chatReferences'
 
 export default function AgentPanel({ connection, selected, onSelect, disabled, active, replacementTarget, onReplacementOpened }: {
@@ -10,6 +11,9 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
   replacementTarget: string | null; onReplacementOpened: () => void
 }) {
   const { state, catalog, messages, status, agentStatus, activity, feedbackStage, send, reconnect } = connection
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    try { return localStorage.getItem('cozy.voice.enabled') === 'true' } catch { return false }
+  })
   const [text, setText] = useState('')
   const [scope, setScope] = useState<string[]>([])
   const [replacement, setReplacement] = useState<string[] | null>(null)
@@ -43,7 +47,7 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
     if (!active || !following.current) return
     const frame = requestAnimationFrame(scrollToComposer)
     return () => cancelAnimationFrame(frame)
-  }, [messages, active])
+  }, [messages, active, status, voiceEnabled])
   useEffect(() => { setScope(selected ? [selected] : []) }, [selected])
   return <section className="agent-panel" aria-label="AI designer">
     <div className={`agent-status ${status}`} role="status"><i /> {activity}
@@ -60,6 +64,12 @@ export default function AgentPanel({ connection, selected, onSelect, disabled, a
           <ReactMarkdown>{m.text}</ReactMarkdown></article>
       })}
     </div>
+    <label className="voice-toggle"><input type="checkbox" checked={voiceEnabled} onChange={event => {
+      const enabled = event.target.checked
+      setVoiceEnabled(enabled)
+      try { localStorage.setItem('cozy.voice.enabled', String(enabled)) } catch { /* Keep this choice for the current page. */ }
+    }} /> Voice chat</label>
+    {voiceEnabled && <VoiceControls sessionId={connection.sessionId} connected={status === 'connected'} />}
     <form ref={composer} onSubmit={e => { e.preventDefault(); if (!text.trim()) return
       if (send(scope.length ? { type: 'feedback.send', action: 'comment', text, slotIds: scope, expectedProducts: expected(scope) } : { type: 'chat.send', text })) setText('')
     }}>
