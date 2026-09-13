@@ -11,11 +11,11 @@ import Alternatives from './FurnitureAlternatives'
 import { findAlternatives, replaceItem } from './alternatives'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Room from './Room'
+import PanelHost from './PanelHost'
+import { escapeWorkspace, type Panel } from './workspace'
 import {
   filterProducts,
-  initialCatalog,
   toStudioProduct,
-  parseProduct,
   validPlacement,
   type Item,
   type Product,
@@ -23,7 +23,6 @@ import {
 } from './catalog'
 import { useConnection } from './useConnection'
 import AgentPanel from './AgentPanel'
-import { generatedProduct } from './backup'
 import type { Command } from './types'
 
 const money = (n: number) =>
@@ -98,12 +97,34 @@ function ProductArt({ product }: { product: Product }) {
   )
 }
 export default function App() {
-  const [compact, setCompact] = useState(() => window.matchMedia('(max-width: 1150px)').matches)
-  const designerRef = useRef<HTMLElement>(null)
-  useEffect(() => { const q = window.matchMedia('(max-width: 1150px)'); const change = () => setCompact(q.matches); q.addEventListener('change', change); return () => q.removeEventListener('change', change) }, [])
-  const [allowLocked, setAllowLocked] = useState<string[]>([])
   const [selected, setSelected] = useState<string | null>(null)
-  const [tab, setTab] = useState<'room' | 'preview'>('room')
+  const [panel, setPanel] = useState<Panel>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [started, setStarted] = useState(false)
+  const [fitRequest, setFitRequest] = useState(0)
+  const returnFocus = useRef<HTMLElement | null>(null)
+  function openPanel(next: Panel) {
+    if (!panel) returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setPanel(next)
+    setExpanded(false)
+    setStarted(true)
+  }
+  function closePanel() {
+    setPanel(null)
+    setExpanded(false)
+    returnFocus.current?.focus()
+  }
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || document.querySelector('[aria-modal="true"]')) return
+      const next = escapeWorkspace(panel, selected)
+      if (panel) closePanel()
+      else setSelected(next.selected)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [panel, selected])
+  const [allowLocked, setAllowLocked] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [source, setSource] = useState('IKEA')
@@ -115,8 +136,6 @@ export default function App() {
 
   const [top, setTop] = useState(false)
   const [notice, setNotice] = useState('')
-  const [preview, setPreview] = useState<Product>(initialCatalog[0])
-  const [bounds, setBounds] = useState(true)
   const connection = useConnection()
   const { state, catalog: wireCatalog, status, send, reconnect, error, pending, backup, restore, dismissBackup } = connection
   const catalog = useMemo(() => wireCatalog.map(toStudioProduct), [wireCatalog])
@@ -134,10 +153,6 @@ export default function App() {
     if (backup) { setNotice('Restore or archive your saved room first.'); return false }
     return send({ ...command, baseRevision: command.baseRevision ?? state?.revision })
   }
-  useEffect(() => {
-    const updated = catalog.find(p => p.id === preview.id)
-    if (updated) setPreview(updated)
-  }, [catalog, preview.id])
   const item = scene.items.find((i) => i.id === selected)
   const product = catalog.find((p) => p.id === item?.productId)
   const mattressSupport = item?.supportId ? catalog.find(p => p.id === scene.items.find(i => i.id === item.supportId)?.productId)?.placement?.support : undefined
@@ -150,9 +165,6 @@ export default function App() {
     product: option,
     error: replaceItem(scene, item.id, option, catalog).error,
   })) : [], [item, product, catalog, scene])
-  useEffect(() => {
-    if (!compact) designerRef.current?.scrollTo({ top: 0 })
-  }, [selected, compact])
   function tryAlternative(replacement: Product) {
     if (!item || !product) return
     const result = replaceItem(scene, item.id, replacement, catalog)
@@ -161,7 +173,7 @@ export default function App() {
     edit({ type: 'item.replace', slotId: item.id, expectedProduct: item.productId, catalogId: replacement.id })
     setNotice(`${replacement.name} is now in your room. Undo restores ${product.name}.`)
   }
-  const alternativesPanel = item && product && !product.door && tab === 'room' ? (
+  const alternativesPanel = item && product && !product.door ? (
     <Alternatives key={item.id} item={item} product={product} options={alternativeOptions} onReplace={tryAlternative} renderArt={p => <ProductArt product={p} />} formatPrice={money} />
   ) : null
   const total = scene.items.reduce(
@@ -212,7 +224,7 @@ export default function App() {
         const next = { ...scene, items: [...scene.items, door] }
         if (validDoors(next, catalog) && !settleScene(next, scene, catalog).error && commit(next)) {
           setSelected(id)
-          setTab('room')
+          closePanel()
           setNotice('Door added. Choose its wall and position below, then open it to let daylight in.')
           return
         }
@@ -252,7 +264,7 @@ export default function App() {
       const supported = settleItem(lamp, scene, catalog)
       if (supported && commit({ ...scene, items: [...scene.items, supported] })) {
         setSelected(p.placement?.surfaceKind === 'mattress' ? item.id : lamp.id)
-        setTab('room')
+        closePanel()
         setNotice(
           p.placement?.surfaceKind === 'mattress' ? 'Attaching the mattress to the selected bed.' : 'Placing the lamp on the selected surface.',
         )
@@ -287,7 +299,7 @@ export default function App() {
         }
         if (validPlacement(next, scene, catalog) && commit({ ...scene, items: [...scene.items, next] })) {
           setSelected(next.id)
-          setTab('room')
+          closePanel()
           setNotice(`Placing ${p.name}...`)
           return
         }
@@ -295,34 +307,6 @@ export default function App() {
     setNotice(
       'No clear space for this product. Move an item or enlarge your room.',
     )
-  }
-  async function importFile(file?: File) {
-    if (!file) return
-    try {
-      if (file.size > 500000)
-        throw Error('Please use a JSON file smaller than 500 KB.')
-      const parsed = parseProduct(JSON.parse(await file.text()))
-      if (parsed.modelUrl) throw new Error('Import generated geometry with parts; IKEA assets come from the server catalog.')
-      const p = { ...parsed, id: parsed.id.startsWith('custom-') ? parsed.id : `custom-${parsed.id}` }
-      setPreview(p)
-      setTab('preview')
-      setNotice(
-        'Product loaded for review. Inspect it before adding it to your catalog.',
-      )
-    } catch (e) {
-      setNotice(e instanceof Error ? e.message : 'Unable to load this file.')
-    }
-  }
-  function download() {
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(
-      new Blob([JSON.stringify(initialCatalog[0], null, 2)], {
-        type: 'application/json',
-      }),
-    )
-    a.download = 'cozy-desk-example.json'
-    a.click()
-    URL.revokeObjectURL(a.href)
   }
   function resize(key: 'width' | 'depth' | 'height', value: number) {
     commit({ ...scene, [key]: value })
@@ -351,64 +335,26 @@ export default function App() {
     setProductType('All')
     setMaxPrice('')
   }
+  const blocked = status !== 'connected' || pending || !!backup
+  const expected = item ? { [item.id]: item.productId } : {}
+  function askReplacement() {
+    if (!item || item.locked) return
+    openPanel('astra')
+    setReplacementTarget(item.id)
+  }
+  const [replacementTarget, setReplacementTarget] = useState<string | null>(null)
   return (
-    <div className="app">
+    <div className={`app immersive${panel ? ' has-panel' : ''}${expanded ? ' sheet-expanded' : ''}`}>
       <header className="header">
-        <a className="brand" href="/">
-          ⌂ cozy<span>.</span>
-        </a>
-        <nav aria-label="Workspace">
-          <button
-            className={tab === 'room' ? 'active' : ''}
-            onClick={() => setTab('room')}
-          >
-            Room designer
-          </button>
-          <button
-            className={tab === 'preview' ? 'active' : ''}
-            onClick={() => setTab('preview')}
-          >
-            Furniture lab <span className="beta">NEW</span>
-          </button>
-        </nav>
-        <span className="saved">
-          <i /> {status === 'connected' ? pending ? 'Saving...' : 'Connected studio' : 'Disconnected - room is read-only'}
-        </span>
+        <a className="brand" href="/" aria-label="Cozy home">cozy<span>.</span></a>
+        <span className="room-title">My room</span>
+        <div className="header-actions">
+          <button disabled={!state?.undoCount || blocked} onClick={() => edit({ type: 'room.undo' })}>↶ <span>Undo</span></button>
+          <button className={scene.budget > 0 && total > scene.budget ? 'over' : ''} onClick={() => openPanel(panel === 'budget' ? null : 'budget')} aria-expanded={panel === 'budget'}>{money(total)}{scene.budget > 0 && <span className="budget-limit"> / {money(scene.budget)}</span>}</button>
+          <button aria-label="Studio menu" aria-expanded={panel === 'menu'} onClick={() => openPanel(panel === 'menu' ? null : 'menu')}>•••</button>
+        </div>
       </header>
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">YOUR SPACE, YOUR WAY</p>
-          <h1>
-            {tab === 'room'
-              ? 'A little room. A lot of possibility.'
-              : 'From a product to a possibility.'}
-          </h1>
-          <p>
-            {tab === 'room'
-              ? 'Bring your ideas home. Pick a piece, find its place, make it yours.'
-              : 'Preview your generated furniture before it finds a home.'}
-          </p>
-        </div>
-        <div className="heading-actions">
-          <button
-            disabled={!state?.undoCount || pending || status !== 'connected'}
-            onClick={() => {
-              edit({ type: 'room.undo' })
-            }}
-          >
-            ↶ Undo
-          </button>
-          <button
-            onClick={() => {
-              edit({ type: 'room.clear' })
-              setSelected(null)
-              setNotice('Clear requested. Accepted changes can be undone.')
-            }}
-          >
-            Start fresh ↗
-          </button>
-        </div>
-      </div>
+      <div className="status-stack">
       {backup && <div className="restore-banner" role="status"><strong>A saved room is available.</strong><span>Restore it through the server, or archive it and start fresh.</span><button disabled={pending || status !== 'connected'} onClick={restore}>Restore saved room</button><button onClick={dismissBackup}>Archive and start fresh</button><button onClick={() => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([backup], { type: 'application/json' })); a.download = 'cozy-room-backup.json'; a.click(); URL.revokeObjectURL(a.href) }}>Download backup</button></div>}
       {connection.restorePreview && <section className="restore-banner" aria-label="Restore preview">
         <strong>Review saved-room adjustments</strong>
@@ -416,8 +362,49 @@ export default function App() {
         {connection.restorePreview.blockers.map(b => <p role="alert" key={b}>{b}</p>)}
         <button disabled={pending || !!connection.restorePreview.blockers.length || connection.restorePreview.adjustments.some(a => a.locked && !allowLocked.includes(a.slotId!))} onClick={() => connection.applyRestore(allowLocked)}>Apply restored room</button>
       </section>}
+
+        {(notice || error) && <div className="notice" role="status"><span>{error || notice}</span>{!error && <button onClick={() => setNotice('')} aria-label="Dismiss notification">×</button>}</div>}
+        {status !== 'connected' && <div className="connection-banner" role="status"><span>Room is read-only · {status === 'connecting' ? 'Connecting…' : 'Disconnected'}</span><button onClick={reconnect}>Reconnect</button></div>}
+        {state?.validationIssues.map(issue => <p role="alert" className="validation-banner" key={issue}>{issue}</p>)}
+      </div>
       <main className="workspace">
-        <aside className="catalog">
+        <section className="studio" aria-label="Room canvas">
+          <div className="viewport">
+            <Room scene={scene} catalog={catalog} selected={selected} onSelect={setSelected}
+              onMove={!blocked ? move : () => setNotice('Reconnect and finish pending changes before editing.')}
+              top={top} fitRequest={fitRequest} showCompass={panel === 'setup'} />
+          </div>
+          <div className="canvas-topline">
+            <div className="room-caption"><span>YOUR SPACE</span><p>{`${scene.width.toFixed(1)} × ${scene.depth.toFixed(1)} m · ${scene.items.length} ${scene.items.length === 1 ? 'piece' : 'pieces'}`}</p></div>
+            <div className="view-switch" aria-label="Camera controls">
+              <button aria-pressed={!top} className={!top ? 'active' : ''} onClick={() => setTop(false)}>3D</button>
+              <button aria-pressed={top} className={top ? 'active' : ''} onClick={() => setTop(true)}>Top</button>
+              <button onClick={() => setFitRequest(n => n + 1)}>Fit room</button>
+            </div>
+          </div>
+          <nav className="tool-dock" aria-label="Studio tools">
+            <button aria-expanded={panel === 'catalog'} onClick={() => panel === 'catalog' ? closePanel() : openPanel('catalog')}><span aria-hidden="true">＋</span>Add furniture</button>
+            <button aria-expanded={panel === 'astra'} onClick={() => panel === 'astra' ? closePanel() : openPanel('astra')}><span aria-hidden="true">✳</span>Ask Astra</button>
+            <button aria-expanded={panel === 'setup'} onClick={() => panel === 'setup' ? closePanel() : openPanel('setup')}><span aria-hidden="true">⌑</span>Room setup</button>
+            <button aria-expanded={panel === 'lighting'} onClick={() => panel === 'lighting' ? closePanel() : openPanel('lighting')}><span aria-hidden="true">☼</span>Lighting</button>
+          </nav>
+          {!started && !scene.items.length && !backup && <div className="empty-prompt"><p>A space to make your own.</p><div><button onClick={() => openPanel('astra')}>Describe your room</button><button onClick={() => openPanel('catalog')}>Add furniture</button></div></div>}
+          {item && product && <div className="selection-toolbar" aria-label="Selected piece">
+            <div className="selected-name"><strong>{product.name}</strong><small>{item.locked ? 'Locked' : product.door ? 'Door' : money(product.price)}</small></div>
+            <div className="quick-actions">
+              {!product.door && <button disabled={blocked || item.locked} onClick={() => move({ ...item, rotation: (item.rotation + 90) % 360 })}>Rotate</button>}
+              {!product.door && <button disabled={blocked || item.locked} onClick={() => openPanel('replace')}>Replace</button>}
+              {item.door && <button disabled={blocked || item.locked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, door: { ...item.door!, open: !item.door!.open } } : i) })}>{item.door.open ? 'Close door' : 'Open door'}</button>}
+              {product.lighting && <button disabled={blocked} onClick={() => commit({ ...scene, items: scene.items.map(i => i.id === item.id ? { ...i, light: { on: i.light?.on === false, brightness: i.light?.brightness ?? .7, color: i.light?.color ?? '#ffd3a0' } } : i) })}>{item.light?.on === false ? 'Light on' : 'Light off'}</button>}
+              <button disabled={blocked} onClick={() => edit({ type: 'item.lock', slotIds: [item.id], expectedProducts: expected, locked: !item.locked })}>{item.locked ? 'Unlock' : 'Lock'}</button>
+              <button onClick={() => openPanel('details')}>More</button>
+              <button aria-label="Deselect piece" onClick={() => setSelected(null)}>×</button>
+            </div>
+          </div>}
+          <div className="canvas-bottomline"><span className="canvas-instructions">Drag a piece to move · Drag space to orbit · Scroll to zoom</span><span role="status">{connection.agentStatus === 'working' ? connection.activity : pending ? 'Saving…' : status === 'connected' ? 'All changes saved locally' : ''}</span></div>
+        </section>
+        <PanelHost panel={panel} expanded={expanded} onExpand={() => setExpanded(v => !v)} onClose={closePanel}>
+          <div hidden={panel !== 'catalog'}>        <div className="catalog">
           <div className="panel-heading">
             <h2>The collection</h2>
             <span>{visible.length} pieces</span>
@@ -448,15 +435,6 @@ export default function App() {
               Room elements
             </button>
           </div>
-          <p className="muted">
-            {completeIkea.length} ready · {reviewCount} awaiting review
-          </p>
-          <button
-            className="refresh-catalog"
-            onClick={reconnect}
-          >
-            ↻ Refresh collection
-          </button>
           <div className="search">
             <span>⌕</span>
             <input
@@ -550,19 +528,12 @@ export default function App() {
           <div className="products">
             {visible.map((p) => (
               <article className="product-card" key={p.id}>
-                <button
-                  className="product-image"
-                  aria-label={`Preview ${p.name}`}
-                  onClick={() => {
-                    setPreview(p)
-                    setTab('preview')
-                  }}
-                >
+                <div className="product-image">
                   <ProductArt product={p} />
                   <span className="product-category">
                     {symbols[p.category] ?? '▢'}
                   </span>
-                </button>
+                </div>
                 <div className="product-info">
                   <h3>{p.name}</h3>
                   <p>
@@ -590,135 +561,112 @@ export default function App() {
             <br />
             Sample prices · IKEA prices in SGD
           </div>
-        </aside>
-        <section className="studio">
-          <div className="studio-toolbar">
-            <div>
-              <span className="small-dot" />{' '}
-              {tab === 'room' ? 'MY FIRST ROOM' : 'FURNITURE PREVIEW'}
-            </div>
-            <div className="view-switch">
-              <button
-                className={!top ? 'active' : ''}
-                onClick={() => setTop(false)}
-              >
-                ◇ 3D view
-              </button>
-              <button
-                className={top ? 'active' : ''}
-                onClick={() => setTop(true)}
-              >
-                ▦ Top view
-              </button>
-            </div>
-          </div>
-          <div className="viewport">
-            <div className="canvas-caption">
-              {tab === 'room' ? (
-                <>
-                  <span>THE EVERYDAY RETREAT</span>
-                  <p>
-                    {scene.width.toFixed(1)} × {scene.depth.toFixed(1)} m{' '}
-                    <b>·</b> {scene.items.length} pieces
-                  </p>
-                </>
-              ) : (
-                <>
-                  <span>
-                    {preview.modelUrl
-                      ? 'IKEA PRODUCT MODEL'
-                      : 'APPROXIMATE REPRESENTATION'}
-                  </span>
-                  <p>{preview.name}</p>
-                </>
-              )}
-            </div>
-            <Room
-              scene={scene}
-              catalog={catalog}
-              selected={selected}
-              onSelect={setSelected}
-              onMove={status === 'connected' && !pending && !backup ? move : () => setNotice('Reconnect and finish pending changes before editing.')}
-              top={top}
-              preview={tab === 'preview' ? preview : undefined}
-              bounds={bounds}
-            />
-            <div className="canvas-help">
-              Drag furniture to move <span>·</span> Drag empty space to orbit{' '}
-              <span>·</span> Scroll to zoom
-            </div>
-          </div>
-          {(notice || error) && (
-            <div className="notice" role="status">
-              {error || notice}
-              <button
-                onClick={() => setNotice('')}
-                aria-label="Dismiss notification"
-              >
-                ×
-              </button>
-            </div>
-          )}
-          {tab === 'room' ? (
-            <>
-              <div className="selection-bar">
-                {item && product ? (
-                  <>
-                    <div>
-                      <span className="selection-icon">
-                        {item.locked ? '▣' : '▢'}
-                      </span>
-                      <div>
-                        <strong>{product.name}</strong>
-                        <small>
-                          {item.door ? `${item.door.wall} wall · ${item.door.open ? 'Open' : 'Closed'}` : `${item.x.toFixed(2)}, ${item.z.toFixed(2)} m · ${item.rotation}°`}
-                        </small>
-                      </div>
-                    </div>
-                    <div className="selection-actions">
-                      {!product.door && <button
-                        disabled={item.locked}
-                        onClick={() =>
-                          move({
-                            ...item,
-                            rotation: (item.rotation + 90) % 360,
-                          })
-                        }
-                      >
-                        ↻ Rotate
-                      </button>}
-                      <button
-                        onClick={() =>
-                          commit({
-                            ...scene,
-                            items: scene.items.map((i) =>
-                              i.id === item.id
-                                ? { ...i, locked: !i.locked }
-                                : i,
-                            ),
-                          })
-                        }
-                      >
-                        {item.locked ? 'Unlock' : 'Lock'}
-                      </button>
-                      <button
-                        disabled={item.locked}
-                        onClick={() => {
-                          if (commit({
-                            ...scene,
-                            items: scene.items.filter((i) => i.id !== item.id),
-                          })) setSelected(null)
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <p>Select a piece to make it feel at home.</p>
-                )}
+        </div>
+</div>
+          <div hidden={panel !== 'astra'}><AgentPanel connection={connection} selected={selected} onSelect={setSelected} disabled={!!backup} replacementTarget={replacementTarget} onReplacementOpened={() => setReplacementTarget(null)} /></div>
+          <div hidden={panel !== 'setup'}><fieldset disabled={blocked}>              <div className="door-entry">
+                <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
+                <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
               </div>
-              {item && product?.door && <DoorControls item={item} product={product} scene={scene} onChange={next => commit({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) })} />}
+<SunlightControls scene={scene} catalog={catalog} onChange={commit} mode="windows" />
+              <div className="room-settings">
+                <div><label htmlFor="height">Room height</label><select id="height" value={scene.height} onChange={e => resize('height', Number(e.target.value))}>{Array.from({length:31},(_,i) => Number((2+i*.1).toFixed(1))).map(n => <option key={n} value={n}>{n.toFixed(1)} m</option>)}</select></div>
+                <div>
+                  <label htmlFor="width">Room width</label>
+                  <select
+                    id="width"
+                    value={scene.width}
+                    onChange={(e) => resize('width', Number(e.target.value))}
+                  >
+                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
+                      (n) => (
+                        <option key={n} value={n}>
+                          {n.toFixed(1)} m
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="depth">Room depth</label>
+                  <select
+                    id="depth"
+                    value={scene.depth}
+                    onChange={(e) => resize('depth', Number(e.target.value))}
+                  >
+                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
+                      (n) => (
+                        <option key={n} value={n}>
+                          {n.toFixed(1)} m
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+
+              </div>
+</fieldset></div>
+          <div hidden={panel !== 'lighting'}><fieldset disabled={blocked}><SunlightControls scene={scene} catalog={catalog} onChange={commit} mode="lighting" /></fieldset></div>
+          <div hidden={panel !== 'budget'}>          <div className="budget">
+            <div>
+              <label htmlFor="budget">Room budget</label>
+              <span>
+                {money(total)} <small>{scene.budget ? `/ ${money(scene.budget)}` : '/ no limit'}</small>
+              </span>
+            </div>
+            {scene.budget > 0 && <progress max={scene.budget} value={total} />}
+            <p className={scene.budget > 0 && total > scene.budget ? 'over' : ''}>
+              {!scene.budget ? 'No budget set' : total > scene.budget
+                ? `${money(total - scene.budget)} over budget`
+                : `${money(scene.budget - total)} left for the finishing touches`}
+            </p>
+            <div className="budget-input">
+              <span>Set budget · S$</span>
+              <input
+                id="budget"
+                disabled={blocked}
+                aria-label="Room budget in SGD"
+                type="number"
+                min="0"
+                max="100000"
+                value={scene.budget}
+                onChange={(e) => {
+                  const v = Number(e.target.value)
+                  if (Number.isFinite(v) && v >= 0 && v <= 100000)
+                    commit({ ...scene, budget: v })
+                }}
+              />
+            </div>
+          </div>
+          <div className="room-list">
+            <p className="eyebrow">
+              IN YOUR ROOM <span>{scene.items.length}</span>
+            </p>
+            {scene.items.length === 0 ? (
+              <p className="muted">A blank canvas. Add your first piece.</p>
+            ) : (
+              scene.items.map((i) => (
+                <button
+                  key={i.id}
+                  className={selected === i.id ? 'selected' : ''}
+                  onClick={() => {
+                    setSelected(i.id)
+                                  }}
+                >
+                  <span>
+                    {i.locked ? '▣' : '▫'}{' '}
+                    {catalog.find((p) => p.id === i.productId)?.name}
+                  </span>
+                  <span>
+                    {i.door ? `${i.door.wall} · ${i.door.open ? 'open' : 'closed'}` : money(catalog.find((p) => p.id === i.productId)?.price ?? 0)}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+</div>
+          <div hidden={panel !== 'details'}>
+            {item && product ? <><div className="detail-summary"><ProductArt product={product} /><h3>{product.name}</h3><p>{product.dimensions.map(n => `${Math.round(n * 100)} cm`).join(' × ')}</p><p>{item.x.toFixed(2)}, {item.z.toFixed(2)} m · {item.rotation}°</p><div className="detail-actions"><button disabled={blocked || !!state?.slots[item.id]?.liked} onClick={() => edit({ type: 'feedback.send', action: 'like', slotIds: [item.id], expectedProducts: expected })}>{state?.slots[item.id]?.liked ? 'Liked' : 'Like'}</button><button className="danger" disabled={blocked || item.locked} onClick={() => { if (edit({ type: 'item.delete', slotId: item.id, expectedProduct: item.productId })) { setSelected(null); closePanel() } }}>Delete piece</button></div></div><fieldset disabled={blocked}>              {item && product?.door && <DoorControls item={item} product={product} scene={scene} onChange={next => commit({ ...scene, items: scene.items.map(i => i.id === next.id ? next : i) })} />}
               {item && product && !product.door && <div className="placement-controls">
                 <strong>{product.placement?.surfaceKind === 'mattress' ? 'Mattress placement' : isAnchored(product) ? 'Ceiling mounted' : item.supportId ? 'Resting on a surface' : 'On the floor'}</strong>
                 {(product.placement?.mode === 'surface' || product.lighting?.mount === 'surface') && <label>{product.placement?.surfaceKind === 'mattress' ? 'Place on bed' : 'Resting on'}
@@ -860,206 +808,16 @@ export default function App() {
                   </small>
                 </div>
               )}
-              {compact && alternativesPanel}
-              <div className="door-entry">
-                <div><strong>Doors</strong><span>Add an opening to the outdoors.</span></div>
-                <button onClick={() => { const door = catalog.find(p => p.id === 'sample-room-door'); if (door) add(door) }}>+ Add door</button>
-              </div>
-              <SunlightControls scene={scene} catalog={catalog} onChange={commit} />
-              <div className="room-settings">
-                <div><label htmlFor="height">Room height</label><select id="height" value={scene.height} onChange={e => resize('height', Number(e.target.value))}>{Array.from({length:31},(_,i) => Number((2+i*.1).toFixed(1))).map(n => <option key={n} value={n}>{n.toFixed(1)} m</option>)}</select></div>
-                <div>
-                  <label htmlFor="width">Room width</label>
-                  <select
-                    id="width"
-                    value={scene.width}
-                    onChange={(e) => resize('width', Number(e.target.value))}
-                  >
-                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
-                      (n) => (
-                        <option key={n} value={n}>
-                          {n.toFixed(1)} m
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="depth">Room depth</label>
-                  <select
-                    id="depth"
-                    value={scene.depth}
-                    onChange={(e) => resize('depth', Number(e.target.value))}
-                  >
-                    {Array.from({ length: 11 }, (_, i) => 3 + i * 0.5).map(
-                      (n) => (
-                        <option key={n} value={n}>
-                          {n.toFixed(1)} m
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </div>
-
-              </div>
-            </>
-          ) : (
-            <div className="lab-controls">
-              <div>
-                <strong>{preview.name}</strong>
-                <p>
-                  {preview.dimensions
-                    .map((n) => `${Math.round(n * 100)} cm`)
-                    .join(' × ')}{' '}
-                  · width / height / depth
-                </p>
-              </div>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={bounds}
-                  onChange={(e) => setBounds(e.target.checked)}
-                />{' '}
-                Show dimensions box
-              </label>
-              <div>
-                <label className="button import-button">
-                  ↑ Import JSON
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    onChange={(e) => {
-                      void importFile(e.target.files?.[0])
-                      e.target.value = ''
-                    }}
-                  />
-                </label>
-                <button onClick={download}>Example JSON ↓</button>
-                <button
-                  className="primary"
-                  onClick={() => {
-                    if (catalog.some((p) => p.id === preview.id)) {
-                      add(preview)
-                      return
-                    }
-                    edit({ type: 'catalog.import', product: generatedProduct(preview) })
-                    setNotice(
-                      'Submitting product for validation?',
-                    )
-                  }}
-                >
-                  {catalog.some((p) => p.id === preview.id)
-                    ? 'Add to room +'
-                    : 'Approve for catalog +'}
-                </button>
-              </div>
-              {preview.productUrl && (
-                <div className="source-details">
-                  <span>
-                    {preview.brand} · {preview.color} · {money(preview.price)}
-                  </span>
-                  {preview.features && (
-                    <div className="feature-tags">
-                      {preview.features.map((f) => (
-                        <span key={f}>{f}</span>
-                      ))}
-                    </div>
-                  )}
-                  {preview.priceBand && (
-                    <small>
-                      {preview.priceBand} within{' '}
-                      {preview.productType?.toLowerCase()} in this collection.
-                    </small>
-                  )}
-                  {preview.priceNote && <small>{preview.priceNote}</small>}
-                  {preview.dimensionsMeasuredFromModel && <small>Some dimensions are measured from the 3D model, checked against published measurements. Approximate footprint may include cables.</small>}
-                  <a href={preview.productUrl} target="_blank" rel="noreferrer">
-                    View product at IKEA ↗
-                  </a>
-                  <small>
-                    Price checked {preview.fetchedAt?.slice(0, 10)} · Verify
-                    current price and availability at IKEA.
-                  </small>
-                </div>
-              )}
-              <small>
-                Import geometry generated from product photos. Inspect the shape
-                and scale before approving.
-              </small>
-            </div>
-          )}
-        </section>
-        <aside ref={designerRef} className={`designer${alternativesPanel && !compact ? ' has-alternatives' : ''}`}>
-          {alternativesPanel && !compact && <button className="chat-jump" onClick={() => document.getElementById('design-message')?.focus()}>Chat with Astra ↓</button>}
-          {!compact && alternativesPanel}
-          <div className="panel-heading">
-            <h2>Your design companion</h2>
-            <span className="spark">✳</span>
+</fieldset></> : <p className="panel-empty">Select a piece in the room to see its details.</p>}
           </div>
-          <AgentPanel connection={connection} selected={selected} onSelect={setSelected} disabled={!!backup} />
-          <div className="budget">
-            <div>
-              <label htmlFor="budget">Room budget</label>
-              <span>
-                {money(total)} <small>{scene.budget ? `/ ${money(scene.budget)}` : '/ no limit'}</small>
-              </span>
-            </div>
-            {scene.budget > 0 && <progress max={scene.budget} value={total} />}
-            <p className={scene.budget > 0 && total > scene.budget ? 'over' : ''}>
-              {!scene.budget ? 'No budget set' : total > scene.budget
-                ? `${money(total - scene.budget)} over budget`
-                : `${money(scene.budget - total)} left for the finishing touches`}
-            </p>
-            <div className="budget-input">
-              <span>Set budget · S$</span>
-              <input
-                id="budget"
-                aria-label="Room budget in SGD"
-                type="number"
-                min="0"
-                max="100000"
-                value={scene.budget}
-                onChange={(e) => {
-                  const v = Number(e.target.value)
-                  if (Number.isFinite(v) && v >= 0 && v <= 100000)
-                    commit({ ...scene, budget: v })
-                }}
-              />
-            </div>
+          <div hidden={panel !== 'replace'}><fieldset disabled={blocked}>{alternativesPanel || <p className="panel-empty">Select a piece to find alternatives.</p>}{item && !product?.door && <button className="primary wide" disabled={blocked || item.locked} onClick={askReplacement}>Ask Astra for another option</button>}</fieldset></div>
+          <div hidden={panel !== 'menu'} className="studio-menu">
+            <button disabled={blocked || !scene.items.length} onClick={() => { if (edit({ type: 'room.clear' })) { setSelected(null); closePanel(); setNotice('Room cleared. Undo restores the previous room.') } }}>Start fresh</button>
+            <details><summary>Connection & collection</summary><p>{status} · {completeIkea.length} IKEA pieces ready · {reviewCount} awaiting review</p><button onClick={reconnect}>Refresh connection and collection</button></details>
+            <p className="muted">Accepted changes are backed up on this device. Undo pauses the designer.</p>
           </div>
-          <div className="room-list">
-            <p className="eyebrow">
-              IN YOUR ROOM <span>{scene.items.length}</span>
-            </p>
-            {scene.items.length === 0 ? (
-              <p className="muted">A blank canvas. Add your first piece.</p>
-            ) : (
-              scene.items.map((i) => (
-                <button
-                  key={i.id}
-                  className={selected === i.id ? 'selected' : ''}
-                  onClick={() => {
-                    setSelected(i.id)
-                    setTab('room')
-                  }}
-                >
-                  <span>
-                    {i.locked ? '▣' : '▫'}{' '}
-                    {catalog.find((p) => p.id === i.productId)?.name}
-                  </span>
-                  <span>
-                    {i.door ? `${i.door.wall} · ${i.door.open ? 'open' : 'closed'}` : money(catalog.find((p) => p.id === i.productId)?.price ?? 0)}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-          <p className="private-note">Accepted changes are backed up on this device. Undo pauses the designer.</p>
-        </aside>
+        </PanelHost>
       </main>
-      <footer>
-        Make room for good things.<span>COZY / YOUR LITTLE DESIGN STUDIO</span>
-      </footer>
     </div>
   )
 }

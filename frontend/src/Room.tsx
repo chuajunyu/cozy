@@ -1,3 +1,4 @@
+import { fitZoom } from './cameraFit'
 import { fixtureIntensity } from './lighting'
 import { liftToSupport, isAnchored, settleScene } from './placement'
 import { WINDOW_TRANSMITTANCE } from './daylightTransport'
@@ -22,7 +23,8 @@ import {
   Html,
   useGLTF,
 } from '@react-three/drei'
-import { Group, Mesh, Plane, Vector3 } from 'three'
+import { Group, Mesh, Plane, Vector3, OrthographicCamera as ThreeCamera } from 'three'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { normalizeModel } from './model'
 import ProceduralFurniture from './Furniture'
 import { type Item, type Product, type Scene } from './catalog'
@@ -124,46 +126,45 @@ function FixtureLight({
     </group>
   )
 }
-function Camera({
-  top,
-  extent,
-  disabled,
-  focusHeight,
-  productView,
-}: {
-  top: boolean
-  extent: number
-  disabled: boolean
-  focusHeight: number
-  productView: boolean
+function Camera({ top, width, height, depth, disabled, fitRequest }: {
+  top: boolean; width: number; height: number; depth: number; disabled: boolean; fitRequest: number
 }) {
-  const { size } = useThree()
-  const zoom = productView
-    ? Math.min(size.width / (extent * 2), size.height / (extent * 1.8), 450)
-    : Math.min(size.width / (extent + 3), size.height / (extent + 3.5), 90)
-  return (
-    <>
-      <OrthographicCamera
-        key={`camera-${top}`}
-        makeDefault
-        position={top ? [0, 12, 0.001] : [8, 8, 8]}
-        zoom={zoom}
-        near={0.1}
-        far={80}
-      />
-      <OrbitControls
-        key={`controls-${top}`}
-        makeDefault
-        enabled={!disabled}
-        target={[0, focusHeight, 0]}
-        enablePan={false}
-        enableRotate={!top}
-        minZoom={zoom * 0.5}
-        maxZoom={zoom * 2.5}
-        maxPolarAngle={Math.PI / 2 - 0.1}
-      />
-    </>
-  )
+  const { size, invalidate } = useThree()
+  const camera = useRef<ThreeCamera>(null)
+  const controls = useRef<OrbitControlsImpl>(null)
+  const viewport = useRef(size)
+  const fittedZoom = useRef<number | null>(null)
+  viewport.current = size
+  useEffect(() => {
+    if (!camera.current || !controls.current) return
+    const { width: pixelsWide, height: pixelsHigh } = viewport.current
+    const zoom = fitZoom(width + .3, height + .2, depth + .3, pixelsWide - 32, pixelsHigh - 140, top)
+    const center = top ? 0 : height / 2
+    camera.current.position.set(top ? 0 : 8, top ? 12 : center + 8, top ? .001 : 8)
+    camera.current.zoom = zoom
+    fittedZoom.current = zoom
+    camera.current.updateProjectionMatrix()
+    controls.current.target.set(0, center, 0)
+    controls.current.minZoom = zoom * .3
+    controls.current.maxZoom = zoom * 4
+    controls.current.update()
+    invalidate()
+  }, [width, height, depth, top, fitRequest, invalidate])
+  useEffect(() => {
+    if (!camera.current || !controls.current || !fittedZoom.current) return
+    const zoom = fitZoom(width + .3, height + .2, depth + .3, size.width - 32, size.height - 140, top)
+    // Keep the user's relative magnification and orbit when a panel changes the available space.
+    camera.current.zoom *= zoom / fittedZoom.current
+    fittedZoom.current = zoom
+    camera.current.updateProjectionMatrix()
+    controls.current.minZoom = zoom * .3
+    controls.current.maxZoom = zoom * 4
+    invalidate()
+  }, [size.width, size.height, width, height, depth, top, invalidate])
+  return <>
+    <OrthographicCamera ref={camera} makeDefault position={[8, 8, 8]} near={.1} far={80} />
+    <OrbitControls ref={controls} makeDefault enabled={!disabled} enablePan={false} enableRotate={!top} maxPolarAngle={Math.PI / 2 - .1} />
+  </>
 }
 function Placed({
   item,
@@ -323,8 +324,8 @@ export default function Room({
   onSelect,
   onMove,
   top,
-  preview,
-  bounds = false,
+  fitRequest = 0,
+  showCompass = false,
 }: {
   scene: Scene
   catalog: Product[]
@@ -332,8 +333,8 @@ export default function Room({
   onSelect: (id: string | null) => void
   onMove: (item: Item) => void
   top: boolean
-  preview?: Product
-  bounds?: boolean
+  fitRequest?: number
+  showCompass?: boolean
 }) {
   const [drag, setDrag] = useState(false)
   const sun = sunAt(scene.sunHour ?? 9)
@@ -346,14 +347,14 @@ export default function Room({
       fallback={<p>Enable WebGL to view your room.</p>}
     >
       <ambientLight
-        intensity={preview ? 1.2 : 0}
+        intensity={0}
       />
       <directionalLight
-        position={preview ? [6, 8, 6] : sun.direction.map(v => v * 20) as [number, number, number]}
-        color={!preview && sun.warm ? '#ffd2a1' : '#fff4df'}
-        intensity={preview ? 2 : sun.intensity * WINDOW_TRANSMITTANCE}
+        position={sun.direction.map(v => v * 20) as [number, number, number]}
+        color={sun.warm ? '#ffd2a1' : '#fff4df'}
+        intensity={sun.intensity * WINDOW_TRANSMITTANCE}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-8}
         shadow-camera-right={8}
         shadow-camera-top={8}
@@ -362,30 +363,6 @@ export default function Room({
         shadow-bias={-0.0001}
         shadow-camera-far={50}
       />
-      {preview ? (
-        <>
-          <mesh position={[0, -0.06, 0]} receiveShadow>
-            <boxGeometry
-              args={[
-                Math.max(...preview.dimensions) * 2.5,
-                0.1,
-                Math.max(...preview.dimensions) * 2.5,
-              ]}
-            />
-            <meshStandardMaterial color="#e6dfd2" />
-          </mesh>
-          <Furniture product={preview} />
-          <FixtureLight product={preview} />
-          {bounds && (
-            <mesh position={[0, preview.dimensions[1] / 2, 0]}>
-              <boxGeometry args={preview.dimensions} />
-              <meshBasicMaterial transparent opacity={0} />
-              <Edges color="#667b5c" />
-            </mesh>
-          )}
-        </>
-      ) : (
-        <>
           <mesh position={[0, -0.1, 0]} receiveShadow>
             <boxGeometry args={[scene.width + 0.16, 0.2, scene.depth + 0.16]} />
             <meshStandardMaterial color="#c7ac88" />
@@ -401,7 +378,7 @@ export default function Room({
               <meshStandardMaterial color="#b99c78" />
             </mesh>
           ))}
-          <RoomShell scene={scene} catalog={catalog} top={top} />
+          <RoomShell scene={scene} catalog={catalog} top={top} showCompass={showCompass} />
           <Daylight room={scene} catalog={catalog} />
           {scene.items.map((item) => {
             const p = catalog.find((p) => p.id === item.productId)
@@ -419,19 +396,8 @@ export default function Room({
               />
             ) : null
           })}
-        </>
-      )}
-      <Camera
-        top={top}
-        extent={
-          preview
-            ? Math.max(...preview.dimensions)
-            : Math.max(scene.width, scene.depth)
-        }
-        disabled={drag}
-        focusHeight={preview ? preview.dimensions[1] / 2 : 0.6}
-        productView={!!preview}
-      />
+      <Camera top={top} width={scene.width} height={scene.height ?? 2.6}
+        depth={scene.depth} disabled={drag} fitRequest={fitRequest} />
     </Canvas>
   )
 }

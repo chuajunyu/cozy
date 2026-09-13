@@ -1,7 +1,7 @@
 # Cozy
 
 A collaborative interior design studio using React 19.2, TypeScript, Vite,
-React Three Fiber 9, Drei, and Python FastAPI. The collection, furniture lab,
+React Three Fiber 9, Drei, and Python FastAPI. The collection, contextual tools,
 manual room editing and GPT-6 Astra designer share one authoritative backend room.
 
 ## Install
@@ -26,7 +26,7 @@ No metadata refresh or OpenAI API call happens during asset preparation.
 The checked-in catalog has 98 preview-ready source records and 95 records awaiting
 review. The backend only marks a product preview-ready when its local GLB passes
 validation. Unavailable assets are excluded from placement and recommendations;
-out-of-stock products may be previewed manually but are excluded from agent search.
+out-of-stock products may be added manually but are excluded from agent search.
 GLBs, decoder copies, dependencies and generated output are Git-ignored.
 
 `data/ikea-ready.json` retains dated source evidence, dimensions, SGD prices,
@@ -65,24 +65,29 @@ Run one FastAPI worker because sessions are in memory.
 
 ## Use the studio
 
-- Browse and filter the IKEA collection or samples. Preview a model in the
-  furniture lab and add it to the room. Repeated GLB instances have independent
-  transforms. Draco, WebP textures and texture transforms are supported locally.
-- Drag furniture to move it; use rotate, lock and delete on a selected piece.
-  Drag empty space to orbit, scroll to zoom, or switch to top view.
-- Adjust room width/depth/height, budget, windows and solar time. Up to eight
-  fixtures use fixed lumen output with on/off, mounting height and colors allowed by their
-  metadata. Select a surface before adding a table lamp to place it on top.
-  Lighting is an illustrative preview, not measured photometry.
-- Import a data-only JSON product in the furniture lab. Inspect geometry and scale,
-  approve it for the session catalog, then add it to the room. Example JSON is
-  downloadable there. Imports accept bounded box/cylinder parts and optional
-  lighting, not scripts or external model URLs. Custom IDs use `custom-`; bundled
-  samples use `sample-`. Existing IDs cannot be overwritten.
+- The room fills the workspace. Add furniture, Ask Astra, Room setup and Lighting
+  open one panel at a time. Panels become expandable bottom sheets below 900px.
+  Closing or switching panels preserves chat drafts and collection filters.
+- Browse and filter the IKEA collection or samples, then add pieces directly to
+  the room. The furniture lab and separate model-preview scene have been removed.
+  Repeated GLB instances have independent transforms; Draco, WebP textures and
+  texture transforms are supported locally.
+- Select a piece for Rotate, Replace and Lock/Unlock. More opens dimensions,
+  placement, Like and Delete. Lamp and door selections expose their relevant
+  quick actions. Mattress fitting controls appear in the selected piece's details.
+- Drag furniture to move it; drag empty space to orbit, scroll to zoom, or switch
+  to Top view. Fit room reframes the complete room. Panel resizing preserves the
+  chosen orbit and relative zoom; the room canvas stays mounted throughout.
+- Room setup contains dimensions, doors and windows. Lighting contains solar time.
+  Select a surface before adding a table lamp to place it on top. Fixture settings
+  live with the selected lamp; illumination is illustrative, not measured photometry.
+- Click the cost summary for budget editing and the room's piece list. The studio
+  menu contains Start fresh and connection details. Escape closes the panel before
+  deselecting a piece. Disconnection, restoration and validation notices remain visible.
 - Describe a room to Astra. It streams explanations and places coordinated groups.
   Select an item or use a group's Comment button to scope feedback; Whole room
   clears that scope. Like is a soft preference. Locks preserve exact product and
-  pose. Replace and Reroll unlocked keep current pieces visible until valid
+  pose. Replace and Find alternatives for unlocked pieces keep current pieces visible until valid
   alternatives are accepted. Feedback and manual edits can steer an active run.
 - Undo restores the previous accepted room change, including agent groups, room
   settings, locks, placement and fixture changes. The shared history keeps 30
@@ -94,7 +99,7 @@ The floor is at y=0 and x/z coordinates are centered on the room. Product dimens
 are named width/height/depth in backend meters; generated JSON uses [width, height,
 depth]. The renderer centers GLBs and normalizes their bounds without changing the
 cached source scene. Rendering remains on demand with DPR capped at 1.5 and one
-2048 x 2048 directional shadow map. A model load error shows a selectable fallback
+1024 x 1024 directional shadow map. A model load error shows a selectable fallback
 without taking down other room items.
 
 ## Sessions and device backups
@@ -176,7 +181,7 @@ it places a sofa/rug and accepts steering for 15 seconds after each input.
 The normal `backend.main:app` entry point always uses the real designer.
 
 Browser checks should cover compressed/uncompressed and repeated models, dragging,
-rotation/locks, import approval, fixtures, undo, stale changes, reload/reconnect,
+rotation/locks, contextual panels, fixtures, undo, stale changes, reload/reconnect,
 backend reset/restore, missing-model fallback and desktop/mobile layouts.
 The optional `python -m backend.tests.live_smoke` uses real API calls and is separate
 from deterministic tests. `npm run preview` serves static production output only;

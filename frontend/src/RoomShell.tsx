@@ -3,7 +3,7 @@ import type { Product, Scene, Vec3 } from './catalog'
 import { doorGeometry } from './doors'
 import { defaultWindows, walls, windowGeometry } from './sunlight'
 
-export default function RoomShell({ scene, catalog, top }: { scene: Scene; catalog: Product[]; top: boolean }) {
+export default function RoomShell({ scene, catalog, top, showCompass = false }: { scene: Scene; catalog: Product[]; top: boolean; showCompass?: boolean }) {
   const windows = scene.windows ?? defaultWindows
   return <group>
     {walls.map(wall => {
@@ -48,7 +48,7 @@ export default function RoomShell({ scene, catalog, top }: { scene: Scene; catal
           <mesh castShadow receiveShadow><boxGeometry args={[0.035,window.height,0.1]} /><meshStandardMaterial color="#faf7ee" /></mesh>
           <mesh position={[0,0,0.01]}><planeGeometry args={[opening.width,window.height]} /><meshBasicMaterial color="#b8d9de" transparent opacity={0.055} depthWrite={false} side={2} /></mesh>
         </group>})}
-        <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>
+        {showCompass && <Html position={[0,0.06,0]} center style={{pointerEvents:'none'}}><span className="compass-label">{wall[0].toUpperCase()}</span></Html>}
       </group>
     })}
     {/* Cutaway roof is invisible to the camera, but blocks sunlight from bypassing windows. */}
