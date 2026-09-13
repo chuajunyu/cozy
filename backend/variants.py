@@ -266,10 +266,10 @@ async def handle_variants(session, command, factory):
                         if c['status'] in {'queued', 'generating'}:
                             c['status'] = 'cancelled'
                 else:
-                    require(not data['outdated'], 'stale_variant', 'These ideas are outdated. Generate a new set.')
                     candidate = next((c for c in data['candidates'] if c['id'] == command.candidateId), None)
                     require(candidate is not None, 'variant', 'Choose an existing idea.')
                     if command.type == 'variants.retry':
+                        require(not data['outdated'], 'stale_variant', 'Generate a new set before retrying an idea from an earlier room.')
                         require(candidate['status'] in {'failed', 'cancelled', 'interrupted'} and candidate['direction'], 'variant_retry', 'Generate a new set to prepare directions.')
                         old = session.variant_tasks.get(candidate['id'])
                         require(not old or old.done(), 'variant_busy', 'Wait for cancellation to finish.')
@@ -279,8 +279,16 @@ async def handle_variants(session, command, factory):
                         require(candidate['status'] == 'ready', 'variant_not_ready', 'Wait for the idea to finish.')
                         require(not session.designer or not session.designer.active, 'designer_busy', 'Finish the current response before adopting.')
                         state = DesignState.model_validate({k: v for k, v in candidate['state'].items() if k in DesignState.model_fields})
-                        protected(session.state, state, variant_permissions(data['request']), session.products)
                         products = {**session.products, **{p['id']: p for p in candidate.get('products', [])}}
+                        source = DesignState.model_validate(data['source'])
+                        protected(source, state, variant_permissions(data['request']), products)
+                        for id, slot in session.state.slots.items():
+                            if not slot.locked:
+                                continue
+                            chosen = state.slots.get(id)
+                            fields = ('catalogId', 'x', 'z', 'rotation', 'elevation', 'supportId', 'wallMount', 'door', 'locked')
+                            require(chosen is not None and all(getattr(slot, field) == getattr(chosen, field) for field in fields),
+                                    'locked', 'This idea conflicts with a piece you locked after it was generated. Unlock it before using this design.')
                         validate_layout(state, products)
                         state.revision = session.state.revision + 1
                         state.feedback = session.state.feedback

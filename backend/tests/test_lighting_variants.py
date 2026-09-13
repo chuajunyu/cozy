@@ -182,8 +182,12 @@ def test_variants_failure_retry_staleness_and_interrupted_recovery():
         assert candidate['status'] == 'ready'
         await edit(s, 'item.update', slotId='desk', expectedProduct='sample-desk', rotation=90)
         assert data['outdated']
-        with pytest.raises(DesignError):
-            await handle_variants(s, VariantCommand(type='variants.adopt', requestId='stale', baseRevision=s.state.revision, setId=data['id'], candidateId=candidate['id']), VariantDesigner)
+        history = len(s.history)
+        await handle_variants(s, VariantCommand(type='variants.adopt', requestId='older-ready-idea', baseRevision=s.state.revision, setId=data['id'], candidateId=candidate['id']), VariantDesigner)
+        assert s.state.concept.title == 'Contrast'
+        assert len(s.history) == history + 1
+        await edit(s, 'room.undo')
+        assert s.state.slots['desk'].rotation == 90
         assert recover_variants({'bad': 'data'}, s.state, s.products) is None
     asyncio.run(run())
 
