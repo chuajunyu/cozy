@@ -68,7 +68,7 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
           const left = capEnds && a === 0 ? -.1 : a
           const right = capEnds && b === length ? length + .1 : b
           const bottom = c === 0 ? -.002 : c
-          return <mesh key={i} position={[(left+right)/2-length/2, (bottom+d)/2, 0]} castShadow receiveShadow>
+          return <mesh key={i} userData={{ roomShell: true }} position={[(left+right)/2-length/2, (bottom+d)/2, 0]} castShadow receiveShadow>
             <boxGeometry args={[right-left, d-bottom, 0.1]} />
             <WallpaperMaterial pattern={scene.wallpapers?.[wall]} color={wallColor(scene, wall)} visible={true} width={right-left} height={d-bottom} left={left} bottom={bottom} />
           </mesh>
@@ -77,9 +77,9 @@ export default function RoomShell({ scene, catalog, top, showCompass = false }: 
       </CutawayWall>
     })}
     {/* Cutaway roof is invisible to the camera, but blocks sunlight from bypassing windows. */}
-    <mesh raycast={() => {}} position={[0,(scene.height ?? 2.6)+.06,0]} castShadow>
+    <mesh userData={{ roomShell: true }} raycast={() => {}} position={[0,(scene.height ?? 2.6)+.06,0]} castShadow receiveShadow>
       <boxGeometry args={[scene.width+0.2,0.12,scene.depth+0.2]} />
-      <meshBasicMaterial colorWrite={false} depthWrite={false} />
+      <meshStandardMaterial color="#f5f1e9" roughness={.95} colorWrite={false} depthWrite={false} />
     </mesh>
   </group>
 }

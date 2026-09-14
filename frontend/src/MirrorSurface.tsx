@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { HalfFloatType, Matrix4, Mesh, Plane, Shape, Vector3, WebGLRenderTarget } from 'three'
 import type { Product } from './catalog'
+import { withMirrorRoom } from './mirrorRoom'
 
 /** Each visible mirror renders on demand, without recursive mirror feedback. */
 export default function MirrorSurface({ surface, resolution }: { surface: NonNullable<Product['reflection']>; resolution: number }) {
@@ -41,17 +42,14 @@ export default function MirrorSurface({ surface, resolution }: { surface: NonNul
     textureMatrix.set(.5,0,0,.5, 0,.5,0,.5, 0,0,.5,.5, 0,0,0,1)
       .multiply(reflected.projectionMatrix).multiply(reflected.matrixWorldInverse)
     const previousTarget = gl.getRenderTarget(), planes = gl.clippingPlanes, autoShadow = gl.shadowMap.autoUpdate
-    const hidden: Mesh[] = []
-    scene.traverse(object => {
-      if (object instanceof Mesh && object.userData.mirrorSurface && object.visible) { hidden.push(object); object.visible = false }
-    })
     try {
       gl.clippingPlanes = [new Plane().setFromNormalAndCoplanarPoint(normal, origin)]
       gl.shadowMap.autoUpdate = false
-      gl.setRenderTarget(target); gl.clear(); gl.render(scene, reflected)
+      gl.setRenderTarget(target); gl.clear()
+      withMirrorRoom(scene, () => gl.render(scene, reflected))
     } finally {
       gl.setRenderTarget(previousTarget); gl.clippingPlanes = planes
-      gl.shadowMap.autoUpdate = autoShadow; hidden.forEach(object => { object.visible = true })
+      gl.shadowMap.autoUpdate = autoShadow
     }
   })
   return <mesh ref={mesh} userData={{ mirrorSurface: true }} position={surface.center} raycast={() => {}}>

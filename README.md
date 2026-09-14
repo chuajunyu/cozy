@@ -570,7 +570,8 @@ and missing assets stay in review. Art and reviewed mirrors attach to walls.
   camera and a 1024 x 1024 render target per mirror for up to four mirrors,
   512 x 512 for five to eight, and 256 x 256 above eight mirrors.
   All reviewed wall mirrors reflect together using HDR targets, room exposure
-  and a small brightness lift. Rendering remains on demand,
+  and a small brightness lift. Reflections include all room walls and the ceiling,
+  even when they are cut away in the main view. Rendering remains on demand,
   without recursive mirror-in-mirror reflections. Tilted/table mirrors and the NYSJON shelf
   mirror retain their ordinary model.
 - Unbranded / Bathroom includes an approximate close-coupled toilet. IKEA
