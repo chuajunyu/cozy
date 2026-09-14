@@ -12,6 +12,7 @@ from backend.design import DesignState, Model, require, validate_layout, snapsho
 from backend.products import GeneratedProduct, generated
 from backend.room_requests import explicit_permissions
 from backend.sessions import Session
+from backend.provider_errors import DesignServiceError, LIMIT_MESSAGES
 
 MAX_BYTES = 2_000_000
 
@@ -144,6 +145,8 @@ async def run_designer(child, factory, text, request_id):
                         if event['type'] == 'design.completed':
                             return
                         if event['type'] == 'error':
+                            if event.get('code') in LIMIT_MESSAGES:
+                                raise DesignServiceError(event['code'])
                             raise RuntimeError('Astra could not finish this design. Retry when available.')
                     elif child.task.done():
                         await child.task
@@ -192,8 +195,9 @@ async def candidate_run(session, data, candidate, factory):
         if candidate['status'] != 'ready':
             candidate['status'] = 'cancelled'
         raise
-    except Exception:
-        candidate.update(status='failed', error='This idea could not be completed within the room constraints. Retry this idea.')
+    except Exception as exc:
+        candidate.update(status='failed', error=str(exc) if isinstance(exc, DesignServiceError) else
+                         'This idea could not be completed within the room constraints. Retry this idea.')
     finally:
         if data is session.variants:
             publish(session)
@@ -229,7 +233,8 @@ async def generate_set(session, data, factory):
         raise
     except Exception as exc:
         logging.getLogger(__name__).warning('Variant planning failed (%s)', type(exc).__name__)
-        message = ('Astra returned an incomplete idea format. Generate a new set to retry.'
+        message = (str(exc) if isinstance(exc, DesignServiceError) else
+                   'Astra returned an incomplete idea format. Generate a new set to retry.'
                    if isinstance(exc, ValidationError) else 'Astra could not finish preparing the ideas. Generate a new set to retry.')
         for candidate in data['candidates']:
             candidate.update(status='failed', error=message)

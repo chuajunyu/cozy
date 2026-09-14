@@ -5,7 +5,7 @@ from backend.sessions import Session
 from backend.tests.test_studio import add, edit
 
 
-def test_three_rotations_update_one_message_and_keep_three_undo_steps_and_steers():
+def test_three_rotations_update_one_message_and_keep_three_undo_steps_and_submissions():
     async def run():
         session = Session()
         await add(session)

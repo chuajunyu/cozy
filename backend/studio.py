@@ -11,6 +11,7 @@ from backend.products import GeneratedProduct, generated
 from backend.sessions import Session
 from backend.concurrency import can_rebase
 from backend.studio_activity import activity_change, describe_activity
+from backend.model_context import compact_feedback
 
 
 class Backup(Model):
@@ -217,9 +218,10 @@ async def handle_studio(session: Session, command: StudioCommand) -> None:
             elif kind != "catalog.import":
                 session.remember()
             state.revision = session.state.revision + 1
-            text = f"Manual change: {kind}; item {command.slotId or 'room'}. Background activity, not a chat request. Use the latest room and preserve this intent silently. Do not acknowledge or narrate this edit; its activity entry is already visible."
+            text = f"Manual change: {kind}; item {command.slotId or 'room'}."
             if kind not in {"catalog.import", "session.restore", "room.undo"}:
-                state.feedback.append({"text": text, "slotIds": [command.slotId] if command.slotId else []})
+                state.feedback.append({"type": "manual", "text": text, "slotIds": [command.slotId] if command.slotId else []})
+                state.feedback = compact_feedback(state.feedback)
                 state.feedback = state.feedback[-100:]
             change = activity_change(kind, command.slotId, session.state, state, products)
             if kind == 'lighting.apply':

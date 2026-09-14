@@ -19,7 +19,8 @@ def test_activity_is_named_replayable_and_only_records_accepted_edits():
         assert message['role'] == 'system' and message['kind'] == 'activity'
         assert message['text'] == 'You added and moved'
         assert message['references'][0]['name'] == session.products['sample-desk']['name']
-        assert 'silently' in session.state.feedback[-1]['text']
+        assert session.state.feedback[-1]['type'] == 'manual'
+        assert session.state.feedback[-1]['text'] == 'Manual change: item.update; item desk.'
         count = len(session.messages)
         await handle_studio(session, command)
         assert len(session.messages) == count
@@ -71,7 +72,8 @@ def test_active_designer_receives_manual_context_without_a_chat_bubble():
         designer.active = True
         designer.active_id = 'working-response'
         session.designer = designer
-        session.task = asyncio.create_task(designer.read_inputs())
+        designer.debounce_seconds = 0
+        session.task = asyncio.create_task(designer.read_background())
         await edit(session, 'item.update', slotId='desk', expectedProduct='sample-desk', x=.3)
         for _ in range(20):
             await asyncio.sleep(0)

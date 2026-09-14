@@ -146,6 +146,7 @@ async def _handle_command(session: Session, command: Command, designer_factory) 
             if session.task is None or session.task.done():
                 session.designer = designer_factory(session)
                 session.task = asyncio.create_task(session.designer.run())
-            session.designer.submit(command.requestId, text)
+            quiet = command.type == 'item.lock' or (command.type == 'feedback.send' and command.action in {'like', 'unlike'})
+            session.designer.submit(command.requestId, text, **({'background': True} if quiet else {}))
         else:
             session.publish({**ack, "stage": "applied"})

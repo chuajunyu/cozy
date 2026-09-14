@@ -50,6 +50,17 @@ test('idle edits are saved, failures stay failed and recovery clears transient r
   assert.deepEqual(reduce(state, { type: 'reset' }), {})
 })
 
+test('an unsent debounce batch becomes saved when Astra finishes', () => {
+  let state = reduce({}, track('first', 'burst', 'activity', 'received'))
+  state = reduce(state, track('latest', 'burst', 'activity', 'received'))
+  state = reduce(state, ack('first', 'saved'))
+  assert.equal(state.latest.stage, 'received')
+  state = reduce(state, ack('latest', 'saved'))
+  assert.equal(deliveryLabel(state.latest), 'Saved to room')
+  assert.equal(reduce(state, ack('latest', 'sent')), state)
+  assert.equal(reduce(state, { type: 'disconnect' }).latest.stage, 'saved')
+})
+
 test('delivery tracking is bounded and duplicate message delivery retains its stage', () => {
   let state = {}
   for (let i = 0; i < 100; i++) state = reduce(state, track(String(i)))

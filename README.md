@@ -116,8 +116,12 @@ restart the backend after creating the first build. Vite development is unchange
   Edits less than five seconds apart update one activity row. Repeated rotations
   collapse to one action; moving and rotating a piece combines both actions.
   Multi-piece and multi-setting bursts expand into named summaries. A new chat
-  message, Undo, Reset or restore closes the burst. Every accepted edit still saves,
-  steers active work immediately and retains its own undo step. Activity summaries
+  message, Undo, Reset or restore closes the burst. Every accepted edit saves
+  immediately and retains its own undo step. Active background steering batches
+  edits after one second of quiet, with a three-second maximum wait once a response
+  ID is available. Written messages send immediately and carry any pending edits.
+  Edits never start a response while Astra is idle; if it finishes before a batch
+  sends, those edits remain Saved to room for the next request. Activity summaries
   recover with a live session; they are not stored in device conversation backups.
   Written messages have individual delivery receipts. Activity shows Saved to room
   while Astra is idle, or Received by Astra after its latest edit reaches Astra.
@@ -250,6 +254,55 @@ Wall and floor finishes remain permission-gated. Direct finish requests and them
 whole-room transformations such as “reimagine this as a blue room” grant finish
 exploration; a color preference, brightness request or furniture/layout instruction
 alone leaves the existing finishes unchanged. “Keep the walls/floor” always wins.
+
+## Astra usage and cost controls
+
+Manual moves, likes and locks do not start idle model responses. During active work,
+they share the background debounce above. Current positions, finishes, locks,
+preferences and rejected candidates remain authoritative. Repeated manual activity
+is condensed to its latest entry per target, including legacy activity in model
+input. Chat prompts are not repeated in both message history and feedback, and
+stable conversation history precedes the changing room snapshot for better prompt
+cache reuse. Tool-state payloads use the same compact projection; browser snapshots,
+backups, permissions and undo remain complete.
+
+The backend writes one JSON line per observed terminal Astra response to
+`logs/astra-usage.jsonl`, including completed, steered/incomplete and failed responses.
+It rotates at 5 MB and keeps two backups. Logs contain a hashed session identifier,
+run/response IDs, mode (design, planning, idea or voice), input/output counts,
+cached input, cache writes, reasoning tokens and cumulative run output/steer counts.
+They contain no prompts, room contents or credentials. Missing usage is `null`,
+not zero; reasoning tokens are already included in output tokens. An abrupt
+disconnect/cancellation without a terminal response cannot be accounted for here.
+These are local diagnostic records, not a complete billing ledger. Retain logs
+externally if your deployment's disk is ephemeral. Voice audio usage is separate.
+
+Inspect recent records with `Get-Content logs/astra-usage.jsonl -Tail 10`.
+Use the current OpenAI pricing and your Platform usage report to compare actual
+costs; cache writes and cached reads have different rates. Prompt caching can
+already operate with default API settings: adding a cache flag alone does not
+guarantee a hit. The recorded cache counts show whether reuse actually occurred.
+
+Optional backend settings in `.env.local` (restart after changing them):
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `COZY_ASTRA_REASONING_EFFORT` | `medium` | Try `low` for routine refinements; compare design quality before adopting it. Also accepts `high`, `xhigh`, `max`. |
+| `COZY_ASTRA_MAX_OUTPUT_TOKENS` | `7000` | Per-response output allowance, including reasoning (256–128000). |
+| `COZY_ASTRA_MAX_RESPONSES` | `40` | Maximum application-created responses per run (1–100); automatic steering successors are not counted here. |
+| `COZY_ASTRA_MAX_RUN_OUTPUT_TOKENS` | `28000` | Pause continuation once reported run output reaches this allowance (256–1000000). Remaining allowance also limits newly created responses. |
+| `COZY_ASTRA_USAGE_LOG` | `logs/astra-usage.jsonl` at repo root | Override the local log file path. |
+
+Invalid settings fall back to their defaults. Work-limit pauses preserve the room
+and explain that a new message can continue. OpenAI credit/quota exhaustion shows
+a billing message; confirmed temporary rate limits ask you to wait and retry.
+A generic HTTP 429 mentions both possible causes. These messages also appear on
+failed idea cards rather than being replaced by generic connection/design errors.
+These controls are not a hard dollar
+cap: input/cache writes, automatic successors, missing usage and in-flight work
+can add costs. Each generated idea has its own run allowance. Three-idea mode
+still generates one planning response plus three full designs and is substantially
+more work than a single design request. No cost-saving percentage is assumed.
 
 ## Verify
 

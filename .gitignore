@@ -16,4 +16,5 @@ frontend/public/ikea-catalog.json
 
 .worktrees/
 .cache/
+logs/
 frontend/public/draco/
